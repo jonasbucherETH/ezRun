@@ -28,6 +28,9 @@ samples <- gsub("samples/", "", data$Sample)
 plot_ly(data, x = samples, y = data$Counts)
 ```
 
+
+### Jonas test header
+
 ### Private/Shared SNPs
 
 ```{r Private SNPs, fig.width=8, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
