@@ -34,7 +34,7 @@ plot_ly(data, x = samples, y = data$Counts)
 
 
 ```{r PCA, fig.width=8, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
-
+barplot(pca1$eig[1:50],main="PCA eigenvalues", col=heat.colors(50))
 ```
 
 
