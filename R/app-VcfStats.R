@@ -36,6 +36,18 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   result <- ezSystem(cmd)
   gc()
 
+  ## pca prep
+  library(adegenet)
+  library(ade4)
+
+  # turn SNP data into genind format
+  snp_df <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
+  snp_genind <- df2genind(snp_df, ploidy=2)
+
+  # replace NAs
+  snp_genind_scaled <- scaleGen(snp_genind, NA.method="mean")
+  pca1 <- dudi.pca(snp_genind_scale, cent=FALSE, scale=FALSE, scannf=FALSE, nf=3)
+
   ## Copy the style files and templates
   styleFiles <- file.path(
     system.file("templates", package = "ezRun"),

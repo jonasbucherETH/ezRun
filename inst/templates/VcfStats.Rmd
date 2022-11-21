@@ -14,6 +14,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(plotly)
 library(magrittr)
+library(adegenet)
+library(ade4)
 ```
 Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
@@ -28,8 +30,13 @@ samples <- gsub("samples/", "", data$Sample)
 plot_ly(data, x = samples, y = data$Counts)
 ```
 
+### PCA TEST 1
 
-### Jonas test header
+
+```{r PCA, fig.width=8, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
+
+```
+
 
 ### Private/Shared SNPs
 
