@@ -14,8 +14,10 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(plotly)
 library(magrittr)
-library(adegenet)
-library(ade4)
+#library(adegenet)
+#library(ade4)
+library(gdsfmt)
+library(SNPRelate)
 ```
 Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
@@ -34,7 +36,10 @@ plot_ly(data, x = samples, y = data$Counts)
 
 
 ```{r PCA, fig.width=8, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
-barplot(pca1$eig[1:50],main="PCA eigenvalues", col=heat.colors(50))
+pc.percent <- pca$varprop*100
+head(round(pc.percent, 2))
+plot(pca_tab$EV2, tab$EV1, xlab="eigenvector 2", ylab="eigenvector 1")
+head(pca_tab)
 ```
 
 

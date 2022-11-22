@@ -37,8 +37,8 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   gc()
 
   ## pca prep
-  library(adegenet)
-  library(ade4)
+  #library(adegenet)
+  #library(ade4)
   library(gdsfmt)
   library(SNPRelate)
 
