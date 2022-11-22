@@ -73,12 +73,11 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   #pca <- snpgdsPCA(genofile, snp.id=snpset.id, num.thread=2)
 
   # case: no prior population information
-  '''
-  pca_tab <- data.frame(sample.id = pca$sample.id,
-		        EV1 = pca$eigenvect[,1],    # the first eigenvector
-			    EV2 = pca$eigenvect[,2],    # the second eigenvector
-			    stringsAsFactors = FALSE)
-  '''
+  
+#  pca_tab <- data.frame(sample.id = pca$sample.id,
+#		        EV1 = pca$eigenvect[,1],    # the first eigenvector
+#			    EV2 = pca$eigenvect[,2],    # the second eigenvector
+#			    stringsAsFactors = FALSE)
 
 
   ## Copy the style files and templates
