@@ -39,14 +39,30 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   ## pca prep
   library(adegenet)
   library(ade4)
+  library(gdsfmt)
+  library(SNPRelate)
+
+  vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
+    
+  snpgdsVCF2GDS(vcf_f, "ccm.gds",  method="biallelic.only")
+  genofile <- openfn.gds("ccm.gds")
+  ccm_pca <- snpgdsPCA(genofile)
+
+  #pca_dat <- file.path(output_dir, "vcf_stats.pca")
 
   # turn SNP data into genind format
-  snp_df <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
-  snp_genind <- df2genind(snp_df, ploidy=2)
+  #snp_genind <- df2genind(snp_df, ploidy=2)
 
   # replace NAs
-  snp_genind_scaled <- scaleGen(snp_genind, NA.method="mean")
-  pca1 <- dudi.pca(snp_genind_scale, cent=FALSE, scale=FALSE, scannf=FALSE, nf=3)
+  pca <- snpgdsPCA(genofile, snp.id=snpset.id, num.thread=2)
+
+  # case: no prior population information
+  pca_tab <- data.frame(sample.id = pca$sample.id,
+		        EV1 = pca$eigenvect[,1],    # the first eigenvector
+			    EV2 = pca$eigenvect[,2],    # the second eigenvector
+			    stringsAsFactors = FALSE)
+  
+
 
   ## Copy the style files and templates
   styleFiles <- file.path(
