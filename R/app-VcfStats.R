@@ -44,16 +44,30 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
 
   vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
     
-  snpgdsVCF2GDS(vcf_f, "ccm.gds",  method="biallelic.only")
-  genofile <- openfn.gds("ccm.gds")
-  ccm_pca <- snpgdsPCA(genofile)
+  snpgdsVCF2GDS(vcf_f, "snp.gds",  method="biallelic.only")
+  genofile <- snpgdsOpen("snp.gds")
+
+  # Get the attributes of chromosome coding
+  get.attr.gdsn(index.gdsn(genofile, "snp.chromosome"))
+
+  # Get the attribute of genotype
+  get.attr.gdsn(index.gdsn(genofile, "genotype"))
+
+  #genofile <- openfn.gds("ccm.gds")
+  #ccm_pca <- snpgdsPCA(genofile)
 
   #pca_dat <- file.path(output_dir, "vcf_stats.pca")
 
   # turn SNP data into genind format
   #snp_genind <- df2genind(snp_df, ploidy=2)
+  
+  # open a GDS file
+  #snp <- snpgdsOpen("snp.gds")
 
-  # replace NAs
+  # replace NA
+  snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2)
+  snpset.id <- unlist(unname(snpset))
+  
   pca <- snpgdsPCA(genofile, snp.id=snpset.id, num.thread=2)
 
   # case: no prior population information
