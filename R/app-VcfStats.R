@@ -64,11 +64,11 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   # turn SNP data into genind format
   #snp_genind <- df2genind(snp_df, ploidy=2)
    
-  snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2)
-  snpset.id <- unlist(unname(snpset))
+  #snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2)
+  #snpset.id <- unlist(unname(snpset))
 
   #pca <- snpgdsPCA(genofile)
-  pca <- snpgdsPCA(genofile, snp.id=snpset.id, num.thread=2)
+  #pca <- snpgdsPCA(genofile, snp.id=snpset.id, num.thread=2)
 
   # replace NA
   #snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2)
