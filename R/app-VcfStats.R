@@ -45,10 +45,10 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
  
   # convert vcf to gds   
-  snpgdsVCF2GDS(vcf_f, "snp.gds",  method="biallelic.only")
+  snpgdsVCF2GDS(vcf_f, file.path(output_dir, "snp.gds"),  method="biallelic.only")
 
   # open gds
-  genofile <- snpgdsOpen("snp.gds")
+  genofile <- snpgdsOpen(file.path(output_dir, "snp.gds"))
 
   # Get the attributes of chromosome coding
   #get.attr.gdsn(index.gdsn(genofile, "snp.chromosome"))
