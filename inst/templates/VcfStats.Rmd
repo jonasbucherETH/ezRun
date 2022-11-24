@@ -14,8 +14,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(plotly)
 library(magrittr)
-#library(adegenet)
-#library(ade4)
+library(adegenet)
+library(ade4)
 library(gdsfmt)
 library(SNPRelate)
 ```
@@ -32,15 +32,47 @@ samples <- gsub("samples/", "", data$Sample)
 plot_ly(data, x = samples, y = data$Counts)
 ```
 
-### PCA TEST 1
+### PCA
 
 
-```{r PCA, fig.width=8, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
-#pc.percent <- pca$varprop*100
-#head(round(pc.percent, 2))
-#plot(pca_tab$EV2, tab$EV1, xlab="eigenvector 2:wq", ylab="eigenvector 1")
-#head(pca_tab)
+```{r PCA, fig.width=20, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+genofile <- snpgdsOpen("./data/snp.gds")
+
+# snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2, autosome.only = F)
+# str(snpset)
+# snpset.id <- unlist(unname(snpset))
+
+pca <- snpgdsPCA(genofile, autosome.only = F)
+# pca <- snpgdsPCA(genofile, autosome.only = F, snp.id=snpset.id)
+
+
+tab <- data.frame(sample.id = pca$sample.id,
+    #pop = factor(pop_code)[match(pca$sample.id, sample.id)],
+    EV1 = pca$eigenvect[,1],    # the first eigenvector
+    EV2 = pca$eigenvect[,2],    # the second eigenvector
+    stringsAsFactors = FALSE)
+# head(tab)
+
+# plot(tab$EV1, tab$EV2, xlab="eigenvector 1", ylab="eigenvector 2")
+
+# pca <- snpgdsPCA(genofile, autosome.only = F)
+
+tab_new <- tab
+tab_new$population <- substr(tab$sample.id, 6, 8)
+
+p <- ggplot(data = tab_new, aes(x = EV1, y = EV2, color = sample.id, shape = population)) +
+  geom_point() +
+  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #   tooltip = sample.id, data_id = sample.id)) +
+  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
+  theme_classic() +
+  xlab(paste0("PC1 (", format(round(pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
+  ylab(paste0("PC2 (", format(round(pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+  labs(shape = "Population", color = "Sample")
+
+p
 ```
+
 
 
 ### Private/Shared SNPs
