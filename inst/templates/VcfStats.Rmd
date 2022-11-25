@@ -18,6 +18,7 @@ library(adegenet)
 library(ade4)
 library(gdsfmt)
 library(SNPRelate)
+library(ggplot2)
 ```
 Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
@@ -34,8 +35,7 @@ plot_ly(data, x = samples, y = data$Counts)
 
 ### PCA
 
-
-```{r PCA, fig.width=20, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+```{r PCA, fig.width=14, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
 # genofile <- snpgdsOpen(snp.gds)
 
 # snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2, autosome.only = F)
@@ -70,7 +70,7 @@ p <- ggplot(data = tab_new, aes(x = EV1, y = EV2, color = sample.id, shape = pop
   ylab(paste0("PC2 (", format(round(pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
   labs(shape = "Population", color = "Sample")
 
-p
+ggplotly(p)
 ```
 
 
