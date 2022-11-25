@@ -35,7 +35,7 @@ plot_ly(data, x = samples, y = data$Counts)
 
 ### PCA
 
-```{r PCA, fig.width=14, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
+```{r PCA, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
 # genofile <- snpgdsOpen(snp.gds)
 
 # snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2, autosome.only = F)
@@ -68,12 +68,22 @@ p <- ggplot(data = tab_new, aes(x = EV1, y = EV2, color = sample.id, shape = pop
   theme_classic() +
   xlab(paste0("PC1 (", format(round(pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
   ylab(paste0("PC2 (", format(round(pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
-  labs(shape = "Population", color = "Sample")
+  labs(color = "Sample", shape = "Population")
 
-ggplotly(p)
+
+
+
+# this works, but messes up the grouping
+ggplotly(p, tooltip = c("sample.id"))
+
 ```
 
+### MDS
 
+```{r MDS, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+```
 
 ### Private/Shared SNPs
 
