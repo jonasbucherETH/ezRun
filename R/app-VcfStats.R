@@ -50,7 +50,14 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   # open gds
   genofile <- snpgdsOpen(file.path(output_dir, "snp.gds"))
 
-  # Get the attributes of chromosome coding
+  # file for mds
+  mds <- file.path(output_dir, "mds")
+
+  # run plink for distance matrix (mds) 
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--cluster", "--mds--plot" , "--out", prefix)
+  result <- ezSystem(cmd)
+  gc()
+
   #get.attr.gdsn(index.gdsn(genofile, "snp.chromosome"))
 
   # Get the attribute of genotype
