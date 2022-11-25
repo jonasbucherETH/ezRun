@@ -42,7 +42,7 @@ genofile <- snpgdsOpen("./data/snp.gds")
 # str(snpset)
 # snpset.id <- unlist(unname(snpset))
 
-pca <- snpgdsPCA(genofile, autosome.only = F)
+pca <- snpgdsPCA(genofile, autosome.only = F, verbose= F)
 # pca <- snpgdsPCA(genofile, autosome.only = F, snp.id=snpset.id)
 
 
