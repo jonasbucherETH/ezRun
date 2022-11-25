@@ -36,7 +36,7 @@ plot_ly(data, x = samples, y = data$Counts)
 
 
 ```{r PCA, fig.width=20, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
-genofile <- snpgdsOpen("./data/snp.gds")
+genofile <- snpgdsOpen(genofile)
 
 # snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2, autosome.only = F)
 # str(snpset)
