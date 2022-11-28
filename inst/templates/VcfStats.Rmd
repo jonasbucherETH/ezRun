@@ -42,11 +42,11 @@ plot_ly(data, x = samples, y = data$Counts)
 # str(snpset)
 # snpset.id <- unlist(unname(snpset))
 
-pca <- snpgdsPCA(genofile, autosome.only = F, verbose= F)
+#pca <- snpgdsPCA(genofile, autosome.only = F, verbose= F)
 # pca <- snpgdsPCA(genofile, autosome.only = F, snp.id=snpset.id)
 
 
-tab <- data.frame(sample.id = pca$sample.id,
+#tab <- data.frame(sample.id = pca$sample.id,
     #pop = factor(pop_code)[match(pca$sample.id, sample.id)],
     EV1 = pca$eigenvect[,1],    # the first eigenvector
     EV2 = pca$eigenvect[,2],    # the second eigenvector
@@ -57,24 +57,24 @@ tab <- data.frame(sample.id = pca$sample.id,
 
 # pca <- snpgdsPCA(genofile, autosome.only = F)
 
-tab_new <- tab
-tab_new$population <- substr(tab$sample.id, 6, 8)
+#tab_new <- tab
+#tab_new$population <- substr(tab$sample.id, 6, 8)
 
-p <- ggplot(data = tab_new, aes(x = EV1, y = EV2, color = sample.id, shape = population)) +
-  geom_point() +
-  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
-  #   tooltip = sample.id, data_id = sample.id)) +
-  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
-  theme_classic() +
-  xlab(paste0("PC1 (", format(round(pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
-  ylab(paste0("PC2 (", format(round(pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
-  labs(color = "Sample", shape = "Population")
+#p <- ggplot(data = tab_new, aes(x = EV1, y = EV2, color = sample.id, shape = population)) +
+#  geom_point() +
+#  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+#  #   tooltip = sample.id, data_id = sample.id)) +
+#  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
+#  theme_classic() +
+#  xlab(paste0("PC1 (", format(round(pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
+#  ylab(paste0("PC2 (", format(round(pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+#  labs(color = "Sample", shape = "Population")
 
 
 
 
 # this works, but messes up the grouping
-ggplotly(p, tooltip = c("sample.id"))
+#ggplotly(p, tooltip = c("sample.id"))
 
 ```
 
