@@ -48,9 +48,9 @@ plot_ly(data, x = samples, y = data$Counts)
 
 #tab <- data.frame(sample.id = pca$sample.id,
     #pop = factor(pop_code)[match(pca$sample.id, sample.id)],
-    EV1 = pca$eigenvect[,1],    # the first eigenvector
-    EV2 = pca$eigenvect[,2],    # the second eigenvector
-    stringsAsFactors = FALSE)
+#    EV1 = pca$eigenvect[,1],    # the first eigenvector
+#    EV2 = pca$eigenvect[,2],    # the second eigenvector
+#    stringsAsFactors = FALSE)
 # head(tab)
 
 # plot(tab$EV1, tab$EV2, xlab="eigenvector 1", ylab="eigenvector 2")
