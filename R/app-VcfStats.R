@@ -55,7 +55,7 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
 
   # run plink for distance matrix (mds)
   prefix_mds <- file.path(output_dir, "plink_mds")
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--cluster", "--mds-plot", 10 , "--out", prefix_mds)
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 10 , "--out", prefix_mds)
   result <- ezSystem(cmd)
   gc()
 
