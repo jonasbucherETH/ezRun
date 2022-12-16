@@ -18,8 +18,9 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   ### PCA
   library(gdsfmt)
   library(SNPRelate)
-  #library(adegenet)
-  #library(ade4)
+  library(adegenet)
+  library(ade4)
+  library(vcfR)
   
   # vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
   # 
