@@ -76,6 +76,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
     output_dir = ".", output_file = htmlFile, quiet = TRUE
   )
 
+  html_files <- c("00index.html",  "banner.png",  "fgcz.css",  "fgcz_header.html")
   dir.create(param[['name']])
   file.copy(from = html_files, to = param[['name']])
   cmd <- paste('mv rmarkdownLib', param[['name']])
