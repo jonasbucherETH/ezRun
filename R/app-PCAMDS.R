@@ -21,25 +21,34 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   #library(adegenet)
   #library(ade4)
   
-  vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
-  
-  # convert vcf to gds   
-  snpgdsVCF2GDS(vcf_f, file.path(output_dir, "snp.gds"),  method="biallelic.only")
-  
-  # open gds
-  genofile <- snpgdsOpen(file.path(output_dir, "snp.gds"))
-  
-  pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
-  
-  saveRDS(pca, file="PCA.rds")
+  # vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
+  # 
+  # grouping_vars <- file.path("/srv/gstore/projects", input$getColumn("Grouping File"))
+  # 
+  # # convert vcf to gds   
+  # snpgdsVCF2GDS(vcf_f, file.path(output_dir, "snp.gds"),  method="biallelic.only")
+  # 
+  # # open gds
+  # genofile <- snpgdsOpen(file.path(output_dir, "snp.gds"))
+  # 
+  # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
   
   grouping_vars <- file.path("/srv/gstore/projects", input$getColumn("Grouping File"))
   
+  vcf <- read.vcfR(file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")))
+  genind <- vcfR2genind(vcf)
+  # pop(genind) <- populations_txt$Population
+  
+  X <- scaleGen(genind, NA.method="mean")
+  pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE)
+  
+  saveRDS(pca, file="PCA.rds")
+
   saveRDS(grouping_vars, file="grouping_vars.rds")
   
   ### MDS
   # file for mds
-  mds <- file.path(output_dir, "mds")
+  # mds <- file.path(output_dir, "mds")
   
   # run plink for distance matrix (mds)
   prefix_mds <- file.path(output_dir, "mds")
