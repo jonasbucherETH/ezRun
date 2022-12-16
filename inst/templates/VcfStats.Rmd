@@ -1,19 +1,29 @@
 ---
-title: "`r paste('VcfStats:', param$name)`"
+title: "`r if (exists('reportTitle')) reportTitle else 'SUSHI Report'`"
 author: "Functional Genomics Center Zurich"
 output: 
   html_document:
-    self_contained: false
-    lib_dir: rmarkdownLib
+    self_contained: true
     includes:
-      in_header: fgcz_header.html
-    css: fgcz.css
+     in_header: !expr system.file("templates/fgcz_header.html", package="ezRun", lib.loc=.libPaths())
+    css: !expr system.file("templates/fgcz.css", package="ezRun", lib.loc=.libPaths())
+editor_options: 
+  chunk_output_type: inline
 ---
+
+Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(plotly)
 library(magrittr)
+library(adegenet)
+library(ade4)
+library(gdsfmt)
+library(SNPRelate)
+library(ggplot2)
 ```
 Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
@@ -54,6 +64,561 @@ names(data) <- c("Transisions", "Transversions", "tstv", "Sample")
 fig <- plot_ly(data, x = ~Sample, y = ~tstv, type = 'bar', name = 'Transisions/Transversions')
 fig <- fig %>% layout(yaxis = list(title = 'ts/tv'), xaxis=list(title=''))
 fig
+```
+
+### PCA
+
+```{r PCA, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+# genofile <- snpgdsOpen(snp.gds)
+genofile <- snpgdsOpen("~/git/ezRun/output_data/snp.gds")
+
+# snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2, autosome.only = F)
+# str(snpset)
+# snpset.id <- unlist(unname(snpset))
+
+
+pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
+# pca <- snpgdsPCA(genofile, autosome.only = F, snp.id=snpset.id)
+
+# pop_code <- read.gdsn(index.gdsn(genofile, "sample.annot/pop.group"))
+pca$varprop[1]
+
+tab <- data.frame(sample.id = pca$sample.id,
+    #pop = factor(pop_code)[match(pca$sample.id, sample.id)],
+    EV1 = pca$eigenvect[,1],    # the first eigenvector
+    EV2 = pca$eigenvect[,2],    # the second eigenvector
+    stringsAsFactors = FALSE)
+# head(tab)
+
+# plot(tab$EV1, tab$EV2, xlab="eigenvector 1", ylab="eigenvector 2")
+
+# pca <- snpgdsPCA(genofile, autosome.only = F)
+
+# for testing, before population info accessible
+tab_new <- tab
+tab_new$population <- substr(tab$sample.id, 6, 8)
+
+p <- ggplot(data = tab_new, aes(x = EV1, y = EV2, color = sample.id, shape = population)) +
+  geom_point() +
+  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #   tooltip = sample.id, data_id = sample.id)) +
+  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
+  theme_classic() +
+  xlab(paste0("PC1 (", format(round(pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
+  ylab(paste0("PC2 (", format(round(pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+  labs(color = "Sample", shape = "Population")
+
+
+# this works, but messes up the grouping
+ggplotly(p, tooltip = c("sample.id"))
+
+```
+
+```{r PCA ade4, fig.width=8, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
+library(vcfR) # to convert vcf to genind (ade4/adegenet)
+library("factoextra")
+
+
+# vcf <- read.table("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz", quote="\"")
+
+vcf <- read.vcfR("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz")
+genind <- vcfR2genind(vcf)
+populations_txt <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
+pop(genind) <- populations_txt$Population
+
+X <- scaleGen(genind, NA.method="mean")
+
+pca1 <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf=4)
+
+barplot(pca1$eig[1:50],main="PCA eigenvalues", col=heat.colors(50))
+
+s.label(pca1$li)
+# title("PCA of dataset\naxes 1-2")
+add.scatter.eig(pca1$eig[1:20], 3,1,2)
+
+s.class(pca1$li,pop(genind),xax=1,yax=3,sub="PCA 1-3",csub=2)
+# title("PCA of  dataset\naxes 1-3")
+add.scatter.eig(pca1$eig[1:20],nf=3,xax=1,yax=3)
+
+col <- funky(15)
+s.class(pca1$li, pop(genind),xax=1,yax=3, col=transp(col,.6), axesell=FALSE,
+cstar=0, cpoint=3, grid=FALSE)
+
+
+colorplot(pca1$li, pca1$li, transp=TRUE, cex=3, xlab="PC 1", ylab="PC 2")
+title("PCA of microbov dataset\naxes 1-2")
+abline(v=0,h=0,col="grey", lty=2)
+
+
+################
+fviz_screeplot(pca1, addlabels = TRUE, ylim = c(0, 25))
+
+fviz_contrib(pca1, choice = "var", axes = 1, top = 10)
+
+# fviz_pca_biplot(pca1, repel = TRUE)
+fviz_pca_ind(pca1, col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE # Avoid text overlapping (slow if many points)
+             )
+
+
+###########
+pca1$eig
+
+fviz_pca_ind(pca1, col.ind="cos2", geom = "point",
+   gradient.cols = c("#2E9FDF", "#FC4E07" ))
+
+
+ggplot(data = pca1, aes(x = li$Axis1, y = li$Axis1])) +
+            geom_point() +
+            # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+            #   tooltip = sample.id, data_id = sample.id)) +
+            # geom_text(hjust=0, vjust=0, label=values$pca$sample.id, label.size=0.1) +
+            # theme_classic() +
+            xlab(paste0("PC1 (", format(round(input$pick_pc_x$varprop*100, 1), nsmall = 1), "%)" )) +
+            ylab(paste0("PC2 (", format(round(values$pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+            labs(color = "Sample", shape = "Population")
+
+```
+
+```{r PCA_shiny, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(shiny)
+library(shinythemes)
+library(shinydashboard)
+
+
+genofile <- snpgdsOpen("~/git/ezRun/output_data/snp.gds", allow.duplicate=TRUE)
+grouping_vars <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
+
+pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
+
+tab <- data.frame(Sample = pca$sample.id,
+    Population = grouping_vars$Population,
+    None = "",
+    #pop = factor(pop_code)[match(pca$sample.id, sample.id)],
+    PC1 = pca$eigenvect[,1],
+    PC2 = pca$eigenvect[,2],
+    PC3 = pca$eigenvect[,3],
+    PC4 = pca$eigenvect[,4],
+    stringsAsFactors = FALSE)
+
+tab_new <- tab
+
+PC_indeces <- grep("PC", colnames(tab_new))
+
+
+tab_varprop <- data.frame(
+  PC1 = pca$varprop[1],
+  PC2 = pca$varprop[2],
+  PC3 = pca$varprop[3],
+  PC4 = pca$varprop[4],
+  stringsAsFactors = FALSE)
+
+
+# choices_grouping = setNames(tab_new$sample.id, tab_new$population)
+# choices_grouping = c("", "sample.id", "population")
+
+
+
+# Define UI for app that draws a histogram ----
+ui <- fluidPage(
+
+  # App title ----
+  # titlePanel("Hello Shiny!"),
+  
+  tabBox(
+        width = 12,
+        
+        tabPanel(
+          "Samples View",
+          icon = icon("share-alt"),
+          conditionalPanel(
+            condition = "!output.checkrlt",
+
+            p(h1("Principal Component Analysis on the samples"),
+              "PCA projections of sample expression profiles onto any pair of components."),
+            fluidRow(
+              column(
+                width = 4,
+                wellPanel(checkboxInput("sample_labels", "Display sample labels", value = TRUE),
+                          
+                          # selectInput("color_by", "Select groups to color by", choices = c("", colnames(grouping_vars))),
+                          # selectInput("group_by", "Select groups for shapes",  choices = c("", colnames(grouping_vars))),
+
+                          varSelectInput("color_by", "Select groups to color by", data = tab_new[,-PC_indeces]),
+                          varSelectInput("group_by", "Select groups for shapes", data = tab_new[,-PC_indeces]),
+                          
+                          selectInput("pick_pc_x", "Select PC for x-axis", choices = list("PC1", "PC2", "PC3", "PC4")),
+                          selectInput("pick_pc_y", "Select PC for y-axis", choices = list("PC1", "PC2", "PC3", "PC4"), selected = "PC2")))), # , choices = list("sample.id", "population")
+
+
+          ), # close conditionalPanel
+          
+          
+          
+        ), # close tabPanel
+  
+        # Main panel for displaying outputs ----
+        mainPanel(
+    
+          # Output: Histogram ----
+          plotOutput(outputId = "pca")
+          
+
+        )
+  ) # close tabBox
+
+) # close u
+            
+
+
+
+# Define server logic
+server <- function(input, output, session) {
+  
+  # vcf <- read.vcfR("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz")
+  # genind <- vcfR2genind(vcf)
+  # populations_txt <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
+  # pop(genind) <- populations_txt$Population
+  # 
+  # X <- scaleGen(genind, NA.method="mean")
+  # 
+  # pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf = 4)
+  
+  
+  # genofile <- snpgdsOpen("~/git/ezRun/output_data/snp.gds", allow.duplicate=TRUE)
+  # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
+  # tab <- data.frame(sample.id = pca$sample.id,
+  #     #pop = factor(pop_code)[match(pca$sample.id, sample.id)],
+  #     PC1 = pca$eigenvect[,1],
+  #     PC2 = pca$eigenvect[,2],
+  #     PC3 = pca$eigenvect[,3],
+  #     PC4 = pca$eigenvect[,4],
+  #     stringsAsFactors = FALSE)
+  # 
+  # tab_new <- tab
+  # tab_new$population <- substr(tab$sample.id, 6, 8)
+  # 
+  # 
+  # tab_varprop <- data.frame(
+  #   PC1 = pca$varprop[1],
+  #   PC2 = pca$varprop[2],
+  #   PC3 = pca$varprop[3],
+  #   PC4 = pca$varprop[4],
+  #   stringsAsFactors = FALSE)
+  
+  
+
+  ## reactive values to use in the app
+  values <- reactiveValues()
+  # values$pca <- pca$li
+  values$pca <- tab_new
+  
+  values$varprop <- tab_varprop
+  
+  
+  
+  # values$color_by <- 
+  #   
+  # output$check_color_by <- reactive({
+  #   is.null(values$color_by)
+  # })
+  
+  
+  # values$mydst <- dst
+
+  # Histogram of the Old Faithful Geyser Data ----
+  # with requested number of bins
+  # This expression that generates a histogram is wrapped in a call
+  # to renderPlot to indicate that:
+  #
+  # 1. It is "reactive" and therefore should be automatically
+  #    re-executed when inputs (input$bins) change
+  # 2. Its output type is a plot
+  
+  
+  # output$pca <- renderPlot({
+  # 
+  #   # x    <- faithful$waiting
+  #   # bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  #   # 
+  #   # hist(x, breaks = bins, col = "#007bc2", border = "white",
+  #   #      xlab = "Waiting time to next eruption (in mins)",
+  #   #      main = "Histogram of waiting times")
+  #   
+  #   if (input$sample_labels) {
+  #   
+  #       # p <- ggplot(data = values$pca, aes(x = EV1, y = EV2, color = sample.id, shape = population)) +
+  #       p <- ggplot(data = values$pca, aes(x = EV1, y = EV2, color=.data[[input$color_by]])) +
+  #           geom_point() +
+  #           # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #           #   tooltip = sample.id, data_id = sample.id)) +
+  #           geom_text(hjust=0, vjust=0, label=values$pca$sample.id, label.size=0.1) +
+  #           theme_classic() +
+  #           xlab(paste0("PC1 (", format(round(values$pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
+  #           ylab(paste0("PC2 (", format(round(values$pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+  #           labs(color = "Sample", shape = "Population")
+  #       
+  #           # colGroups <- colSel()[factor(expgroups)]
+  #           
+  # 
+  #   }
+  #   
+  #   else {
+  #               # p <- ggplot(data = values$pca, aes(x = EV1, y = EV2, color = sample.id, shape = population)) +
+  #       p <- ggplot(data = values$pca, aes(x = EV1, y = EV2, color=.data[[input$color_by]])) +
+  #           geom_point() +
+  #           # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #           #   tooltip = sample.id, data_id = sample.id)) +
+  #           # geom_text(hjust=0, vjust=0, label=input$sample_labels, label.size=0.1) +
+  #           theme_classic() +
+  #           xlab(paste0("PC1 (", format(round(values$pca$varprop[1]*100, 1), nsmall = 1), "%)" )) +
+  #           ylab(paste0("PC2 (", format(round(values$pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+  #           labs(color = "Sample", shape = "Population")
+  #   }
+  #   
+  #   p
+  # 
+  #   })
+  
+  p <- reactive({
+    
+       
+      # ggplot(data = values$pca, aes(x = .data[[input$pick_pc_x]], y = .data[[input$pick_pc_y]], color=.data[[input$color_by]], shape=.data[[input$group_by]])) +
+      ggplot(data = values$pca, aes(x = .data[[input$pick_pc_x]], y = .data[[input$pick_pc_y]], color=!!input$color_by, shape=!!input$group_by)) +
+
+            geom_point() +
+            # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+            #   tooltip = sample.id, data_id = sample.id)) +
+            # geom_text(hjust=0, vjust=0, label=values$pca$sample.id, label.size=0.1) +
+            theme_classic() +
+        
+            xlab(paste0("PC1 (", format(round(values$varprop[input$pick_pc_x]*100, 1), nsmall = 1), "%)" )) +
+            # xlab(paste0("PC1 (10%)" )) +
+
+            ylab(paste0("PC2 (", format(round(values$varprop[input$pick_pc_y]*100, 1), nsmall = 1), "%)" )) +
+            labs(color = input$color_by, shape = input$group_by)
+    
+  })
+  
+  output$pca <- renderPlot({
+    p()
+
+  },  height = 800, width = 1600 
+  )
+  
+  
+  # output$color_by <- renderUI({
+  # 
+  #   poss_covars <- colnames(values$pca)
+  #   selectInput("color_by", label = "Group/color by: ",
+  #               choices = c(NULL, poss_covars), selected = NULL, multiple = TRUE)
+  # })
+  # 
+  # 
+  # colSel <- reactive({
+  #   # find out how many colors to generate: if no factor is selected, either
+  #   # return all say steelblue or all different
+  # 
+  #   if (!is.null(input$color_by)) {
+  #     expgroups <- as.data.frame(colData(values$mydst)[, input$color_by])
+  #     expgroups <- interaction(expgroups)
+  #   } else {
+  #     expgroups <- factor(colnames(values$mydst))
+  #     # return(rep("steelblue",ncol(values$mydst))) # to return all same
+  #   }
+  # 
+  #   nrgroups <- length(levels(expgroups))
+  # 
+  #   if (input$col_palette == "hue"){
+  #     return(hue_pal()(nrgroups))
+  #   }
+  #   # hue_pal()(ncol(values$mydst)/2) # or somewhat other way
+  #   if (input$col_palette == "set1"){
+  #     if (nrgroups <= 9) { # max color nr allowed for set1
+  #       return(brewer_pal(palette = "Set1")(nrgroups))
+  #     } else {
+  #       return(hue_pal()(nrgroups)) # plus print message?
+  #     }
+  #   }
+  #   # (ncol(values$mydst)/2) # or somewhat other way
+  #   if (input$col_palette == "rainbow"){
+  #     return(rainbow(nrgroups))
+  #   }
+  # })
+
+  
+  # output$color_by <- renderUI({
+  #     if (is.null(values$mydds))
+  #       return(NULL)
+  #     poss_covars <- names(colData(values$mydds))
+  #     selectInput("color_by", label = "Group/color by: ",
+  #                 choices = c(NULL, poss_covars), selected = NULL, multiple = TRUE)
+  # })
+  
+  # snpgdsClose(genofile)
+  
+  session$onSessionEnded(function() {
+    stopApp()
+  })
+
+}
+
+# Create Shiny object
+shinyApp(ui = ui, server = server, options = list("display.mode"))
+```
+
+
+```{r PCA_shiny_facto, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(shiny)
+library(shinythemes)
+library(shinydashboard)
+library(vcfR) # to convert vcf to genind (ade4/adegenet)
+library("factoextra")
+
+
+
+# Define UI for app that draws a histogram ----
+ui <- fluidPage(
+
+  # App title ----
+  # titlePanel("Hello Shiny!"),
+  
+  tabBox(
+        width = 12,
+        
+        tabPanel(
+          "Samples View",
+          icon = icon("share-alt"),
+          conditionalPanel(
+            condition = "!output.checkrlt",
+
+            p(h1("Principal Component Analysis on the samples"),
+              "PCA projections of sample expression profiles onto any pair of components."),
+            fluidRow(
+              column(
+                width = 4,
+                wellPanel(checkboxInput("sample_labels", "Display sample labels", value = TRUE),
+                          selectInput("color_by", "Select groups to color by", choices = list("sample.id", "population")),
+                          selectInput("pick_pc_x", "Select PC for x-axis", choices = list("1", "2", "3", "4")),
+                          selectInput("pick_pc_y", "Select PC for y-axis", choices = list("1", "2", "3", "4"), selected = "2")))), # , choices = list("sample.id", "population")
+
+
+          ), # close conditionalPanel
+          
+          
+          
+        ), # close tabPanel
+  
+        # Main panel for displaying outputs ----
+        mainPanel(
+    
+          # Output: Histogram ----
+          plotOutput(outputId = "pca")
+          
+
+        )
+  ) # close tabBox
+
+) # close u
+            
+
+
+
+# Define server logic
+server <- function(input, output) {
+  
+  vcf <- read.vcfR("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz")
+  genind <- vcfR2genind(vcf)
+  populations_txt <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
+  pop(genind) <- populations_txt$Population
+  
+  X <- scaleGen(genind, NA.method="mean")
+
+  pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
+  
+
+  
+  ## reactive values to use in the app
+  values <- reactiveValues()
+  values$pca <- pca
+  
+  # values$varprop <- pca$varprop
+  
+
+  
+  p <- reactive({
+    
+      # values$varprop <- 
+      # ggplot(data = values$pca, aes(x = .data[[input$pick_pc_x]], y = .data[[input$pick_pc_y]], color=.data[[input$color_by]])) +
+      #       geom_point() +
+      #       # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+      #       #   tooltip = sample.id, data_id = sample.id)) +
+      #       geom_text(hjust=0, vjust=0, label=values$pca$sample.id, label.size=0.1) +
+      #       theme_classic() +
+      #       xlab(paste0("PC1 (", format(round(input$pick_pc_x$varprop*100, 1), nsmall = 1), "%)" )) +
+      #       ylab(paste0("PC2 (", format(round(values$pca$varprop[2]*100, 1), nsmall = 1), "%)" )) +
+      #       labs(color = "Sample", shape = "Population")
+      
+      # fviz_pca_ind(
+      #       X,
+      #       axes = c(.data[[input$pick_pc_x]], .data[[input$pick_pc_y]]),
+      #       geom = c("point", "text"),
+      #       # geom.ind = geom,
+      #       repel = FALSE,
+      #       habillage = "none",
+      #       palette = NULL,
+      #       addEllipses = FALSE,
+      #       col.ind = "black",
+      #       fill.ind = "white",
+      #       col.ind.sup = "blue",
+      #       alpha.ind = 1
+      #       # select.ind = list(name = NULL, cos2 = NULL, contrib = NULL),
+      #       )
+    
+    s.label(pca$li, 
+        xax = 1,     # Dimension 1
+        yax = 2)     # Dimension 2
+    
+  })
+  
+  output$pca <- renderPlot({
+    p()
+    
+  })
+
+
+}
+
+# Create Shiny object
+shinyApp(ui = ui, server = server, options = list("display.mode"))
+```
+
+### MDS
+
+```{r MDS, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+# fig <- plot_ly(plink_test1, x = ~C1, y = ~C2, type = 'scatter', name = 'MDS')
+# fig
+# mds <- plink_mds.mds
+mds <- read.csv("~/git/ezRun/output_data/plink_mds.mds", sep="")
+# 
+p <- ggplot(data = mds, aes(x = C1, y = C2, color = FID)) +
+  geom_point() +
+  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #   tooltip = sample.id, data_id = sample.id)) +
+  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
+  theme_classic() +
+  xlab("Coordinate 1") +
+  ylab("Coordinate 2") +
+  labs(color = "Sample", shape = "Population")
+
+
+p
+
+# this works, but messes up the grouping
+ggplotly(p, tooltip = c("sample.id"))
 ```
 
 ### Input Dataset
