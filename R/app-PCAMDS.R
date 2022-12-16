@@ -64,7 +64,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   styleFiles <- file.path(
     system.file("templates", package = "ezRun"),
     c(
-      "fgcz.css", "VcfStats.Rmd",
+      "fgcz.css", "PCAMDS.Rmd",
       "fgcz_header.html", "banner.png"
     )
   )
