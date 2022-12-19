@@ -46,9 +46,10 @@ Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 pca <- readRDS("PCA.rds")
 grouping_vars <- readRDS("grouping_vars.rds")
 
+# pca <- readRDS("~/sushi_project_JB/data/PCA.rds")
+# grouping_vars <- readRDS("~/sushi_project_JB/data/grouping_vars.rds")
+
 # tab_pc <- pca$eigenvect
-
-
 
 n_pcs <- ncol(pca$eigenvect) # number of (> 0) principal components
 

@@ -39,7 +39,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # 
   # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
   
-  grouping_vars <- file.path("/srv/gstore/projects", input$getColumn("Grouping File"))
+  grouping_vars <- read.delim(file.path("/srv/gstore/projects", input$getColumn("Grouping File")))
   
   vcf <- read.vcfR(file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")))
   genind <- vcfR2genind(vcf)
@@ -66,7 +66,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   
   # mds <- read.csv(file.path(output_dir, "plink.mds"), sep="")
   
-  #saveRDS(mds, file="mds.rds")
+  # saveRDS(mds, file="mds.rds")
 
   ## Copy the style files and templates
   styleFiles <- file.path(
@@ -96,9 +96,9 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # cmd <- "mv rmarkdownLib plink"
   # ezSystem(cmd)
   
-  #file.copy(from = html_files, to = output_dir)
-  #cmd <- paste("mv rmarkdownLib ", output_dir) 
-  #ezSystem(cmd)
+  # file.copy(from = html_files, to = output_dir)
+  # cmd <- paste("mv rmarkdownLib ", output_dir) 
+  # ezSystem(cmd)
 
   return("Success")
 }
