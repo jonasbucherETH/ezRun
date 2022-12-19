@@ -15,6 +15,11 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
 
   output_dir <- basename(output$getColumn("Report"))
   
+  cwd <- getwd()
+  setwdNew(basename(output$getColumn("Report")))
+  on.exit(setwd(cwd), add = TRUE)
+
+  
   ### PCA
   library(gdsfmt)
   library(SNPRelate)
@@ -52,13 +57,16 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # mds <- file.path(output_dir, "mds")
   
   # run plink for distance matrix (mds)
-  #prefix_mds <- file.path(output_dir, "mds")
+  # prefix <- file.path(output_dir, "plink")
+  # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
   cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4)
-  #cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix_mds)
+  # this saves it to plink.mds
   result <- ezSystem(cmd)
   gc()
   
- 
+  mds <- read.csv(file.path(output_dir, "plink.mds"), sep="")
+  
+  saveRDS(mds, file="mds.rds")
 
   ## Copy the style files and templates
   styleFiles <- file.path(
@@ -75,15 +83,17 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
     input = "PCAMDS.Rmd", envir = new.env(),
     output_dir = ".", output_file = htmlFile, quiet = TRUE
   )
-
+  
   html_files <- c("00index.html",  "banner.png",  "fgcz.css",  "fgcz_header.html")
-  dir.create(param[['name']])
-  file.copy(from = html_files, to = param[['name']])
-  cmd <- paste('mv rmarkdownLib', param[['name']])
-
-  #html_files <- c("00index.html",  "banner.png",  "fgcz.css",  "fgcz_header.html")
-  #file.copy(from = html_files, to = "mds")
-  #cmd <- "mv rmarkdownLib mds"
+  
+  ## try this, taken (and adapted) from app-Vpipe
+  # dir.create(param[['name']])
+  # file.copy(from = html_files, to = param[['name']])
+  # cmd <- paste('mv rmarkdownLib', param[['name']])
+  
+  ## this was before
+  file.copy(from = html_files, to = "plink")
+  cmd <- "mv rmarkdownLib plink"
   ezSystem(cmd)
 
   return("Success")

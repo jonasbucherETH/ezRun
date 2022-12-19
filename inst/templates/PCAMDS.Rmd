@@ -43,8 +43,8 @@ Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 ###
 
 ### for the actual app -> pca done in .R
-pca <- readRDS("PCA.rds")
-grouping_vars <- readRDS("grouping_vars.rds")
+#pca <- readRDS("PCA.rds")
+#grouping_vars <- readRDS("grouping_vars.rds")
 
 # tab_pc <- pca$eigenvect
 
@@ -352,7 +352,7 @@ grouping_vars <- readRDS("grouping_vars.rds")
 
 ### Input Dataset
 ```{r, echo=FALSE, message=FALSE}
-ezInteractiveTableRmd(values=ans4Report[["dataset"]])
+#ezInteractiveTableRmd(values=ans4Report[["dataset"]])
 ```
 
 ### SessionInfo
