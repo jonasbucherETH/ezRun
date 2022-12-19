@@ -57,9 +57,9 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # mds <- file.path(output_dir, "mds")
   
   # run plink for distance matrix (mds)
-  # prefix <- file.path(output_dir, "plink")
-  # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4)
+  prefix <- file.path(output_dir, "plink")
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
+  #cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4)
   # this saves it to plink.mds
   result <- ezSystem(cmd)
   gc()
@@ -92,8 +92,8 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # cmd <- paste('mv rmarkdownLib', param[['name']])
   
   ## this was before
-  file.copy(from = html_files, to = "plink")
-  cmd <- "mv rmarkdownLib plink"
+  file.copy(from = html_files, to = output_dir)
+  cmd <- paste("mv rmarkdownLib ", output_dir)
   ezSystem(cmd)
 
   return("Success")
