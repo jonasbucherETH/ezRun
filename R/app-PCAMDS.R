@@ -15,11 +15,17 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
 
   output_dir <- basename(output$getColumn("Report"))
   
+  cwd <- getwd()
+  setwdNew(basename(output$getColumn("Report")))
+  on.exit(setwd(cwd), add = TRUE)
+
+  
   ### PCA
   library(gdsfmt)
   library(SNPRelate)
-  #library(adegenet)
-  #library(ade4)
+  library(adegenet)
+  library(ade4)
+  library(vcfR)
   
   # vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
   # 
@@ -33,7 +39,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # 
   # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
   
-  grouping_vars <- file.path("/srv/gstore/projects", input$getColumn("Grouping File"))
+  grouping_vars <- read.delim(file.path("/srv/gstore/projects", input$getColumn("Grouping File")))
   
   vcf <- read.vcfR(file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")))
   genind <- vcfR2genind(vcf)
@@ -48,21 +54,25 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   
   ### MDS
   # file for mds
-  # mds <- file.path(output_dir, "mds")
+  mds <- file.path(output_dir, "plink.mds")
   
   # run plink for distance matrix (mds)
-  prefix_mds <- file.path(output_dir, "mds")
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix_mds)
+  # prefix <- file.path(output_dir, "plink")
+  # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4)
+  # this saves it to plink.mds
   result <- ezSystem(cmd)
   gc()
   
- 
+  # mds <- read.csv(file.path(output_dir, "plink.mds"), sep="")
+  
+  # saveRDS(mds, file="mds.rds")
 
   ## Copy the style files and templates
   styleFiles <- file.path(
     system.file("templates", package = "ezRun"),
     c(
-      "fgcz.css", "VcfStats.Rmd",
+      "fgcz.css", "PCAMDS.Rmd",
       "fgcz_header.html", "banner.png"
     )
   )
@@ -73,11 +83,22 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
     input = "PCAMDS.Rmd", envir = new.env(),
     output_dir = ".", output_file = htmlFile, quiet = TRUE
   )
-
+  
   html_files <- c("00index.html",  "banner.png",  "fgcz.css",  "fgcz_header.html")
-  file.copy(from = html_files, to = "mds")
-  cmd <- "mv rmarkdownLib mds"
-  ezSystem(cmd)
+  
+  ## try this, taken (and adapted) from app-Vpipe
+  # dir.create(param[['name']])
+  # file.copy(from = html_files, to = param[['name']])
+  # cmd <- paste('mv rmarkdownLib', param[['name']])
+  
+  ## this was before
+  # file.copy(from = html_files, to = "plink")
+  # cmd <- "mv rmarkdownLib plink"
+  # ezSystem(cmd)
+  
+  # file.copy(from = html_files, to = output_dir)
+  # cmd <- paste("mv rmarkdownLib ", output_dir) 
+  # ezSystem(cmd)
 
   return("Success")
 }
