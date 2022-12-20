@@ -50,7 +50,7 @@ for (i in 1:n_pcs){
 }
 
 ### MDS setup
-mds <- read.csv(plink.mds, sep="")
+mds <- read.csv("plink.mds", sep="")
 
 n_dim <- ncol(mds)-ncol(grouping_vars)-1   # number of dimensions kept in mds
 mds_tab <- data.frame(grouping_vars, mds[, (ncol(grouping_vars)+2):ncol(mds)], stringsAsFactors = FALSE, row.names = NULL)
