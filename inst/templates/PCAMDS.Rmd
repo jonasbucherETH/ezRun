@@ -58,7 +58,6 @@ mds_tab <- data.frame(grouping_vars, mds[, (ncol(grouping_vars)+2):ncol(mds)], s
 ```
 
 ### PCA
-
 ```{r PCA, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
 p <- ggplot(data = pca_tab, aes(x = PC1, y = PC2, color = Population, text = pca_tab[,1])) +
   geom_point() +
@@ -76,137 +75,8 @@ ggplotly(p, tooltip = "text")
 ```
 
 
-# ```{r PCA_shiny_NEW, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
-# ### for testing
-# # genofile <- snpgdsOpen("~/git/ezRun/output_data/snp.gds", allow.duplicate=TRUE)
-# # grouping_vars <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
-# # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
-# ###
-# 
-# ### for the actual app -> pca done in .R
-# # pca <- readRDS("PCA.rds")
-# # grouping_vars <- readRDS("grouping_vars.rds")
-# # 
-# # n_pcs <- pca$nf # number of (> 0) principal components
-# # 
-# # eig_sum <- sum(pca$eig)
-# # pca_varprop <- pca$eig/eig_sum 
-# # pca_varprop <- pca_varprop[1:n_pcs]
-# # 
-# # tab <- data.frame(grouping_vars, pca$li, stringsAsFactors = FALSE, row.names = NULL)
-# # 
-# # tab_varprop <- as.data.frame(t(pca_varprop), stringsAsFactors = FALSE)
-# # PC_indeces <- seq(1+ncol(grouping_vars), ncol(tab))
-# # 
-# # for (i in 1:n_pcs){
-# #   colnames(tab)[i+ncol(grouping_vars)] <- paste0("PC", i)
-# #   colnames(tab_varprop)[i] <- paste0("PC", i)
-# # }
-# 
-# 
-# # Define UI for app that draws a histogram ----
-# ui <- fluidPage(
-# 
-#   # App title ----
-#   # titlePanel("Hello Shiny!"),
-# 
-#   tabBox(
-#         width = 12,
-# 
-#         tabPanel(
-#           "Samples View",
-#           icon = icon("share-alt"),
-#           conditionalPanel(
-#             condition = "!output.checkrlt",
-# 
-#             p(h1("Principal Component Analysis on the samples"),
-#               "PCA projections of sample expression profiles onto any pair of components."),
-#             fluidRow(
-#               column(
-#                 width = 4,
-#                 wellPanel(checkboxInput("sample_labels", "Display sample labels", value = TRUE),
-# 
-#                           # selectInput("color_by", "Select groups to color by", choices = c("", colnames(grouping_vars))),
-#                           # selectInput("group_by", "Select groups for shapes",  choices = c("", colnames(grouping_vars))),
-#                           # selectInput("color_by", "Select groups to color by", choices = colnames(grouping_vars)),
-#                           # selectInput("group_by", "Select groups for shapes",  choices = colnames(grouping_vars)),
-# 
-#                           varSelectInput("color_by", "Select groups to color by", data = tab[,-PC_indeces]),
-#                           varSelectInput("group_by", "Select groups for shapes", data = tab[,-PC_indeces]),
-# 
-#                           # selectInput("pick_pc_x", "Select PC for x-axis", choices = list("PC1", "PC2", "PC3", "PC4")),
-#                           # selectInput("pick_pc_y", "Select PC for y-axis", choices = list("PC1", "PC2", "PC3", "PC4"), selected = "PC2")))),
-#                           selectInput("pick_pc_x", "Select PC for x-axis", choices = colnames(tab)[PC_indeces]),
-#                           selectInput("pick_pc_y", "Select PC for y-axis", choices = colnames(tab)[PC_indeces], selected = "PC2")))),
-# 
-# 
-#           ), # close conditionalPanel
-# 
-# 
-# 
-#         ), # close tabPanel
-# 
-#         # Main panel for displaying outputs ----
-#         mainPanel(
-# 
-#           # Output: Histogram ----
-#           plotOutput(outputId = "pca")
-# 
-# 
-#         )
-#   ) # close tabBox
-# 
-# ) # close u
-# 
-# 
-# # Define server logic
-# server <- function(input, output, session) {
-# 
-#   ## reactive values to use in the app
-#   values <- reactiveValues()
-#   # values$pca <- pca$li
-#   values$pca <- tab
-#   values$varprop <- tab_varprop
-# 
-#   p <- reactive({
-# 
-#         # ggplot(data = values$pca, aes(x = .data[[input$pick_pc_x]], y = .data[[input$pick_pc_y]], color=.data[[input$color_by]], shape=.data[[input$group_by]])) +
-#         ggplot(data = values$pca, aes(x = .data[[input$pick_pc_x]], y = .data[[input$pick_pc_y]], color=!!input$color_by, shape=!!input$group_by)) +
-# 
-# 
-#               geom_point() +
-#               # geom_text(hjust=0, vjust=0, label=values$pca$sample.id, label.size=0.1) +
-#               theme_classic() +
-# 
-#               xlab(paste0("PC1 (", format(round(values$varprop[input$pick_pc_x]*100, 1), nsmall = 1), "%)" )) +
-# 
-#               # xlab(paste0("PC1 (10%)" )) +
-# 
-#               ylab(paste0("PC2 (", format(round(values$varprop[input$pick_pc_y]*100, 1), nsmall = 1), "%)" )) +
-#               labs(color = input$color_by, shape = input$group_by)
-# 
-#   })
-# 
-# 
-#   output$pca <- renderPlot({
-#     p()
-# 
-#   },  height = 800, width = 1600 )
-# 
-#   session$onSessionEnded(function() {
-#     stopApp()
-#   })
-# 
-# }
-# 
-# # Create Shiny object
-# shinyApp(ui = ui, server = server, options = list("display.mode"))
-# ```
-
-
 ### MDS
-
-```{r MDS, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
+```{r MDS, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
 p <- ggplot(data = mds_tab, aes(x = C1, y = C2, color = Population, text = mds_tab[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
