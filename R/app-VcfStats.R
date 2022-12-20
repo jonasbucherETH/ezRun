@@ -50,6 +50,11 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   # open gds
   genofile <- snpgdsOpen(file.path(output_dir, "snp.gds"))
 
+  #pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
+
+
+  # get population file
+  #grouping_vars <- file.path("/srv/gstore/projects", input$getColumn("Grouping File")) 
   # file for mds
   mds <- file.path(output_dir, "mds")
 
