@@ -13,23 +13,6 @@ editor_options:
 
 Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(plotly)
-library(magrittr)
-library(adegenet)
-library(ade4)
-library(gdsfmt)
-library(SNPRelate)
-library(ggplot2)
-library(shiny)
-library(shinythemes)
-library(shinydashboard)
-```
-Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
-
 ## PCAMDS_Result {.tabset}
 
 ```{r setup, include=FALSE}
