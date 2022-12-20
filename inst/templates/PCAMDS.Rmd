@@ -32,6 +32,48 @@ Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
 ## PCAMDS_Result {.tabset}
 
+```{r setup, include=FALSE}
+# input for this report: sce
+knitr::opts_chunk$set(echo = TRUE)
+library(plotly)
+library(magrittr)
+library(adegenet)
+library(ade4)
+library(gdsfmt)
+library(SNPRelate)
+library(ggplot2)
+library(shiny)
+library(shinythemes)
+library(shinydashboard)
+# knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, knitr.table.format = "html")
+
+### PCA setup
+pca <- readRDS("PCA.rds")
+grouping_vars <- readRDS("grouping_vars.rds")
+n_pcs <- pca$nf # number of (> 0) principal components
+
+eig_sum <- sum(pca$eig)
+pca_varprop <- pca$eig/eig_sum 
+pca_varprop <- pca_varprop[1:n_pcs]
+
+tab <- data.frame(grouping_vars, pca$li, stringsAsFactors = FALSE, row.names = NULL)
+
+tab_varprop <- as.data.frame(t(pca_varprop), stringsAsFactors = FALSE)
+PC_indeces <- seq(1+ncol(grouping_vars), ncol(tab))
+
+for (i in 1:n_pcs){
+  colnames(tab)[i+ncol(grouping_vars)] <- paste0("PC", i)
+  colnames(tab_varprop)[i] <- paste0("PC", i)
+}
+
+### MDS setup
+mds <- read.csv(plink.mds, sep="")
+
+n_dim <- ncol(mds)-ncol(grouping_vars)-1   # number of dimensions kept in mds
+mds_tab <- data.frame(grouping_vars, mds[, (ncol(grouping_vars)+2):ncol(mds)], stringsAsFactors = FALSE, row.names = NULL)
+
+```
+
 ```{r}
 # vcf <- read.vcfR("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz")
 # genind <- vcfR2genind(vcf)
@@ -69,24 +111,24 @@ Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 ###
 
 ### for the actual app -> pca done in .R
-pca <- readRDS("PCA.rds")
-grouping_vars <- readRDS("grouping_vars.rds")
-
-n_pcs <- pca$nf # number of (> 0) principal components
-
-eig_sum <- sum(pca$eig)
-pca_varprop <- pca$eig/eig_sum 
-pca_varprop <- pca_varprop[1:n_pcs]
-
-tab <- data.frame(grouping_vars, pca$li, stringsAsFactors = FALSE, row.names = NULL)
-
-tab_varprop <- as.data.frame(t(pca_varprop), stringsAsFactors = FALSE)
-PC_indeces <- seq(1+ncol(grouping_vars), ncol(tab))
-
-for (i in 1:n_pcs){
-  colnames(tab)[i+ncol(grouping_vars)] <- paste0("PC", i)
-  colnames(tab_varprop)[i] <- paste0("PC", i)
-}
+# pca <- readRDS("PCA.rds")
+# grouping_vars <- readRDS("grouping_vars.rds")
+# 
+# n_pcs <- pca$nf # number of (> 0) principal components
+# 
+# eig_sum <- sum(pca$eig)
+# pca_varprop <- pca$eig/eig_sum 
+# pca_varprop <- pca_varprop[1:n_pcs]
+# 
+# tab <- data.frame(grouping_vars, pca$li, stringsAsFactors = FALSE, row.names = NULL)
+# 
+# tab_varprop <- as.data.frame(t(pca_varprop), stringsAsFactors = FALSE)
+# PC_indeces <- seq(1+ncol(grouping_vars), ncol(tab))
+# 
+# for (i in 1:n_pcs){
+#   colnames(tab)[i+ncol(grouping_vars)] <- paste0("PC", i)
+#   colnames(tab_varprop)[i] <- paste0("PC", i)
+# }
 
 
 # Define UI for app that draws a histogram ----
@@ -195,21 +237,19 @@ shinyApp(ui = ui, server = server, options = list("display.mode"))
 ### MDS
 
 ```{r MDS, fig.width=14, fig.height=8, echo=FALSE, message=FALSE, warning=FALSE}
-# fig <- plot_ly(plink_test1, x = ~C1, y = ~C2, type = 'scatter', name = 'MDS')
-# fig
-mds <- read.csv(plink_mds.mds, sep="")
-# mds <- read.csv("~/git/ezRun/output_data/plink_mds.mds", sep="")
-#
-p <- ggplot(data = mds, aes(x = C1, y = C2, color = FID)) +
+# n_dim <- ncol(mds)-ncol(grouping_vars)-1   # number of dimensions kept in mds
+# 
+# mds_tab <- data.frame(grouping_vars, mds[, (ncol(grouping_vars)+2):ncol(mds)], stringsAsFactors = FALSE, row.names = NULL)
+
+p <- ggplot(data = mds_tab, aes(x = C1, y = C2, color = Population)) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
   #   tooltip = sample.id, data_id = sample.id)) +
-  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
+  geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
   theme_classic() +
   xlab("Coordinate 1") +
   ylab("Coordinate 2") +
-  labs(color = "Sample", shape = "Population")
-
+  labs(color = "Population")
 
 p
 
