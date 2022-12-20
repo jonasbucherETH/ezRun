@@ -46,7 +46,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # pop(genind) <- populations_txt$Population
   
   X <- scaleGen(genind, NA.method="mean")
-  pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE)
+  pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
   
   saveRDS(pca, file="PCA.rds")
 
