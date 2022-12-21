@@ -56,13 +56,20 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # file for mds
   mds <- file.path(output_dir, "plink.mds")
   
-  # run plink for distance matrix (mds)
+  # plink MDS
   # prefix <- file.path(output_dir, "plink")
   # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4)
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 5)
   # this saves it to plink.mds
   result <- ezSystem(cmd)
   gc()
+  
+  # plink distance matrix
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--distance square")
+  # this saves it to plink.dist
+  result <- ezSystem(cmd)
+  gc()
+  
   
   # mds <- read.csv(file.path(output_dir, "plink.mds"), sep="")
   
