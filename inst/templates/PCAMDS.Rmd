@@ -100,47 +100,9 @@ ggplotly(plot_mds, tooltip = "text")
 ```
 
 
+
+
 ### t-SNE
-```{r tsne, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-### load data for testing
-vcf <- read.vcfR("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz")
-genind <- vcfR2genind(vcf)
-grouping_vars <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
-# pop(genind) <- populations_txt$Population
-genofile <- snpgdsOpen("~/git/ezRun/output_data/snp.gds")
-
-snp_dist <- snpgdsDiss(genofile, sample.id=NULL, snp.id=NULL, autosome.only=FALSE,
-    remove.monosnp=TRUE, maf=NaN, missing.rate=NaN, num.thread=1, verbose=TRUE)
-
-
-tsne <- Rtsne(snp_dist$diss, perplexity=10, check_duplicates = FALSE) # You can change the value of perplexity and see how the plot changes
-
-## Generate the t_SNE plot
-# par(mfrow=c(1,2))
-# plot(tsne$Y, col = "blue", pch = 19, cex = 1)
-# # plot(tsne$Y, col = "black", bg= meta_data$louvain, pch = 21, cex = 1)
-# plot(tsne$Y, col = "black", bg=grouping_vars$Population , pch = 21, cex = 1)
-
-
-tsne_tab <- data.frame(grouping_vars, tsne$Y)
-
-
-plot_tsne <- ggplot(data = tsne_tab, aes(x = X1, y = X2, color = Population, text = tsne_tab[,1])) +
-  geom_point() +
-  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
-  #   tooltip = sample.id, data_id = sample.id)) +
-  # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
-  theme_classic() +
-  xlab("Coordinate 1") +
-  ylab("Coordinate 2") +
-  labs(color = "Population")
-  
-# plot_tsne
-
-ggplotly(plot_tsne, tooltip = "text")
-```
-
-### t-SNE with plink distance-matrix
 ```{r tsne_plink, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
 plot_tsne <- ggplot(data = tsne_tab, aes(x = X1, y = X2, color = Population, text = tsne_tab[,1])) +
   geom_point() +
@@ -155,42 +117,6 @@ plot_tsne <- ggplot(data = tsne_tab, aes(x = X1, y = X2, color = Population, tex
 ggplotly(plot_tsne, tooltip = "text")
 ```
 
-
-### t-SNE function; try perplexity
-```{r tsne_function, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-
-# plink_dist2 <- read_tsv("~/sushi_project_JB/dist_test2.dist")
-plink_dist3 <- read_tsv("~/sushi_project_JB/dist_test3.dist", col_names = F)
-
-tsne_fun <- function(dist, perplexity) {
-  tsne <- Rtsne(plink_dist3, perplexity=perplexity, check_duplicates = FALSE, is_distance = TRUE) # You can change the value of perplexity and see how the plot changes
-
-  tsne_tab <- data.frame(grouping_vars, tsne$Y)
-  
-  
-  plot_tsne <- ggplot(data = tsne_tab, aes(x = X1, y = X2, color = Population, text = tsne_tab[,1])) +
-    geom_point() +
-    # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
-    #   tooltip = sample.id, data_id = sample.id)) +
-    # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
-    theme_classic() +
-    xlab("Coordinate 1") +
-    ylab("Coordinate 2") +
-    labs(color = "Population")
-    
-  # plot_tsne
-  
-  # p <- ggplotly(plot_tsne, tooltip = "text")
-  return(plot_tsne)
-  
-}
-
-
-p_i <- tsne_fun(plink_dist3, 10)
-ggplotly(p_i, tooltip = "text")
-
-
-```
 
 
 <!-- ### Input Dataset -->
