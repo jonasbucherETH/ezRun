@@ -5,6 +5,7 @@
 # The terms are available here: http://www.gnu.org/licenses/gpl.html
 # www.fgcz.ch
 
+
 ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
                            htmlFile = "00index.html") {
   # #setwdNew(basename(output$getColumn("Report")))
@@ -12,7 +13,11 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   ans4Report <- list() # a list of results for rmarkdown report
   ans4Report[["dataset"]] <- dataset
 
-  output_dir <- basename(output$getColumn("Report"))
+  # output_dir <- basename(output$getColumn("Report"))
+  
+  # output directory for testing
+  output_dir <- "/home/jobucher/git/ezRun/output_data"
+  
   prefix <- file.path(output_dir, "vcf_stats")
 
   # For Rmd
@@ -35,6 +40,41 @@ ezMethodVcfStats <- function(input = NA, output = NA, param = NA,
   cmd <- paste("vcf-stats", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "-p", prefix)
   result <- ezSystem(cmd)
   gc()
+  
+  ## pca prep
+  #library(adegenet)
+  #library(ade4)
+  library(gdsfmt)
+  library(SNPRelate)
+  
+  vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
+  
+  # convert vcf to gds   
+  snpgdsVCF2GDS(vcf_f, file.path(output_dir, "snp.gds"),  method="biallelic.only")
+  
+  # open gds
+  genofile <- snpgdsOpen(file.path(output_dir, "snp.gds"))
+  
+  # file for mds
+  mds <- file.path(output_dir, "mds")
+  
+  # run plink for distance matrix (mds)
+  prefix_mds <- file.path(output_dir, "plink_mds")
+  # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix_mds)
+  
+  # cmd <- ". /usr/local/ngseq/etc/lmod_profile"
+  # ezSystem(cmd)
+  # # need to load plink module first
+  # cmd <- "module load Tools/PLINK/1.9beta6.21"
+  # ezSystem(cmd)
+  
+  # for testing
+  cmd <- paste("plink --vcf", "/srv/gstore/projects/p1535/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz", "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix_mds)
+  # /srv/gstore/projects/p1535/test_vcf_dataset
+  
+  result <- ezSystem(cmd)
+  gc()
+  
 
   ## Copy the style files and templates
   styleFiles <- file.path(

@@ -12,13 +12,13 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   dataset <- input$meta
   ans4Report <- list() # a list of results for rmarkdown report
   ans4Report[["dataset"]] <- dataset
-
+  
   output_dir <- basename(output$getColumn("Report"))
   
   cwd <- getwd()
   setwdNew(basename(output$getColumn("Report")))
   on.exit(setwd(cwd), add = TRUE)
-
+  
   
   ### PCA
   library(gdsfmt)
@@ -49,32 +49,25 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
   
   saveRDS(pca, file="PCA.rds")
-
+  
   saveRDS(grouping_vars, file="grouping_vars.rds")
   
   ### MDS
   # file for mds
   mds <- file.path(output_dir, "plink.mds")
   
-  # plink MDS
+  # run plink for distance matrix (mds)
   # prefix <- file.path(output_dir, "plink")
   # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 5)
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4)
   # this saves it to plink.mds
   result <- ezSystem(cmd)
   gc()
   
-  # plink distance matrix
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--distance square")
-  # this saves it to plink.dist
-  result <- ezSystem(cmd)
-  gc()
-  
-  
   # mds <- read.csv(file.path(output_dir, "plink.mds"), sep="")
   
   # saveRDS(mds, file="mds.rds")
-
+  
   ## Copy the style files and templates
   styleFiles <- file.path(
     system.file("templates", package = "ezRun"),
@@ -84,7 +77,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
     )
   )
   file.copy(from = styleFiles, to = ".", overwrite = TRUE)
-
+  
   ### generate the main reports
   rmarkdown::render(
     input = "PCAMDS.Rmd", envir = new.env(),
@@ -106,7 +99,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # file.copy(from = html_files, to = output_dir)
   # cmd <- paste("mv rmarkdownLib ", output_dir) 
   # ezSystem(cmd)
-
+  
   return("Success")
 }
 
@@ -127,14 +120,14 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
 
 EzAppPCAMDS <-
   setRefClass("EzAppPCAMDS",
-    contains = "EzApp",
-    methods = list(
-      initialize = function() {
-        "Initializes the application using its specific defaults."
-        runMethod <<- ezMethodPCAMDS
-        name <<- "EzAppPCAMDS"
-        appDefaults <<- rbind(perLibrary = ezFrame(Type = "logical", DefaultValue = TRUE, Description = "PCAMDS brabra"))
-      }
-    )
+              contains = "EzApp",
+              methods = list(
+                initialize = function() {
+                  "Initializes the application using its specific defaults."
+                  runMethod <<- ezMethodPCAMDS
+                  name <<- "EzAppPCAMDS"
+                  appDefaults <<- rbind(perLibrary = ezFrame(Type = "logical", DefaultValue = TRUE, Description = "PCAMDS brabra"))
+                }
+              )
   )
 

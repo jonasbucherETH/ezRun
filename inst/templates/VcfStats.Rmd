@@ -128,7 +128,10 @@ pop(genind) <- populations_txt$Population
 
 X <- scaleGen(genind, NA.method="mean")
 
-pca1 <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf=4)
+pca1 <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE)
+
+eig_sum <- sum(pca1$eig)
+pca1_varprop <- pca1$eig/eig_sum 
 
 barplot(pca1$eig[1:50],main="PCA eigenvalues", col=heat.colors(50))
 
@@ -603,22 +606,23 @@ shinyApp(ui = ui, server = server, options = list("display.mode"))
 # fig
 # mds <- plink_mds.mds
 mds <- read.csv("~/git/ezRun/output_data/plink_mds.mds", sep="")
-# 
-p <- ggplot(data = mds, aes(x = C1, y = C2, color = FID)) +
+
+n_dim <- ncol(mds)-ncol(grouping_vars)-1   # number of dimensions kept in mds
+
+mds_tab <- data.frame(grouping_vars, mds[, (ncol(grouping_vars)+2):ncol(mds)], stringsAsFactors = FALSE, row.names = NULL)
+
+p <- ggplot(data = mds_tab, aes(x = C1, y = C2, color = Population, text = mds_tab[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
   #   tooltip = sample.id, data_id = sample.id)) +
-  # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
+  # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
   theme_classic() +
   xlab("Coordinate 1") +
   ylab("Coordinate 2") +
-  labs(color = "Sample", shape = "Population")
+  labs(color = "Population")
 
+ggplotly(p, tooltip = "text")
 
-p
-
-# this works, but messes up the grouping
-ggplotly(p, tooltip = c("sample.id"))
 ```
 
 ### Input Dataset

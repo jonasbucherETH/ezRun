@@ -1,0 +1,39 @@
+PLINK v1.90b6.21 64-bit (19 Oct 2020)
+Options in effect:
+  --allow-extra-chr
+  --cluster
+  --double-id
+  --mds-plot 4
+  --out /home/jobucher/git/ezRun/output_data/plink_mds
+  --vcf /srv/gstore/projects/p1535/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz
+
+Hostname: fgcz-c-047
+Working directory: /home/jobucher/git/ezRun/R
+Start time: Tue Dec 13 13:54:50 2022
+
+Random number seed: 1670936090
+1032004 MB RAM detected; reserving 516002 MB for main workspace.
+--vcf: /home/jobucher/git/ezRun/output_data/plink_mds-temporary.bed +
+/home/jobucher/git/ezRun/output_data/plink_mds-temporary.bim +
+/home/jobucher/git/ezRun/output_data/plink_mds-temporary.fam written.
+886 variants loaded from .bim file.
+42 people (0 males, 0 females, 42 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+/home/jobucher/git/ezRun/output_data/plink_mds.nosex .
+Using up to 31 threads (change this with --threads).
+Before main variant filters, 42 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.819789.
+886 variants and 42 people pass filters and QC.
+Note: No phenotypes present.
+Distance matrix calculation complete.
+Clustering... done.
+Cluster solution written to
+/home/jobucher/git/ezRun/output_data/plink_mds.cluster1 ,
+/home/jobucher/git/ezRun/output_data/plink_mds.cluster2 , and
+/home/jobucher/git/ezRun/output_data/plink_mds.cluster3 .
+Performing multidimensional scaling analysis (SVD algorithm, 4
+dimensions)... done.
+MDS solution written to /home/jobucher/git/ezRun/output_data/plink_mds.mds .
+
+End time: Tue Dec 13 13:54:50 2022
