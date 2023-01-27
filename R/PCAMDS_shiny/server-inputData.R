@@ -1,15 +1,16 @@
 inputDataReactive <- reactive({
+# inputDataReactive <- {
 
   
-  cat("input")
+  # cat("server-inputData")
   
-  ### load data for testing
-  vcf <- read.vcfR("~/sushi_project_JB/data/test_vcf_dataset/ragi_highcov_sa0001_1k.vcf.gz")
+  ### local load (use this instead of full path)
+  vcf <- read.vcfR("data/ragi_highcov_sa0001_1k.vcf.gz")
   genind <- vcfR2genind(vcf)
-  grouping_vars <- read.delim("~/sushi_project_JB/data/test_vcf_dataset/populations.txt")
-  # pop(genind) <- populations_txt$Population
-  
+  grouping_vars <- read.delim("data/populations.txt") # read.table or read.delim (used before) -> delim should be fine
+  grouping_vars[42, 2] <- "DipPop"
   X <- scaleGen(genind, NA.method="mean")
+  # colnames(grouping_vars) <- make.names(colnames(grouping_vars))
   
   
   # pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE)
@@ -61,10 +62,11 @@ inputDataReactive <- reactive({
     # "tab_varprop" = tab_varprop,
     "vcf" = vcf,
     "genind" = genind,
-    "grouping_vars" = grouping_vars,
-    "X" = X
+    "X" = X,
+    "grouping_vars" = grouping_vars
     )
   )
   
-  
+# }
 })
+  
