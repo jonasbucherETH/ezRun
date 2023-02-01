@@ -42,6 +42,8 @@ library("ggplot2")
 library("shinythemes")
 library("shinytest")
 library("vcfR")
+library("styler")
+library("Rtsne")
 # library("testthat")
 
 # console.error = function () {
@@ -69,10 +71,10 @@ reactiveConsole(TRUE)
 #   span("Loading stuff...", style="color:white;")
 # )
 
-ui = dashboardPage(
+ui <- dashboardPage(
   skin = "blue",
   dashboardHeader(
-    title = "Dimensionality Reduction" #,
+    title = "Dimensionality Reduction" # ,
     # tags$li(
     #   a(
     #     href = 'mailto:sequencing@fgcz.ethz.ch?subject=exploreDEG-shiny-app-feedback',
@@ -103,9 +105,14 @@ ui = dashboardPage(
     sidebarMenu(
       id = "tabs",
       menuItem(
-        text = "PCA Plots",
+        text = "PCA",
         tabName = "tab-PCA",
         icon = icon("meteor")
+      ),
+      menuItem(
+        text = "t-SNE",
+        tabName = "tab-tSNE",
+        icon = icon("table")
       )
     )
   ),
@@ -115,15 +122,14 @@ ui = dashboardPage(
     # tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "main.css")),
     # use_waiter(),
     tabItems(
-      source("ui-PCA.R", local = TRUE)$value
+      source("ui-PCA.R", local = TRUE)$value,
+      source("ui-tSNE.R", local = TRUE)$value
       # source("~/git/ezRun/R/PCAMDS_shiny/ui-PCA.R", local = F)$value
     )
   )
 )
 
-server = function(input, output, session) {
-
-
+server <- function(input, output, session) {
   # track_usage(storage_mode = store_rds(path = "/scratch/shiny_logs/"), app_name="PCAMDS_shiny")
 
   # inputDataReactive <- reactive({source(file="server-inputData.R", local=T)})
@@ -133,9 +139,8 @@ server = function(input, output, session) {
 
   source("server-inputData.R", local = TRUE)
   source("server-PCA.R", local = TRUE)
+  source("server-tSNE.R", local = TRUE)
   
 }
 
 shinyApp(ui = ui, server = server)
-
-

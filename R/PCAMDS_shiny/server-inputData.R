@@ -1,18 +1,26 @@
 inputDataReactive <- reactive({
 # inputDataReactive <- {
+  
 
+  # Load data ---------------------------
+  ## PCA
+  vcfRaw <- read.vcfR("data/ragi_highcov_sa0001_1k.vcf.gz")
+  vcfGenind <- vcfR2genind(vcfRaw)
+  groupingVariables <- read.delim("data/populations.txt") # read.table or read.delim (used before) -> delim should be fine
+  rownames(groupingVariables) <- groupingVariables[,1]
+  factors <- colnames(groupingVariables)
+  groupingVariables[42, 2] <- "DipPop"
+  datasetPCA <- scaleGen(vcfGenind, NA.method="mean")
   
-  # cat("server-inputData")
+  ## MDS
+  # mds <- read.csv("data/plink_3101.mds", sep="")
+
+  ## t-SNE
+  distanceMatrixTSNE <- read_tsv("data/plink_3101.dist", col_names = F)
   
-  ### local load (use this instead of full path)
-  vcf <- read.vcfR("data/ragi_highcov_sa0001_1k.vcf.gz")
-  genind <- vcfR2genind(vcf)
-  grouping_vars <- read.delim("data/populations.txt") # read.table or read.delim (used before) -> delim should be fine
-  grouping_vars[42, 2] <- "DipPop"
-  X <- scaleGen(genind, NA.method="mean")
-  # colnames(grouping_vars) <- make.names(colnames(grouping_vars))
-  
-  
+  # cat(class(distanceMatrixTSNE))
+
+
   # pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE)
   # #
   # # mds <- read.csv("~/git/ezRun/output_data/plink_mds.mds", sep="")
@@ -52,6 +60,20 @@ inputDataReactive <- reactive({
   # n_pcs = "please print this"
   # print(n_pcs)
   
+  
+  # If there's only one factor, duplicate it so everything that expects a 
+  # second factor doesn't break: 
+  if (length(factors) == 1) {
+    factors <- as.numeric(c(factors, factors))
+  }
+
+  colourList <- list()
+  for (i in factors) {
+    for (l in levels(as.factor(groupingVariables[, i]))) {
+      colourList[l] <- NA
+    }
+  }
+
   return(list(
     # "pca" = pca,
     # "n_pcs" = n_pcs,
@@ -60,10 +82,15 @@ inputDataReactive <- reactive({
     # "pca_varprop" = pca_varprop,
     # "pca_tab" = pca_tab,
     # "tab_varprop" = tab_varprop,
-    "vcf" = vcf,
-    "genind" = genind,
-    "X" = X,
-    "grouping_vars" = grouping_vars
+    "vcfRaw" = vcfRaw,
+    "vcfGenind" = vcfGenind,
+    "datasetPCA" = datasetPCA,
+    "groupingVariables" = groupingVariables,
+    "distanceMatrixTSNE" = distanceMatrixTSNE,
+    "colourList" = colourList
+    # "mds" = mds,
+    # "distanceMatrix" = distanceMatrix
+    
     )
   )
   
