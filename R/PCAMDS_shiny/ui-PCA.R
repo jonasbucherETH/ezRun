@@ -1,122 +1,158 @@
 tabItem(
   tabName = "tab-PCA",
-  fluidRow(
+  fluidRow( ### NOTE: 1 row has width = 12
     column(
       width = 3,
       box(
-        title = "Display options",
+        title = "Plot Settings",
         width = NULL,
         solidHeader = TRUE,
         status = "primary",
         collapsible = TRUE,
         collapsed = FALSE,
-      
-        checkboxInput("sample_labels", "Display sample labels", value = TRUE),
-                
-        ### grouping input (colors & shapes)
-        # selectInput("color_by", "Select groups to color by", choices = c("", colnames(grouping_vars))),
-        # selectInput("group_by", "Select groups for shapes",  choices = c("", colnames(grouping_vars))),
-        # selectInput("color_by", "Select groups to color by", choices = colnames(grouping_vars)),
-        # selectInput("group_by", "Select groups for shapes",  choices = colnames(grouping_vars)),
-        
-        # varSelectInput("color_group", "Select groups to color by", data = pca_tab[,-PC_indeces]),
-        # varSelectInput("shape_group", "Select groups for shapes", data = pca_tab[,-PC_indeces]),
-        # selectInput("color_group", "Select groups to color by", choices = list("Sample", "Population")),
-        # selectInput("shape_group", "Select groups for shapes", choices = list("Sample", "Population"), selected = "Population"),
-        
+        checkboxInput(
+          inputId = "displayTitlePCA",
+          label = "Display Title",
+          value = FALSE
+        ),
+        textInput(
+          inputId = "pcaTitle",
+          label = "Title of PCA plot",
+          value = ""
+        ),
+        checkboxInput(
+          inputId = "sampleLabelsPCA",
+          label = "Display sample labels",
+          value = FALSE
+        ),
         selectInput(
-          inputId = "color_group",
+          inputId = "colorGroupPCA",
           label = "Select groups to color by",
-          choices = "", 
+          choices = "",
           selected = ""
         ),
         selectInput(
-          inputId = "shape_group",
+          inputId = "shapeGroupPCA",
           label = "Select groups for shapes",
-          choices = "", 
+          choices = "",
           selected = ""
         ),
         
-        
-        ### PC input (axis)
-        # selectInput(inputId = "pick_pc_x", label = "Select PC for x-axis", choices = list("PC1", "PC2", "PC3", "PC4")),
-        # selectInput(inputId = "pick_pc_y", label = "Select PC for y-axis", choices = list("PC1", "PC2", "PC3", "PC4"), selected = "PC2")
-        
-        # selectInput(inputId = "pick_pc_x", label = "Select PC for x-axis", choices = colnames(pca_tab)[PC_indeces]),
-        # selectInput(inputId = "pick_pc_y", label = "Select PC for y-axis", choices = colnames(pca_tab)[PC_indeces], selected = colnames(pca_tab)[PC_indeces[2]])
-        
-        # selectInput(
-        #   inputId = "pick_pc_x",
-        #   label = "Select PC for x-axis",
-        #   choices = "PC1", 
-        #   selected = "PC1"
-        # ),
-        # selectInput(
-        #   inputId = "pick_pc_y",
-        #   label = "Select PC for y-axis",
-        #   choices = "PC2", 
-        #   selected = "PC2"
-        # ),
-        
         selectInput(
-          inputId = "pick_pc_x",
+          inputId = "excludedSamplesPCA",
+          label = "Select samples to exclude",
+          choices = "",
+          selected = ""
+        ),
+        selectInput(
+          inputId = "pickFactor1PCA",
           label = "Select PC for x-axis",
-          choices = c("PC1","PC2","PC3","PC4","PC5"), 
+          choices = "PC1",
           selected = "PC1"
         ),
         selectInput(
-          inputId = "pick_pc_y",
+          inputId = "pickFactor2PCA",
           label = "Select PC for y-axis",
-          choices = c("PC1","PC2","PC3","PC4","PC5"), 
+          choices = "PC2",
           selected = "PC2"
         ),
-      
-        # selectInput("pick_pc_x", "Select PC for x-axis", choices = colnames(pca_tab)[PC_indeces]),
-        # selectInput("pick_pc_y", "Select PC for y-axis", choices = colnames(pca_tab)[PC_indeces], selected = "PC2")
+        # sliderInput("pcaPlotWidth", "Width of plot", min = 100, max = 2000, value = 800, step = 10),
+        # sliderInput("pcaPlotHeight", "Height of plot", min = 100, max = 2000, value = 600, step = 10),
+
+        numericInput("pointSizePCA", "Sizes of points in PCA plot", min = 1, max = 6, value = 3, step = 0.5),
+        numericInput(
+          inputId = "textSizePCA",
+          label = "Figure Font Size", min = 4, max = 30,
+          value = 12, step = 0.5
+        ),
+
+
+        # selectInput(
+        #   inputId = "pickFactor1PCA",
+        #   label = "Select PC for x-axis",
+        #   choices = c("PC1","PC2","PC3","PC4","PC5"),
+        #   selected = "PC1"
+        # ),
+        # selectInput(
+        #   inputId = "pickFactor2PCA",
+        #   label = "Select PC for y-axis",
+        #   choices = c("PC1","PC2","PC3","PC4","PC5"),
+        #   selected = "PC2"
+        # ),
+
+        # selectInput("pickFactor1PCA", "Select PC for x-axis", choices = colnames(pca_tab)[PC_indeces]),
+        # selectInput("pickFactor2PCA", "Select PC for y-axis", choices = colnames(pca_tab)[PC_indeces], selected = "PC2")
       ) # close box
     ), # close column
 
     column(
-      width = 8,
+      width = 9, # 3 + 9 = 12 to fill row
       box(
         title = "PCA Plots",
         width = NULL,
         solidHeader = TRUE,
         status = "primary",
+        downloadButton(
+          outputId = "downloadPCA",
+          label = "Download PCA Plot (PDF)"
+        ),
+        br(), br(),
         plotOutput(
-          outputId = "pca_plot",
-          inline = TRUE
+          outputId = "pcaStatic",
+          height = "80vh",
+          width = "100%",
+          inline = F
         )
       ), # close box
       
+    column(
+      width = 9,
       box(
-        title = "PCA Table",
-        width = NULL,
+        title = "Scree Plot",
+        width = 6, 
         solidHeader = TRUE,
         status = "primary",
-        tableOutput(outputId = "pca_table")
-      ) # close box
-      
-      #### testing stuff
-      ,
+        plotOutput("pcaScree", inline = F),
+        # DT::dataTableOutput("pcaVars")
+      ),
       box(
-        title = "Test text",
-        width = NULL,
+        title = "PCA Loadings",
+        width = 6, 
         solidHeader = TRUE,
         status = "primary",
-        textOutput(outputId = "test_text")
-      ) # close box
-      ,
-      box(
-        title = "Test pick_pc_x",
-        width = NULL,
-        solidHeader = TRUE,
-        status = "primary",
-        textOutput(outputId = "result")
-      ) # close box
+        DT::dataTableOutput("pcaLoadings")
+      )
+    ),
 
       
-      
+        
+
+      # box(
+      #   title = "PCA Table",
+      #   width = NULL,
+      #   solidHeader = TRUE,
+      #   status = "primary", br(),
+      #   DT::dataTableOutput(outputId = "pca_table")
+      # ) # close box
+
+      #### testing stuff
+      # ,
+      # box(
+      #   title = "Test text",
+      #   width = NULL,
+      #   solidHeader = TRUE,
+      #   status = "primary",
+      #   textOutput(outputId = "test_text")
+      # ) # close box
+
+      # ,
+      # box(
+      #   title = "Test pickFactor1PCA",
+      #   width = NULL,
+      #   solidHeader = TRUE,
+      #   status = "primary",
+      #   textOutput(outputId = "result")
+      # ) # close box
     ) # close column
   ) # close fluidRow
 ) # close tabItem
