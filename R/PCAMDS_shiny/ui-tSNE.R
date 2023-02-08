@@ -13,7 +13,7 @@ tabItem(
         actionButton(
           inputId = "goButton",
           label = "Apply parameters",
-          icon = NULL,
+          icon = NULL
         ),
         br(), br(),
         numericInput(
