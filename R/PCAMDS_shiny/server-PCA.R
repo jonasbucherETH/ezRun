@@ -2,23 +2,58 @@ observe({
   withProgress(message = "Generating PCA Plots. Please wait...", {
     vcfRaw <- inputDataReactive()$vcfRaw
     vcfGenind <- inputDataReactive()$vcfGenind
-    datasetPCA <- inputDataReactive()$datasetPCA
+    datasetScaled <- inputDataReactive()$datasetScaled
     groupingVariables <- inputDataReactive()$groupingVariables
     colourList <- inputDataReactive()$colourList
     
-    ##### -----#####
-    # Use observeEvent whenever you want to perform an action in response to an event.
-    # (Note that "recalculate a value" does not generally count as performing an action--see eventReactive for that.)
-    # The first argument is the event you want to respond to,
-    # and the second argument is a function that should be called whenever the event occurs.
+    shinyInput <- function(FUN, len, id, ...) {
+      inputs <- character(len)
+      for (i in seq_len(len)) {
+        inputs[i] <- as.character(FUN(paste0(id, i), label = NULL, ...))
+      }
+      inputs
+    }
 
-    # The observeEvent will only be dependent on the 'event' section in the small piece of code above. (first {...})
-    # It will not be dependent on anything in the 'code to run' part. (after ignoreInit)
-    ##### -----#####
+    
+    groupingVarsCheckbox <- cbind(groupingVariables, bool = T)
+    
+    groupingVarsCheckbox2 <- cbind(
+      groupingVariables,
+      Include = shinyInput(checkboxInput, nrow(groupingVarsCheckbox), "checkb")
+    )
+    
+    js <- c(
+      "$('[id^=checkb]').on('click', function(){",
+      "  var id = this.getAttribute('id');",
+      "  var i = parseInt(/checkb(\\d+)/.exec(id)[1]);",
+      "  var value = $(this).prop('checked');",
+      "  var info = [{row: i, col: 3, value: value}];",
+      "  Shiny.setInputValue('sampleTablePCA_cell_edit:DT.cellInfo', info);",
+      "})"
+    )
+    
+    output$sampleTablePCA <- DT::renderDataTable({
+      datatable(groupingVarsCheckbox2,
+                rownames = F,
+                escape = FALSE,
+                editable = list(target = "column", disable = list(columns = 3)),
+                selection = "none",
+                callback = JS(js)
+      )
+    }, server = FALSE
+    )
+
+    # datasetScaledPCA <- as.data.frame(datasetScaled)
+    datasetScaledPCA <- datasetScaled
+    
+    # datasetScaledPCA$selected_ <- rep(FALSE, nrow(datasetScaledPCA))
+    selectedList <- c()
 
     observeEvent( # Event number 1
       {
-        input$excludedSamplesPCA
+        input$removeSamplesPCA
+        input$restoreFullPCA
+        # input$pcaBrush
         # input$sampleLabelsPCA
         # input$colorGroupPCA
         # input$shapeGroupPCA
@@ -26,39 +61,180 @@ observe({
         # input$pickFactor2PCA
         # input$pcaPlotWidth
         # input$pcaPlotHeight
+        # input[["dtable_cell_edit"]]
+        # input$sampleTablePCA_cell_edit
+        
       },
       ignoreInit = F, # If TRUE, then, when the eventified object is first created/initialized, don't trigger the action or (compute the value). The default is FALSE.
-      ignoreNULL = T, # default = TRUE
+      ignoreNULL = F, # default = TRUE
       {
         # # # TODO: omit selected samples/groups
-        # datasetPCA <- datasetPCA
+        
+        
+        # output$sampleTablePCA <- DT::renderDataTable({
+        #   datatable(groupingVarsCheckbox2,
+        #             rownames = F,
+        #             escape = FALSE,
+        #             editable = list(target = "cell", disable = list(columns = 3)),
+        #             selection = "none",
+        #             callback = JS(js)
+        #   )
+        # }, server = FALSE
+        # )
+        
+
+        # info <- input[["dtable_cell_edit"]] # this input contains the info of the edit
+        # info <- input$sampleTablePCA_cell_edit
+        # info <- input[["sampleTablePCA_cell_edit"]]
+        
+        groupingVarsCheckbox2[input$sampleTablePCA_cell_edit$row,input$sampleTablePCA_cell_edit$col] <<- input$sampleTablePCA_cell_edit$value
+        
+        
+        
+        print(groupingVarsCheckbox2$Include)
+        
+        # datasetScaledPCA <- editData(datasetScaledPCA, info)
+        
+        # print(datasetScaledPCA[1,])
+        
+        # print(datasetScaledPCA[info$row, 1])
+        # if (!is.null(nrow(info))) {
+        #   datasetScaledPCA <- as.data.frame(datasetScaled)
+        #   datasetScaledPCA <- datasetScaledPCA[info$row[info$value==FALSE], ]
+        #   groupingVariables <- groupingVariables[info$row[info$value==FALSE], ]
+        # 
+        # }
+        
+        # datasetScaledPCA <- as.data.frame(datasetScaled[-info, ])
+        
+        
+        # datasetScaledPCA <- boolDatasetScaledPCA[-info$row, -ncol(boolDatasetScaledPCA)]
+        
+        # print(info$row)
+        # print(info)
+        
+        # datasetScaled <<- editData(datasetScaled, input$sampleTablePCA_cell_edit, 'sampleTablePCA')
+        # datasetScaled <<- datasetScaled[-info$row, ]
+        
+        # Dat(editData(Dat(), info))
+
+        
+        # if (length(selectedList)!=0) {
+        #   datasetScaledPCA <- datasetScaledPCA[!(rownames(datasetScaledPCA) %in% selectedList), ]
+        #   groupingVariables <- groupingVariables[!(rownames(groupingVariables) %in% selectedList), ]
+        # }
+          
+        # print("up")
+        # print(datasetScaledPCA$selected_)
+        
+        # print(rownames(datasetScaledPCA[!datasetScaledPCA$selected_, ]))
+        
+        # datasetScaledPCA <- datasetScaledPCA[!datasetScaledPCA$selected_, ]
+        # print(selectedList)
+        
+        # cat("1")
+        
+        # datasetScaledPCA <- as.data.frame(datasetScaled)
+        
+        # create id for data
+        # if (input$removeThesePointsPCA!="") {
+        #   # cat("-------- in if clause -----------")
+        #   
+        #   # cat(nrow(datasetScaledPCA[rownames(datasetScaledPCA)!=input$removeThesePointsPCA, ]))
+        #   # print(input$pcaBrush)
+        #   # currentBrush <- brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA, allRows = T)
+        #   # print(currentBrush)
+        #   datasetScaledPCA <- datasetScaledPCA[rownames(datasetScaledPCA)!=input$removeThesePointsPCA, ]
+        #   groupingVariables <- groupingVariables[rownames(groupingVariables)!=input$removeThesePointsPCA, ]
+        # }
+        
+        # cat(rownames(datasetScaled))
+        # cat(nrow(datasetScaled))
+        # cat(nrow(datasetScaledPCA))
+        # cat(nrow(groupingVariables))
+        
+        # cat(class(datasetScaled))
+        # cat(class(datasetScaledPCA))
+        # cat(class(groupingVariables))
+        
+        # datasetScaled2$id <- 1:nrow(datasetScaled)
+        # brushedPointsPCA <- brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA, allRows = TRUE)
+        
+
+        
+        # brushedPointsPCA <- brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA, allRows = TRUE)
+        
+        # Return the brushed points. See ?shiny::brushedPoints.
+        
+        # p <- brushedPoints(data, input$brush)
+        
+        # create vector of ids that match brushed points and data
+        # g <- which(brushedPointsID %in% datasetScaled2$id)
+        
+        # return a subset of the original data without brushed points
+        # datasetScaled2 <- datasetScaled2[g,]
+
+        
+        # if (exists("brushedPointsPCA")) {
+        #   print(brushedPointsPCA)
+        # } else {
+        #   print("brushed points do not exits/cannot be found --------------------------")
+        # }
+        # selectedPointsPCA <- rownames(brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA, allRows = FALSE)) #[, c(colnames(groupingVariables))]
+        # brushedPointsPCA <- brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA, allRows = TRUE)
+        # datasetScaled2 <- datasetScaled
+        # datasetScaled <- datasetScaled[!(rownames(datasetScaled2) %in% input$removeThesePointsPCA), ]
+        
+        
+        # if (exists("brushedPointsReactivePCA")) {
+        #   selectedPointsPCA <- brushedPointsReactivePCA
+        #   selectedPointsPCA <- as.data.frame(selectedPointsPCA, row.names = rownames(groupingVariables))
+        #   print(selectedPointsPCA)
+        # } else {
+        #   print("brushed points do not exits/cannot be found --------------------------")
+        # }
+
+        # selectedPointsPCA <- selectedPointsPCA[selectedPointsPCA$selected_ == TRUE, ]
+        # selectedPointsPCA <- which(selectedPointsPCA$selected_=="TRUE")
+        # selectedPointsPCA <- selectedPointsPCA[selectedPointsPCA$selected_ == TRUE, ]
+        
+        # if (is.null(input$excludePointsPCA)) {
+        #   print("nll")
+        # }
+        
+        # observeEvent(input$DeleteSelectedData, {
+        #   Var1 <- brushedPoints(rx_de(), input$plot1_brush, allRows = TRUE)
+        #   rx_de(Var1[!Var1$selected_, names(Var1) != "selected_", drop = FALSE])
+        # })
+        # 
+        # print(selectedPointsPCA)
+        
+        # print(selectedPointsPCA)
+        # Var1 <- brushedPoints(datasetScaled, input$pcaBrush, allRows = TRUE)
+        # datasetScaled(Var1[!Var1$selected_, names(Var1) != "selected_", drop = FALSE])
+        # selectedPointsPCA <- brushedPoints(d, input$plot1_brush, allRows = TRUE)
+        # datasetScaled <- datasetScaled
 
         ##### compute PCA
-        # pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
-        pcaResults <- dudi.pca(datasetPCA, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
-        nPC <- pcaResults$nf # number of (> 0) principal components
-        # nGrouping <- ncol(groupingVariables)
-        nGrouping <- ncol(groupingVariables)
-        # eigSum <- sum(pcaResult$eig)
-        pcaVarprop <- pcaResults$eig
-        # eigSum <- sum(pcaVarprop)
+        pcaResults <- dudi.pca(datasetScaledPCA, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
+
         
+        nPC <- pcaResults$nf # number of (> 0) principal components
+        nGrouping <- ncol(groupingVariables)
+        pcaVarprop <- pcaResults$eig
+
         pcaVarprop <- tibble(PC = paste0("PC", factor(1:length(pcaVarprop))), variance = pcaVarprop) %>% 
           mutate(pct = format(variance/sum(variance)*100, digits = 2)) %>%
           # mutate(pct = variance/sum(variance)*100) %>% 
           mutate(pct_cum = cumsum(pct))
         pcaVarprop$PC <- factor(pcaVarprop$PC, levels = pcaVarprop$PC)
         
-        # pcaVarprop <- pcaResults$eig / eigSum
-        # pcaVarprop <- pcaVarprop[1:nPC]
-        pcaTable <- data.frame(groupingVariables, pcaResults$li, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
-        # tabVarprop <- as.data.frame(t(pcaVarprop), stringsAsFactors = FALSE)
-        # tabVarprop <- format(round(tabVarprop * 100, 2), nsmall = 2)
+
+        pcaTable <- data.frame(groupingVariables, pcaResults$li, stringsAsFactors = FALSE, row.names = rownames(datasetScaledPCA))
+
         tabVarprop <- pcaVarprop
-        # PC_indeces <- seq(1+nGrouping, ncol(pcaTable))
         for (i in 1:nPC) {
           colnames(pcaTable)[i + nGrouping] <- paste0("PC", i)
-          # colnames(tabVarprop)[i] <- paste0("PC", i)
         }
 
         # all PCs in array for selecting input
@@ -102,7 +278,6 @@ observe({
         observeEvent(
           { # Event number 2: only need axis inputs here, for the others no need for redrawing plot (?)
             input$sampleLabelsPCA
-
             input$pickFactor1PCA
             input$pickFactor2PCA
             input$colorGroupPCA
@@ -111,9 +286,12 @@ observe({
             input$pcaPlotHeight
             input$textSizePCA
             input$pointSizePCA
-            
             input$displayTitlePCA
+            input$pcaBrush
+            # input$excludeSamplesPCA
           },
+            ignoreInit = F, # default = FALSE
+            ignoreNULL = F, # default = TRUE
           {
             # cat("2")
 
@@ -150,26 +328,11 @@ observe({
                 scale_shape_manual(values = c(rep(c(21, 22, 23, 24, 25, 8, 3, 4), times = 10))[1:nlevels(as.factor(pcaTable[[input$shapeGroupPCA]]))])
               ### Note: 21-25 are simple shapes, but with filling; 8,3,4 are crosses with different amount of lines
             }
-
-            # if (input$shapeGroupPCA == "Population") {
-            #   cat("if statement works")
-            #   plotPCA <- pcaTable %>%
-            #     ggplot(aes(x = .data[[input$pickFactor1PCA]], y = .data[[input$pickFactor2PCA]], color = .data[[input$colorGroupPCA]], fill = .data[[input$colorGroupPCA]], shape = .data[[input$shapeGroupPCA]])) +
-            #     geom_point()
-            # } else {
-            #   plotPCA <- pcaTable %>%
-            #     ggplot(aes(x = .data[[input$pickFactor1PCA]], y = .data[[input$pickFactor2PCA]], color = .data[[input$colorGroupPCA]], fill = .data[[input$colorGroupPCA]])) +
-            #     geom_point()
-            #   # scale_shape_manual(values = c(rep(c(21,22,23,24,25,8,3,4), times = 10 ))[1:nlevels(as.factor(datasetPCA[[input$pcaFactor2]]))] )
-            #   ### Note: 21-25 are simple shapes, but with filling; 8,3,4 are crosses with different amount of lines
-            # }
-            # plotPCA <- pcaTable %>%
-            #   ggplot(aes(x = .data[[input$pickFactor1PCA]], y = .data[[input$pickFactor2PCA]], color = .data[[input$colorGroupPCA]])) +
-            #   geom_point()
-            # scale_color_manual(values = colours)
-
-
-
+            
+            if (isTRUE(input$pcaAxesProp)) {
+              plotPCA <- plotPCA + coord_fixed(ratio = as.numeric(tabVarprop$pct[tabVarprop$PC == input$pickFactor2PCA])/as.numeric(tabVarprop$pct[tabVarprop$PC == input$pickFactor1PCA]))
+            }
+            
 
             if (input$sampleLabelsPCA) {
               plotPCA <- plotPCA +
@@ -194,8 +357,8 @@ observe({
             plotPCA <- plotPCA + labs(
               # x = paste0(input$pickFactor1PCA, " (", format(round(tabVarprop[input$pickFactor1PCA] * 100, 1), nsmall = 1), "%)"),
               # y = paste0(input$pickFactor2PCA, " (", format(round(tabVarprop[input$pickFactor2PCA] * 100, 1), nsmall = 1), "%)"),
-              x = paste0(input$pickFactor1PCA, " (", tabVarprop$pct[tabVarprop$PC == input$pickFactor1PCA], "% variance)"),
-              y = paste0(input$pickFactor2PCA, " (", tabVarprop$pct[tabVarprop$PC == input$pickFactor2PCA], "% variance)"),
+              x = paste0(input$pickFactor1PCA, " (", tabVarprop$pct[tabVarprop$PC == input$pickFactor1PCA], "% variance explained)"),
+              y = paste0(input$pickFactor2PCA, " (", tabVarprop$pct[tabVarprop$PC == input$pickFactor2PCA], "% variance explained)"),
               color = input$colorGroupPCA, shape = input$shapeGroupPCA
             ) +
               theme_bw() +
@@ -234,15 +397,47 @@ observe({
               {
                 plotPCA
               },
-              # width = as.numeric(input$pcaPlotWidth),
-              # height = as.numeric(input$pcaPlotHeight)
+              width = as.numeric(input$pcaPlotWidth),
+              height = as.numeric(input$pcaPlotHeight)
               # , res = 96
             )
             
+            # create id for data
+            brushedPointsPCA <- brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA, allRows = TRUE)
+            
+            selectedList <<- rownames(brushedPointsPCA)[which(brushedPointsPCA$selected_)]
+            # selectedList <<- append(selectedList, which(brushedPointsPCA$selected_))
+            
+            # datasetScaledPCA$selected_ <<- brushedPointsPCA$selected_
+            
+            # print("down")
+            # print(datasetScaledPCA$selected_)
+            
+            # cat(datasetScaledPCA$selected_)
+            # brushedPointsID <- which(brushedPointsPCA$selected_ == FALSE)
+
+            # output$brushInfo <- renderTable({
+            #   # brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA)[, c(colnames(groupingVariables))]
+            #   rownames(brushedPointsPCA[brushedPointsPCA$selected_ == TRUE, ])
+            # },
+            # rownames = F,
+            # colnames = F
+            # )
+
+            # brushedPointsReactivePCA <- reactive(brushedPointsPCA)
+            
+            # output$brush_info <- renderTable({
+            #   brushedPoints(df = pcaTable, brush = input$pcaBrush, xvar = input$pickFactor1PCA, yvar = input$pickFactor2PCA)[, c(colnames(groupingVariables), input$pickFactor1PCA, input$pickFactor2PCA)]
+            # })
+            
             output$pcaScree <- renderPlot({
               tabVarprop2 <- tabVarprop
-              # pc_eigenvalues2$PC <- gsub("PC", "", pc_eigenvalues2$PC)
-              # pc_eigenvalues2$PC <- factor(pc_eigenvalues2$PC, levels = pc_eigenvalues2$PC)
+              tabVarprop2$PC <- gsub("PC", "", tabVarprop2$PC)
+              tabVarprop2$PC <- factor(tabVarprop2$PC, levels = tabVarprop2$PC)
+              tabVarprop2$variance <- as.numeric(tabVarprop2$variance)
+              tabVarprop2$pct <- as.numeric(tabVarprop2$pct)
+              tabVarprop2$pct_cum <- as.numeric(tabVarprop2$pct_cum)
+              
               if (nrow(tabVarprop2) > 15) {
                 tabVarprop2 <- tabVarprop2[1:15,]
               }
@@ -251,11 +446,12 @@ observe({
                   geom_col(aes(y = pct)) +
                   geom_line(aes(y = pct_cum, group = 1)) +
                   geom_point(aes(y = pct_cum)) +
-                  labs(x = "Principal component", y = "Fraction variance explained") +
+                  labs(x = "Principal component", y = "Fraction variance explained (%)") +
+                  scale_y_continuous(n.breaks = 20) +
                   theme_classic(base_size = as.numeric(input$textSizePCA))
               pcaScree
             
-            }, width = 400, height = 400)
+            }, width = 600, height = 400)
             
             output$downloadPCA <- downloadHandler(
               filename = function() {
@@ -274,6 +470,9 @@ observe({
             output$pcaLoadings <- DT::renderDataTable({
               datatable(top_genes, rownames = F) %>% formatRound("loading", digits = 3)
             })
+            
+            
+   
             
             # }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")} # close withProgress
             # }) # close tryCatch

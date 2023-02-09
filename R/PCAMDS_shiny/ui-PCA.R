@@ -10,21 +10,47 @@ tabItem(
         status = "primary",
         collapsible = TRUE,
         collapsed = FALSE,
-        checkboxInput(
-          inputId = "displayTitlePCA",
-          label = "Display Title",
-          value = FALSE
+        
+        # tags$head(
+        #   tags$style(HTML('.shiny-split-layout>div {overflow: hidden;}')),
+        # ),
+        
+        # checkboxInput(
+        #   inputId = "displayTitlePCA",
+        #   label = "Display Title",
+        #   value = FALSE
+        # ),
+        # textInput(
+        #   inputId = "pcaTitle",
+        #   label = "Title of PCA plot",
+        #   value = ""
+        # ),
+        fluidRow(
+          column(
+            textInput(
+              inputId = "pcaTitle",
+              label = "Title of PCA plot",
+              value = ""
+            ),
+            width = 9
+          ),
+          column(
+            br(),
+            checkboxInput(
+              inputId = "displayTitlePCA",
+              label = "Display Title",
+              value = FALSE
+            ),
+            width = 3
+          )
         ),
-        textInput(
-          inputId = "pcaTitle",
-          label = "Title of PCA plot",
-          value = ""
-        ),
+        
         checkboxInput(
           inputId = "sampleLabelsPCA",
           label = "Display sample labels",
-          value = FALSE
+          value = TRUE
         ),
+        
         selectInput(
           inputId = "colorGroupPCA",
           label = "Select groups to color by",
@@ -38,32 +64,109 @@ tabItem(
           selected = ""
         ),
         
-        selectInput(
-          inputId = "excludedSamplesPCA",
-          label = "Select samples to exclude",
-          choices = "",
-          selected = ""
+        # selectInput(
+        #   inputId = "excludeSamplesPCA",
+        #   label = "Select samples to exclude",
+        #   choices = "",
+        #   selected = ""
+        # ),
+        
+        # tags$div(sliderInput("slide1", "Slider1", min = 0, max=10, value=4),  style="display:inline-block"),
+        tags$b("Select PCs"),
+        # hr(),
+        # br(),
+        
+        # tags$div(
+        #   selectInput(
+        #     inputId = "pickFactor1PCA",
+        #     label = "x-axis",
+        #     choices = "PC1",
+        #     selected = "PC1",
+        #     width = "100px"
+        #     ),
+        #   # width = "200%",
+        #   style="display:inline-block"
+        #   ),
+        # tags$div(
+        #   selectInput(
+        #     inputId = "pickFactor2PCA",
+        #     label = "y-axis",
+        #     choices = "PC2",
+        #     selected = "PC2",
+        #     width = "100px"
+        #   ),
+        #   # width = "200%",
+        #   style="display:inline-block"
+        # ),
+        
+        fluidRow(
+          column(
+            selectInput(
+              inputId = "pickFactor1PCA",
+              label = "x-axis",
+              choices = "PC1",
+              selected = "PC1",
+              # width = "100px"
+            ),
+            width = 6
+          ),
+          column(
+            selectInput(
+              inputId = "pickFactor2PCA",
+              label = "y-axis",
+              choices = "PC2",
+              selected = "PC2",
+              # width = "100px"
+            ),
+            width = 6
+          )
         ),
-        selectInput(
-          inputId = "pickFactor1PCA",
-          label = "Select PC for x-axis",
-          choices = "PC1",
-          selected = "PC1"
-        ),
-        selectInput(
-          inputId = "pickFactor2PCA",
-          label = "Select PC for y-axis",
-          choices = "PC2",
-          selected = "PC2"
-        ),
-        # sliderInput("pcaPlotWidth", "Width of plot", min = 100, max = 2000, value = 800, step = 10),
-        # sliderInput("pcaPlotHeight", "Height of plot", min = 100, max = 2000, value = 600, step = 10),
 
-        numericInput("pointSizePCA", "Sizes of points in PCA plot", min = 1, max = 6, value = 3, step = 0.5),
-        numericInput(
-          inputId = "textSizePCA",
-          label = "Figure Font Size", min = 4, max = 30,
-          value = 12, step = 0.5
+        
+        br(),
+        
+        # tags$b("Keep PCA axes proportional to variance?"),
+        checkboxInput(
+          inputId = "pcaAxesProp",
+          label = "Keep axes proportional",
+          # label = "",
+          value = TRUE
+        ),
+
+        sliderInput(
+          inputId = "pcaPlotWidth",
+          label = "Width of plot",
+          min = 100, max = 2000,
+          value = 800, step = 10,
+          ticks = FALSE
+        ),
+        sliderInput(
+          inputId = "pcaPlotHeight",
+          label = "Height of plot",
+          min = 100, max = 2000,
+          value = 600, step = 10,
+          ticks = FALSE
+        ),
+        
+        fluidRow(
+          column(
+            numericInput(
+              inputId = "pointSizePCA",
+              label = "Point size", min = 1, max = 6,
+              value = 3, step = 0.5,
+              # width = "100px"
+            ),
+            width = 6
+          ),
+          column(
+            numericInput(
+              inputId = "textSizePCA",
+              label = "Font Size", min = 4, max = 30,
+              value = 12, step = 0.5,
+              # width = "100px"
+            ),
+            width = 6
+          )
         ),
 
 
@@ -99,17 +202,49 @@ tabItem(
         br(), br(),
         plotOutput(
           outputId = "pcaStatic",
-          height = "80vh",
-          width = "100%",
-          inline = F
+          # height = "80vh",
+          # width = "100%",
+          inline = T,
+          brush = brushOpts(id = "pcaBrush")
         )
       ), # close box
+    ), # close row
       
+    # column(
+    #   width = 3,
+    #   box(
+    #     title = "Brush points",
+    #     width = NULL,
+    #     solidHeader = TRUE,
+    #     status = "primary",
+    #     h4("Brushed points"), 
+    #     # verbatimTextOutput("brush_info")
+    #     tableOutput("brush_info"),
+    #     br(), br(),
+    #     textInput(
+    #       inputId = "removeThesePointsPCA",
+    #       label = "Type sample(s) to remove",
+    #       value = ""  
+    #     ),
+    #     tags$b("Remove selected data and redo PCA?"),
+    #     actionButton(
+    #       inputId = "excludePointsPCA",
+    #       label = "Remove selected data",
+    #       icon = NULL
+    #     )
+    #   )
+    # ),
+    
+    # column(
+    #   width = 3,
+    # ),
+    
+  fluidRow( 
     column(
       width = 9,
       box(
         title = "Scree Plot",
-        width = 6, 
+        width = 7 , 
         solidHeader = TRUE,
         status = "primary",
         plotOutput("pcaScree", inline = F),
@@ -117,15 +252,54 @@ tabItem(
       ),
       box(
         title = "PCA Loadings",
-        width = 6, 
+        width = 5, 
         solidHeader = TRUE,
         status = "primary",
         DT::dataTableOutput("pcaLoadings")
       )
     ),
-
-      
+    column(
+      width = 3,
+      box(
+        title = "Outlier removal",
+        width = NULL,
+        solidHeader = TRUE,
+        status = "primary",
+        tags$b(
+          "Click and drag over a point in the plot,
+          then press the button below to redo the PCA without the samples
+          displayed below"
+        ),
+        br(),br(),
         
+        # h4("Brushed points"),
+        # verbatimTextOutput("brush_info")
+        # tableOutput(
+        #   outputId = "brushInfo"
+        # ),
+        DT::dataTableOutput("sampleTablePCA"),
+        
+        # br(),
+        # textInput(
+        #   inputId = "removeThesePointsPCA",
+        #   label = "Type sample(s) to remove",
+        #   value = ""
+        # ),
+        tags$b("Remove selected data and redo PCA?"),
+        br(),br(),
+        actionButton(
+          inputId = "removeSamplesPCA",
+          label = "Remove selected data",
+          icon = NULL
+        ),
+        br(),br(),
+        actionButton(
+          inputId = "restoreFullPCA",
+          label = "Restore previously removed samples",
+          icon = NULL
+        )
+      )
+    ),
 
       # box(
       #   title = "PCA Table",

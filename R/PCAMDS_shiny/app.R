@@ -44,6 +44,7 @@ library("shinytest")
 library("vcfR")
 library("styler")
 library("Rtsne")
+library("uwot")
 # library("testthat")
 
 # console.error = function () {
@@ -113,6 +114,11 @@ ui <- dashboardPage(
         text = "t-SNE",
         tabName = "tab-tSNE",
         icon = icon("table")
+      ),
+      menuItem(
+        text = "UMAP",
+        tabName = "tab-UMAP",
+        icon = icon("wifi")
       )
     )
   ),
@@ -123,7 +129,9 @@ ui <- dashboardPage(
     # use_waiter(),
     tabItems(
       source("ui-PCA.R", local = TRUE)$value,
-      source("ui-tSNE.R", local = TRUE)$value
+      source("ui-tSNE.R", local = TRUE)$value,
+      source("ui-UMAP.R", local = TRUE)$value
+      
       # source("~/git/ezRun/R/PCAMDS_shiny/ui-PCA.R", local = F)$value
     )
   )
@@ -140,6 +148,8 @@ server <- function(input, output, session) {
   source("server-inputData.R", local = TRUE)
   source("server-PCA.R", local = TRUE)
   source("server-tSNE.R", local = TRUE)
+  source("server-UMAP.R", local = TRUE)
+  
   
 }
 
