@@ -1,50 +1,46 @@
 tabItem(
-  tabName = "tab-tSNE",
+  tabName = "tab-UMAP",
   fluidRow( ### NOTE: 1 row has width = 12
     
     column(
       width = 2, 
       box(
-        title = "t-SNE Parameters",
+        title = "Parameters",
         width = NULL,
         solidHeader = TRUE,
         status = "primary",
         # inputs
         actionButton(
-          inputId = "goButton",
+          inputId = "goButtonUMAP",
           label = "Apply parameters",
           icon = NULL
         ),
         br(), br(),
-        numericInput(
-          inputId = "perplexityTSNE",
-          label = "Perplexity parameter",
-          min = 5, max = 5,
-          value = 5, step = 5
-        ),
+
         selectInput(
-          inputId = "excludedSamplesTSNE",
+          inputId = "excludeSamplesUMAP",
           label = "Select samples to exclude",
           choices = "",
           selected = ""
+        
         ),
       ) # close box 
-    ), # close t-SNE parameters column
+    ), # close  column
     
     column(
       width = 7,
       box(
-        title = "TSNE Plots",
+        title = "UMAP Plots",
         width = NULL,
         solidHeader = TRUE,
         status = "primary",
         downloadButton(
-          outputId = "downloadTSNE",
-          label = "Download t-SNE Plot (PDF)"
+          outputId = "downloadUMAP",
+          label = "Download UMAP Plot (PDF)"
         ),
         br(), br(),
         plotOutput(
-          outputId = "tsneStatic",
+          outputId = "UMAPStatic",
           height = "80vh",
           width = "100%",
           inline = F
@@ -61,56 +57,66 @@ tabItem(
         status = "primary",
         collapsible = TRUE,
         collapsed = FALSE,
+        checkboxInput(
+          inputId = "displayTitleUMAP",
+          label = "Display Title",
+          value = FALSE
+        ),
+        textInput(
+          inputId = "UMAPTitle",
+          label = "Title of UMAP plot",
+          value = ""
+        ),
         
         checkboxInput(
-          inputId = "sampleLabelsTSNE",
+          inputId = "sampleLabelsUMAP",
           label = "Display sample labels",
           value = FALSE
         ),
         
         ### no choices, selected = "" as default
         selectInput(
-          inputId = "colorGroupTSNE",
+          inputId = "colorGroupUMAP",
           label = "Select groups to color by",
           choices = "",
           selected = ""
         ),
         selectInput(
-          inputId = "shapeGroupTSNE",
+          inputId = "shapeGroupUMAP",
           label = "Select groups for shapes",
           choices = "",
           selected = ""
         ),
-        selectInput(
-          inputId = "pickFactor1TSNE",
-          label = "Select Dimension for x-axis",
-          choices = "X1",
-          selected = "X1"
-        ),
-        selectInput(
-          inputId = "pickFactor2TSNE",
-          label = "Select Dimension for y-axis",
-          choices = "X2",
-          selected = "X2"
-        ),
-
-        # sliderInput("TSNEPlotWidth", "Width of plot", min = 100, max = 2000, value = 800, step = 10),
-        # sliderInput("TSNEPlotHeight", "Height of plot", min = 100, max = 2000, value = 600, step = 10),
+        # selectInput(
+        #   inputId = "pickFactor1UMAP",
+        #   label = "Select Dimension for x-axis",
+        #   choices = "X1",
+        #   selected = "X1"
+        # ),
+        # selectInput(
+        #   inputId = "pickFactor2UMAP",
+        #   label = "Select Dimension for y-axis",
+        #   choices = "X2",
+        #   selected = "X2"
+        # ),
+        
+        # sliderInput("UMAPPlotWidth", "Width of plot", min = 100, max = 2000, value = 800, step = 10),
+        # sliderInput("UMAPPlotHeight", "Height of plot", min = 100, max = 2000, value = 600, step = 10),
         
         numericInput(
-          inputId = "pointSizeTSNE",
-          label = "Sizes of points in TSNE plot", min = 1, max = 6,
+          inputId = "pointSizeUMAP",
+          label = "Sizes of points in UMAP plot", min = 1, max = 6,
           value = 3, step = 0.5
         ),
         numericInput(
-          inputId = "textSizeTSNE",
+          inputId = "textSizeUMAP",
           label = "Figure Font Size", min = 4, max = 30,
           value = 12, step = 0.5
         ),
-
+        
       ) # close box
     ), # close column
     
-  
+    
   ) # close fluidRow
 ) # close tabItem
