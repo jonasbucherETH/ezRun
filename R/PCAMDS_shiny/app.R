@@ -77,31 +77,31 @@ reactiveConsole(TRUE)
 ui <- dashboardPage(
   skin = "blue",
   dashboardHeader(
-    title = "Dimensionality Reduction" # ,
+    title = "Dimensionality Reduction",
     # tags$li(
     #   a(
     #     href = 'mailto:sequencing@fgcz.ethz.ch?subject=exploreDEG-shiny-app-feedback',
     #     "Request Features/Report Bugs"),
     #   class = "dropdown"
     # ),
-    # tags$li(
-    #   a(href = 'http://www.fgcz.ch',
-    #     target = "_blank",
-    #     img(src = 'fgcz_logo.png', title = "FGCZ", height = "30px"),
-    #     style = "padding-top:10px; padding-bottom:5px;"),
-    #   class = "dropdown"),
-    # tags$li(
-    #   a(href = 'http://www.ethz.ch/en.html',
-    #     target = "_blank",
-    #     img(src = 'eth_logo.png', title = "FGCZ", height = "22px"),
-    #     style = "padding-top:13px; padding-bottom:10px;"),
-    #   class = "dropdown"),
-    # tags$li(
-    #   a(href = 'http://www.uzh.ch/en.html',
-    #     target = "_blank",
-    #     img(src = 'University_of_Zurich_Logo.png', title = "FGCZ", height = "30px"),
-    #     style = "padding-top:10px; padding-bottom:5px;"),
-    #   class = "dropdown")
+    tags$li(
+      a(href = 'http://www.fgcz.ch',
+        target = "_blank",
+        img(src = 'fgcz_logo.png', title = "FGCZ", height = "30px"),
+        style = "padding-top:10px; padding-bottom:5px;"),
+      class = "dropdown"),
+    tags$li(
+      a(href = 'http://www.ethz.ch/en.html',
+        target = "_blank",
+        img(src = 'eth_logo.png', title = "FGCZ", height = "22px"),
+        style = "padding-top:13px; padding-bottom:10px;"),
+      class = "dropdown"),
+    tags$li(
+      a(href = 'http://www.uzh.ch/en.html',
+        target = "_blank",
+        img(src = 'University_of_Zurich_Logo.png', title = "FGCZ", height = "30px"),
+        style = "padding-top:10px; padding-bottom:5px;"),
+      class = "dropdown")
   ),
   dashboardSidebar(
     shinyjs::useShinyjs(),
