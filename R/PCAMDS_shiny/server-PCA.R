@@ -6,53 +6,91 @@ observe({
     groupingVariables <- inputDataReactive()$groupingVariables
     colourList <- inputDataReactive()$colourList
     
-    shinyInput <- function(FUN, len, id, ...) {
-      inputs <- character(len)
-      for (i in seq_len(len)) {
-        inputs[i] <- as.character(FUN(paste0(id, i), label = NULL, ...))
-      }
-      inputs
-    }
+    # shinyInput <- function(FUN, len, id, ...) {
+    #   inputs <- character(len)
+    #   for (i in seq_len(len)) {
+    #     inputs[i] <- as.character(FUN(paste0(id, i), label = NULL, ...))
+    #   }
+    #   inputs
+    # }
 
     
     groupingVarsCheckbox <- cbind(groupingVariables, bool = T)
     
-    groupingVarsCheckbox2 <- cbind(
-      groupingVariables,
-      Include = shinyInput(checkboxInput, nrow(groupingVarsCheckbox), "checkb")
-    )
+    # groupingVarsCheckbox2 <- cbind(
+    #   groupingVariables,
+    #   Include = shinyInput(checkboxInput, nrow(groupingVarsCheckbox), "checkb")
+    # )
     
-    js <- c(
-      "$('[id^=checkb]').on('click', function(){",
-      "  var id = this.getAttribute('id');",
-      "  var i = parseInt(/checkb(\\d+)/.exec(id)[1]);",
-      "  var value = $(this).prop('checked');",
-      "  var info = [{row: i, col: 3, value: value}];",
-      "  Shiny.setInputValue('sampleTablePCA_cell_edit:DT.cellInfo', info);",
-      "})"
-    )
+    # js <- c(
+    #   "$('[id^=checkb]').on('click', function(){",
+    #   "  var id = this.getAttribute('id');",
+    #   "  var i = parseInt(/checkb(\\d+)/.exec(id)[1]);",
+    #   "  var value = $(this).prop('checked');",
+    #   "  var info = [{row: i, col: 3, value: value}];",
+    #   "  Shiny.setInputValue('sampleTablePCA_cell_edit:DT.cellInfo', info);",
+    #   "})"
+    # )
     
-    output$sampleTablePCA <- DT::renderDataTable({
-      datatable(groupingVarsCheckbox2,
-                rownames = F,
-                escape = FALSE,
-                editable = list(target = "column", disable = list(columns = 3)),
-                selection = "none",
-                callback = JS(js)
-      )
-    }, server = FALSE
-    )
+    # output$sampleTablePCA <- DT::renderDataTable({
+    #   datatable(groupingVarsCheckbox2,
+    #             rownames = F,
+    #             escape = FALSE,
+    #             editable = list(target = "column", disable = list(columns = 3)),
+    #             selection = "none",
+    #             callback = JS(js)
+    #   )
+    # }, server = FALSE
+    # )
 
     # datasetScaledPCA <- as.data.frame(datasetScaled)
     datasetScaledPCA <- datasetScaled
     
     # datasetScaledPCA$selected_ <- rep(FALSE, nrow(datasetScaledPCA))
-    selectedList <- c()
+    # selectedList <- c()
+    
+    # output$x1 = DT::renderDataTable(groupingVariables, server = FALSE)
+    
+    # highlight selected rows in the scatterplot
+    # output$x2 = renderPlot({
+    #   s = input$x1_rows_selected
+    #   # par(mar = c(4, 4, 1, .1))
+    #   plot(groupingVariables)
+    #   # if (length(s)) points(groupingVariables[s, , drop = FALSE], pch = 19, cex = 2)
+    # })
+    
+    # server-side processing
+    # groupingVariables = groupingVariables[, 1:2]
+    output$sampleTablePCA <- DT::renderDataTable(
+      groupingVariables,
+      server = TRUE,
+      rownames = FALSE
+    )
+    
+    # print the selected indices
+    output$selectedSamplesPCA <- renderPrint({
+      s = input$sampleTablePCA_rows_selected
+      if (length(s)) {
+        cat('These samples are currently selected:\n\n')
+        cat(rownames(datasetScaled)[s], sep = '\n')
+      }
+    })
+    
+    # output$selectedSamplesPCA <- renderText({
+    #   s = input$sampleTablePCA_rows_selected
+    #   # selectedSamplesText <- ""
+    #   if (length(s)) {
+    #     cat('These samples are currently selected:\n\n')
+    #     cat(rownames(datasetScaled)[s], sep = '\n')
+    #   }
+    # })
+    
+    # output$cbTablePCA = DT::renderDataTable(groupingVariables, server = TRUE)
 
     observeEvent( # Event number 1
       {
         input$removeSamplesPCA
-        input$restoreFullPCA
+        input$resetSelectionPCA
         # input$pcaBrush
         # input$sampleLabelsPCA
         # input$colorGroupPCA
@@ -63,14 +101,74 @@ observe({
         # input$pcaPlotHeight
         # input[["dtable_cell_edit"]]
         # input$sampleTablePCA_cell_edit
+        # input$checkboxPCA
+        # input$choice
         
       },
       ignoreInit = F, # If TRUE, then, when the eventified object is first created/initialized, don't trigger the action or (compute the value). The default is FALSE.
       ignoreNULL = F, # default = TRUE
       {
+        
+        # removeRowsPCA <- input$x3_rows_selected
+        # if (is.null(removeRowsPCA)) {
+        #   removeRowsPCA <- c()
+        # }
+        # 
+        # a <- c(1,3,6)
+        # b <- 1:nrow(groupingVariables)
+        
+        # print(length(input$x3_rows_selected))
+        
+        removeRowsPCA <- input$sampleTablePCA_rows_selected
+        if (length(removeRowsPCA)) {
+          # cat('These rows were selected:\n\n')
+          s <- c(removeRowsPCA)
+          # print(s)
+          # print(groupingVariables[-s, ])
+          datasetScaledPCA <- datasetScaled[-s, ]
+          groupingVariables <- groupingVariables[-s, ]
+        }
+
+        # print(removeRowsPCA)
+
+
+        # datasetScaledPCA <- datasetScaled[-removeRowsPCA, ]
+        
+        # cbTablePCA <- checkboxGroupTable(
+        #   tbl = groupingVariables,
+        #   inputId = "checkboxPCA", # for checkboxGroupInput
+        #   label = "",
+        #   choices = rownames(groupingVariables),
+        #   selected = rownames(groupingVariables),
+        #   table_label = "",
+        #   control_column = 3L,
+        #   pixie = . %>% identity(),
+        #   # pixie = . %>% 
+        #   # sprinkle(bg_pattern_by = "rows") %>%
+        #   # sprinkle_table(pad = 7) %>%
+        #   # sprinkle_colnames("colnames(groupingVariables)" = "",
+        #   #                   control = ""),
+        #   display_table = FALSE,
+        #   disabled = FALSE,
+        #   hidden = FALSE,
+        #   disabled_table = FALSE,
+        #   hidden_table = FALSE
+        # )
+        
+        # output$checkboxTablePCA <- renderText({
+        #   cbTablePCA
+        # })
+        # 
+        # output$choice <- renderText(input$checkboxPCA)
+        # 
+        # choiceVector <- input$checkboxPCA
+        # print(choiceVector[1])
+        # print(choiceVector)
+        # print(cbTablePCA[1,3])
+        # cat(input$checkboxPCA)
+        
         # # # TODO: omit selected samples/groups
-        
-        
+
         # output$sampleTablePCA <- DT::renderDataTable({
         #   datatable(groupingVarsCheckbox2,
         #             rownames = F,
@@ -87,11 +185,9 @@ observe({
         # info <- input$sampleTablePCA_cell_edit
         # info <- input[["sampleTablePCA_cell_edit"]]
         
-        groupingVarsCheckbox2[input$sampleTablePCA_cell_edit$row,input$sampleTablePCA_cell_edit$col] <<- input$sampleTablePCA_cell_edit$value
+        # groupingVarsCheckbox2[input$sampleTablePCA_cell_edit$row,input$sampleTablePCA_cell_edit$col] <<- input$sampleTablePCA_cell_edit$value
         
-        
-        
-        print(groupingVarsCheckbox2$Include)
+        # print(groupingVarsCheckbox2$Include)
         
         # datasetScaledPCA <- editData(datasetScaledPCA, info)
         
@@ -438,8 +534,8 @@ observe({
               tabVarprop2$pct <- as.numeric(tabVarprop2$pct)
               tabVarprop2$pct_cum <- as.numeric(tabVarprop2$pct_cum)
               
-              if (nrow(tabVarprop2) > 15) {
-                tabVarprop2 <- tabVarprop2[1:15,]
+              if (nrow(tabVarprop2) > 10) {
+                tabVarprop2 <- tabVarprop2[1:10,]
               }
               pcaScree <- tabVarprop2 %>%
                   ggplot(aes(x = PC)) +
@@ -451,7 +547,9 @@ observe({
                   theme_classic(base_size = as.numeric(input$textSizePCA))
               pcaScree
             
-            }, width = 600, height = 400)
+            } 
+            # , width = 500, height = 400
+            )
             
             output$downloadPCA <- downloadHandler(
               filename = function() {

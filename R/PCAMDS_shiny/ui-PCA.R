@@ -27,21 +27,22 @@ tabItem(
         # ),
         fluidRow(
           column(
+            width = 9,
             textInput(
               inputId = "pcaTitle",
               label = "Title of PCA plot",
               value = ""
-            ),
-            width = 9
+            )
           ),
           column(
+            width = 3,
             br(),
             checkboxInput(
               inputId = "displayTitlePCA",
               label = "Display Title",
+              # label = "",
               value = FALSE
-            ),
-            width = 3
+            )
           )
         ),
         
@@ -195,9 +196,34 @@ tabItem(
         width = NULL,
         solidHeader = TRUE,
         status = "primary",
-        downloadButton(
+        # downloadButton(
+        #   outputId = "downloadPCA",
+        #   label = "Download PCA Plot (PDF)"
+        # ),
+        # div(
+        #   style="display:inline-block",
+        #   downloadBttn(
+        #     outputId = "downloadPCA",
+        #     label = "Download PCA Plot (PDF)",
+        #     style = "unite",
+        #     color = "primary",
+        #     size = "sm",
+        #     block = FALSE,
+        #     no_outline = TRUE,
+        #     icon = shiny::icon("download")
+        #   ),
+        #   style="float:right"
+        # ),
+        
+        downloadBttn(
           outputId = "downloadPCA",
-          label = "Download PCA Plot (PDF)"
+          label = "Download PCA Plot (PDF)",
+          style = "unite",
+          color = "primary",
+          size = "sm",
+          block = FALSE,
+          no_outline = TRUE,
+          icon = shiny::icon("download")
         ),
         br(), br(),
         plotOutput(
@@ -241,33 +267,36 @@ tabItem(
     
   fluidRow( 
     column(
-      width = 9,
+      width = 12,
       box(
         title = "Scree Plot",
-        width = 7 , 
+        width = 4, 
         solidHeader = TRUE,
         status = "primary",
-        plotOutput("pcaScree", inline = F),
+        plotOutput(
+          outputId ="pcaScree",
+          inline = F,
+          width = "100%"
+        ),
         # DT::dataTableOutput("pcaVars")
       ),
+
       box(
         title = "PCA Loadings",
-        width = 5, 
+        width = 4, 
         solidHeader = TRUE,
         status = "primary",
         DT::dataTableOutput("pcaLoadings")
-      )
-    ),
-    column(
-      width = 3,
+      ),
+
       box(
-        title = "Outlier removal",
-        width = NULL,
+        title = "Sample removal",
+        width = 4,
         solidHeader = TRUE,
         status = "primary",
+        
         tags$b(
-          "Click and drag over a point in the plot,
-          then press the button below to redo the PCA without the samples
+          "Select samples, then press the button below to redo the PCA without the samples
           displayed below"
         ),
         br(),br(),
@@ -277,25 +306,64 @@ tabItem(
         # tableOutput(
         #   outputId = "brushInfo"
         # ),
-        DT::dataTableOutput("sampleTablePCA"),
         
-        # br(),
-        # textInput(
-        #   inputId = "removeThesePointsPCA",
-        #   label = "Type sample(s) to remove",
-        #   value = ""
+        # DT::dataTableOutput("sampleTablePCA"),
+        # checkboxGroupInput(
+        #   inputId = "checkboxPCA",
+        #   label = "checkboxGroup test",
+        #   choices = NULL,
+        #   selected = NULL,
+        #   inline = FALSE,
+        #   width = NULL,
+        #   choiceNames = NULL,
+        #   choiceValues = NULL
         # ),
+        # 
+        # verbatimTextOutput("choice"),
+        # 
+        # uiOutput("checkboxTablePCA"),
+        # DT::dataTableOutput('x1'),
+        # plotOutput('x2', height = 500),
+        
+        DT::dataTableOutput('sampleTablePCA'),
+        br(),
+        tags$head(
+          tags$style(HTML("
+            /* this will affect only the pre elements under the class myclass */
+            .myclass pre {
+              color: black;
+              background-color: white;
+              font-weight: bolder;
+            }"))
+        ),
+        div(class = "myclass",
+            verbatimTextOutput("selectedSamplesPCA")
+        ),
+        # verbatimTextOutput('selectedSamplesPCA'),
+        # textOutput('selectedSamplesPCA'),
+        br(),
         tags$b("Remove selected data and redo PCA?"),
         br(),br(),
-        actionButton(
+        # actionButton(
+        #   inputId = "removeSamplesPCA",
+        #   label = "Redo PCA",
+        #   class="btn btn-primary",
+        #   icon = icon("repeat")
+        # ),
+        actionBttn(
           inputId = "removeSamplesPCA",
-          label = "Remove selected data",
-          icon = NULL
+          label = "Redo PCA",
+          icon = icon("repeat"),
+          style = "simple",
+          color = "primary",
+          size = "md",
+          block = FALSE,
+          no_outline = TRUE
         ),
         br(),br(),
         actionButton(
-          inputId = "restoreFullPCA",
-          label = "Restore previously removed samples",
+          inputId = "resetSelectionPCA",
+          label = "Reset selected samples",
           icon = NULL
         )
       )
