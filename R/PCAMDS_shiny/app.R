@@ -44,6 +44,9 @@ library("shinytest")
 library("vcfR")
 library("styler")
 library("Rtsne")
+library("uwot")
+library("shinydust")
+library("shinyWidgets")
 # library("testthat")
 
 # console.error = function () {
@@ -74,31 +77,31 @@ reactiveConsole(TRUE)
 ui <- dashboardPage(
   skin = "blue",
   dashboardHeader(
-    title = "Dimensionality Reduction" # ,
+    title = "Dimensionality Reduction",
     # tags$li(
     #   a(
     #     href = 'mailto:sequencing@fgcz.ethz.ch?subject=exploreDEG-shiny-app-feedback',
     #     "Request Features/Report Bugs"),
     #   class = "dropdown"
     # ),
-    # tags$li(
-    #   a(href = 'http://www.fgcz.ch',
-    #     target = "_blank",
-    #     img(src = 'fgcz_logo.png', title = "FGCZ", height = "30px"),
-    #     style = "padding-top:10px; padding-bottom:5px;"),
-    #   class = "dropdown"),
-    # tags$li(
-    #   a(href = 'http://www.ethz.ch/en.html',
-    #     target = "_blank",
-    #     img(src = 'eth_logo.png', title = "FGCZ", height = "22px"),
-    #     style = "padding-top:13px; padding-bottom:10px;"),
-    #   class = "dropdown"),
-    # tags$li(
-    #   a(href = 'http://www.uzh.ch/en.html',
-    #     target = "_blank",
-    #     img(src = 'University_of_Zurich_Logo.png', title = "FGCZ", height = "30px"),
-    #     style = "padding-top:10px; padding-bottom:5px;"),
-    #   class = "dropdown")
+    tags$li(
+      a(href = 'http://www.fgcz.ch',
+        target = "_blank",
+        img(src = 'fgcz_logo.png', title = "FGCZ", height = "30px"),
+        style = "padding-top:10px; padding-bottom:5px;"),
+      class = "dropdown"),
+    tags$li(
+      a(href = 'http://www.ethz.ch/en.html',
+        target = "_blank",
+        img(src = 'eth_logo.png', title = "FGCZ", height = "22px"),
+        style = "padding-top:13px; padding-bottom:10px;"),
+      class = "dropdown"),
+    tags$li(
+      a(href = 'http://www.uzh.ch/en.html',
+        target = "_blank",
+        img(src = 'University_of_Zurich_Logo.png', title = "FGCZ", height = "30px"),
+        style = "padding-top:10px; padding-bottom:5px;"),
+      class = "dropdown")
   ),
   dashboardSidebar(
     shinyjs::useShinyjs(),
@@ -113,6 +116,11 @@ ui <- dashboardPage(
         text = "t-SNE",
         tabName = "tab-tSNE",
         icon = icon("table")
+      ),
+      menuItem(
+        text = "UMAP",
+        tabName = "tab-UMAP",
+        icon = icon("wifi")
       )
     )
   ),
@@ -123,7 +131,9 @@ ui <- dashboardPage(
     # use_waiter(),
     tabItems(
       source("ui-PCA.R", local = TRUE)$value,
-      source("ui-tSNE.R", local = TRUE)$value
+      source("ui-tSNE.R", local = TRUE)$value,
+      source("ui-UMAP.R", local = TRUE)$value
+      
       # source("~/git/ezRun/R/PCAMDS_shiny/ui-PCA.R", local = F)$value
     )
   )
@@ -140,6 +150,8 @@ server <- function(input, output, session) {
   source("server-inputData.R", local = TRUE)
   source("server-PCA.R", local = TRUE)
   source("server-tSNE.R", local = TRUE)
+  source("server-UMAP.R", local = TRUE)
+  
   
 }
 

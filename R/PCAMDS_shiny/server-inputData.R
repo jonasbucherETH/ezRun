@@ -3,20 +3,51 @@ inputDataReactive <- reactive({
   
 
   # Load data ---------------------------
+  # pca <- readRDS("PCA.rds")
+  # groupingVariables <- readRDS("grouping_vars.rds")
+  # vcfRaw <- read.vcfR("vcf.rds")
+  # vcfGenind <- vcfR2genind(vcfRaw)
+  # datasetScaled <- scaleGen(vcfGenind, NA.method="mean")
+  # 
+  # mds <- read.csv("plink.mds", sep="")
+  # 
+  # distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
+  
+  ### for testing
+  # vcfA <- read.vcfR("~/git/ezRun/R/PCAMDS_shiny/data/sample_dataset4jonas_20230206/A_Eall.vcf.gz")
+  # vcfB <- read.vcfR("~/git/ezRun/R/PCAMDS_shiny/data/sample_dataset4jonas_20230206/B_Eall.vcf.gz")
+  # vcfA_corrected <- read.vcfR("~/git/ezRun/R/PCAMDS_shiny/data/sample_dataset4jonas_20230206/A_Eall.pruned.phased.sample_name_corrected.landraces.vcf.gz")
+  # vcfB_corrected <- read.vcfR("~/git/ezRun/R/PCAMDS_shiny/data/sample_dataset4jonas_20230206/B_Eall.pruned.phased.sample_name_corrected.landraces.vcf.gz")
+  # vcfGenind <- vcfR2genind(vcfA_corrected)
+  # pop(vcfGenind) <- c(groupingVariables[,2])
+  
+  # colnames(vcfRaw@gt)
+  
   ## PCA
   vcfRaw <- read.vcfR("data/ragi_highcov_sa0001_1k.vcf.gz")
+  # vcfR@gt has sample IDs as colnames (col 1 = FORMAT)
   vcfGenind <- vcfR2genind(vcfRaw)
   groupingVariables <- read.delim("data/populations.txt") # read.table or read.delim (used before) -> delim should be fine
+  # groupingVariables <- groupingVariables[1:41,]
   rownames(groupingVariables) <- groupingVariables[,1]
   factors <- colnames(groupingVariables)
   groupingVariables[42, 2] <- "DipPop"
-  datasetPCA <- scaleGen(vcfGenind, NA.method="mean")
-  
-  ## MDS
-  # mds <- read.csv("data/plink_3101.mds", sep="")
 
-  ## t-SNE
+  # # get sample IDs from vcf
+  # sampleIDs <- colnames(vcfRaw@gt)[-1]
+  # 
+  datasetScaled <- scaleGen(vcfGenind, NA.method="mean")
+  # datasetScaled <- datasetScaled[1:41,]
+  # 
+  # 
+  # ## MDS
+  mds <- read.csv("data/plink_3101.mds", sep="")
+  # 
+  # ## t-SNE
   distanceMatrixTSNE <- read_tsv("data/plink_3101.dist", col_names = F)
+  
+  ## UMAP
+  
   
   # cat(class(distanceMatrixTSNE))
 
@@ -63,6 +94,17 @@ inputDataReactive <- reactive({
   
   # If there's only one factor, duplicate it so everything that expects a 
   # second factor doesn't break: 
+  
+  # factorLevels <- NULL
+  # for (i in seq_along(datasetScaled[factors])){
+  #   factorLevels[[i]] <- paste0(
+  #     colnames(datasetScaled[factors[[i]]]),
+  #     ": ",
+  #     levels(as.factor(datasetScaled[, factors[i]])))
+  # }
+  # factorLevels <- unlist(factorLevels)
+  # 
+  # 
   if (length(factors) == 1) {
     factors <- as.numeric(c(factors, factors))
   }
@@ -84,10 +126,11 @@ inputDataReactive <- reactive({
     # "tab_varprop" = tab_varprop,
     "vcfRaw" = vcfRaw,
     "vcfGenind" = vcfGenind,
-    "datasetPCA" = datasetPCA,
+    "datasetScaled" = datasetScaled,
     "groupingVariables" = groupingVariables,
     "distanceMatrixTSNE" = distanceMatrixTSNE,
     "colourList" = colourList
+    # "factorLevels" = factorLevels
     # "mds" = mds,
     # "distanceMatrix" = distanceMatrix
     
