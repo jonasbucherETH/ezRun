@@ -39,18 +39,20 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # 
   # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
   
-  grouping_vars <- read.delim(file.path("/srv/gstore/projects", input$getColumn("Grouping File")))
+  groupingVariables <- read.delim(file.path("/srv/gstore/projects", input$getColumn("Grouping File")))
   
-  vcf <- read.vcfR(file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")))
-  genind <- vcfR2genind(vcf)
+  vcfRaw <- read.vcfR(file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")))
+  vcfGenind <- vcfR2genind(vcfRaw)
   # pop(genind) <- populations_txt$Population
   
-  X <- scaleGen(genind, NA.method="mean")
-  pca <- dudi.pca(X, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
+  datasetScaled <- scaleGen(vcfGenind, NA.method="mean")
+  pcaResults <- dudi.pca(datasetScaled, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
   
-  saveRDS(pca, file="PCA.rds")
-
-  saveRDS(grouping_vars, file="grouping_vars.rds")
+  saveRDS(vcfRaw, file="vcfRaw.rds")
+  saveRDS(vcfGenind, file="vcfGenind.rds")
+  
+  saveRDS(pcaResults, file="pcaResults.rds")
+  saveRDS(groupingVariables, file="groupingVariables.rds")
   
   ### MDS
   # file for mds
@@ -59,7 +61,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # plink MDS
   # prefix <- file.path(output_dir, "plink")
   # cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 4 , "--out", prefix)
-  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 5)
+  cmd <- paste("plink --vcf", file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")), "--double-id", "--allow-extra-chr", "--cluster", "--mds-plot", 2)
   # this saves it to plink.mds
   result <- ezSystem(cmd)
   gc()

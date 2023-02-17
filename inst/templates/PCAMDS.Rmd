@@ -13,11 +13,12 @@ editor_options:
 
 Started on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
 
-## PCAMDS_Result {.tabset}
+## Results {.tabset}
 
 ```{r setup, include=FALSE}
 # input for this report: sce
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 library(plotly)
 library(magrittr)
 library(adegenet)
@@ -29,54 +30,120 @@ library(shiny)
 library(shinythemes)
 library(shinydashboard)
 library(Rtsne)
+library(readr)
 # knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, knitr.table.format = "html")
 
-### PCA setup
-pca <- readRDS("PCA.rds")
-grouping_vars <- readRDS("grouping_vars.rds")
-n_pcs <- pca$nf # number of (> 0) principal components
+### -------------------- Test imports
+# pcaResults <- readRDS("~/git/ezRun/R/PCAMDS_shiny/data/PCA.rds")
+# groupingVariables <- read.delim("~/git/ezRun/R/PCAMDS_shiny/data/populations.txt")
+# rownames(groupingVariables) <- groupingVariables[,1]
+# mdsResults <- read.csv("~/git/ezRun/R/PCAMDS_shiny/data/plink_3101.mds", sep="")
+# distanceMatrixTSNE <- read_tsv("~/git/ezRun/R/PCAMDS_shiny/data/plink_3101.dist", col_names = F)
 
-eig_sum <- sum(pca$eig)
-pca_varprop <- pca$eig/eig_sum 
-pca_varprop <- pca_varprop[1:n_pcs]
+### -------------------- SUSHI imports
 
-pca_tab <- data.frame(grouping_vars, pca$li, stringsAsFactors = FALSE, row.names = NULL)
+pcaResults <- readRDS("pcaResults.rds")
+groupingVariables <- readRDS("groupingVariables.rds")
+mdsResults <- read.csv("plink.mds", sep="")
+distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
 
-tab_varprop <- as.data.frame(t(pca_varprop), stringsAsFactors = FALSE)
-PC_indeces <- seq(1+ncol(grouping_vars), ncol(pca_tab))
 
-for (i in 1:n_pcs){
-  colnames(pca_tab)[i+ncol(grouping_vars)] <- paste0("PC", i)
-  colnames(tab_varprop)[i] <- paste0("PC", i)
+nPC <- pcaResults$nf # number of (> 0) principal components
+nGrouping <- ncol(groupingVariables)
+pcaVarprop <- pcaResults$eig
+
+pcaVarprop <- tibble(PC = paste0("PC", factor(1:length(pcaVarprop))), variance = pcaVarprop) %>% 
+  mutate(pct = format(variance/sum(variance)*100, digits = 2)) %>%
+  # mutate(pct = variance/sum(variance)*100) %>% 
+  mutate(pct_cum = cumsum(pct))
+pcaVarprop$PC <- factor(pcaVarprop$PC, levels = pcaVarprop$PC)
+
+pcaTable <- data.frame(groupingVariables, pcaResults$li, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
+
+tabVarprop <- pcaVarprop
+for (i in 1:nPC) {
+  colnames(pcaTable)[i + nGrouping] <- paste0("PC", i)
 }
 
-### MDS setup
-mds <- read.csv("plink.mds", sep="")
+# all PCs in array for selecting input
+pcList <- colnames(pcaTable)[-(1:nGrouping)]
+# all grouping variables in array for selecting input
+gvList <- c(colnames(pcaTable)[1:nGrouping], "-")
 
-n_dim <- ncol(mds)-ncol(grouping_vars)-1   # number of dimensions kept in mds
-mds_tab <- data.frame(grouping_vars, mds[, (ncol(grouping_vars)+2):ncol(mds)], stringsAsFactors = FALSE, row.names = NULL)
+# Get the gene loadings (in dudi.pca: $c1)
+pc_loadings <- pcaResults$c1
+colnames(pc_loadings) <- c("PC1", "PC2") 
+# pc_loadings <- pc_loadings %>% 
+#   as_tibble(rownames = "gene")
+pc_loadings$gene <- rownames(pc_loadings)
+top_genes <- pc_loadings %>% 
+  select(gene, PC1, PC2) %>%
+  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>% 
+  group_by(PC) %>% 
+  arrange(desc(abs(loading)))
 
-### t-SNE setup
-dist_matrix <- read_tsv("plink.dist", col_names = F)
 
-max_perplexity <- floor((nrow(dist_matrix)/3) - 1)
-tsne <- Rtsne(dist_matrix, perplexity=max_perplexity, check_duplicates = FALSE, is_distance = TRUE)
+### -------------------- MDS setup
+# mdsResults <- read.csv("plink.mds", sep="")
 
-tsne_tab <- data.frame(grouping_vars, tsne$Y)
+# n_dim <- ncol(mds)-ncol(groupingVariables)-1   # number of dimensions kept in mds
+mdsTable <- data.frame(groupingVariables, mdsResults[, (ncol(groupingVariables)+2):ncol(mdsResults)], stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
+
+### -------------------- t-SNE setup
+# distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
+
+optimalPerplexity <- sqrt(nrow(distanceMatrixTSNE))
+optimalPerplexity <- round(optimalPerplexity / 5) * 5 # round to nearest 5
+# max_perplexity <- floor((nrow(dist_matrix)/3) - 1)
+rownames(distanceMatrixTSNE) <- rownames(groupingVariables)
+tsneResults <- Rtsne(distanceMatrixTSNE, perplexity=optimalPerplexity, check_duplicates = FALSE, is_distance = TRUE)
+
+tsneTable <- data.frame(groupingVariables, tsneResults$Y, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
 
 ```
 
 ### PCA
 ```{r PCA, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
-plot_pca <- ggplot(data = pca_tab, aes(x = PC1, y = PC2, color = Population, text = pca_tab[,1])) +
+plot_pca <- ggplot(data = pcaTable, aes(x = PC1, y = PC2, color = pcaTable[,2], text = pcaTable[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
   #   tooltip = sample.id, data_id = sample.id)) +
   # geom_text(hjust=0, vjust=0, label=tab$sample.id, label.size=0.1) +
-  theme_classic() +
-  xlab(paste0("PC1 (", format(round(pca_varprop[1]*100, 1), nsmall = 1), "%)" )) +
-  ylab(paste0("PC2 (", format(round(pca_varprop[2]*100, 1), nsmall = 1), "%)" )) +
-  labs(color = "Population")
+  theme_bw() +
+  xlab(paste0("PC1 (", tabVarprop$pct[tabVarprop$PC == "PC1"], "%)" )) +
+  ylab(paste0("PC2 (", tabVarprop$pct[tabVarprop$PC == "PC2"], "%)" )) +
+  # labs(color = "Population")
+  labs(color = colnames(pcaTable)[2]) +
+  theme_bw() +
+              theme(
+                axis.text.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = .5, face = "plain"
+                ),
+                axis.text.y = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = 1,
+                  vjust = 0.5, face = "plain"
+                ),
+                axis.title.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = 0, face = "plain"
+                ),
+                axis.title.y = element_text(
+                  colour = "grey20", size = 10, angle = 90,
+                  hjust = .5, vjust = .5, face = "plain"
+                ),
+                legend.text = element_text(
+                  colour = "grey20", size = 10
+                ),
+                legend.title = element_text(
+                  colour = "grey20", size = 12
+                ),
+                title = element_text(colour = "grey20", size = 10
+                )
+              )
+            
+
+
 
 
 # this works, but messes up the grouping
@@ -86,15 +153,42 @@ ggplotly(plot_pca, tooltip = "text")
 
 ### MDS
 ```{r MDS, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
-plot_mds <- ggplot(data = mds_tab, aes(x = C1, y = C2, color = Population, text = mds_tab[,1])) +
+plot_mds <- ggplot(data = mdsTable, aes(x = C1, y = C2, color = mdsTable[,2], text = mdsTable[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
   #   tooltip = sample.id, data_id = sample.id)) +
   # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
-  theme_classic() +
+  theme_bw() +
   xlab("Coordinate 1") +
   ylab("Coordinate 2") +
-  labs(color = "Population")
+  labs(color = colnames(mdsTable)[2]) +
+    theme_bw() +
+              theme(
+                axis.text.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = .5, face = "plain"
+                ),
+                axis.text.y = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = 1,
+                  vjust = 0.5, face = "plain"
+                ),
+                axis.title.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = 0, face = "plain"
+                ),
+                axis.title.y = element_text(
+                  colour = "grey20", size = 10, angle = 90,
+                  hjust = .5, vjust = .5, face = "plain"
+                ),
+                legend.text = element_text(
+                  colour = "grey20", size = 10
+                ),
+                legend.title = element_text(
+                  colour = "grey20", size = 12
+                ),
+                title = element_text(colour = "grey20", size = 10
+                )
+              )
 
 ggplotly(plot_mds, tooltip = "text")
 ```
@@ -104,7 +198,7 @@ ggplotly(plot_mds, tooltip = "text")
 
 ### t-SNE
 ```{r tsne_plink, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
-plot_tsne <- ggplot(data = tsne_tab, aes(x = X1, y = X2, color = Population, text = tsne_tab[,1])) +
+plot_tsne <- ggplot(data = tsneTable, aes(x = X1, y = X2, color = tsneTable[,2], text = tsneTable[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
   #   tooltip = sample.id, data_id = sample.id)) +
@@ -112,7 +206,34 @@ plot_tsne <- ggplot(data = tsne_tab, aes(x = X1, y = X2, color = Population, tex
   theme_classic() +
   xlab("Coordinate 1") +
   ylab("Coordinate 2") +
-  labs(color = "Population")
+  labs(color = colnames(tsneTable)[2]) +
+    theme_bw() +
+              theme(
+                axis.text.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = .5, face = "plain"
+                ),
+                axis.text.y = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = 1,
+                  vjust = 0.5, face = "plain"
+                ),
+                axis.title.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = 0, face = "plain"
+                ),
+                axis.title.y = element_text(
+                  colour = "grey20", size = 10, angle = 90,
+                  hjust = .5, vjust = .5, face = "plain"
+                ),
+                legend.text = element_text(
+                  colour = "grey20", size = 10
+                ),
+                legend.title = element_text(
+                  colour = "grey20", size = 12
+                ),
+                title = element_text(colour = "grey20", size = 10
+                )
+              )
 
 ggplotly(plot_tsne, tooltip = "text")
 ```
