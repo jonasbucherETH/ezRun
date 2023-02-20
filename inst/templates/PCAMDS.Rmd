@@ -46,7 +46,7 @@ pcaResults <- readRDS("pcaResults.rds")
 groupingVariables <- readRDS("groupingVariables.rds")
 mdsResults <- read.csv("plink.mds", sep="")
 distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
-
+umapResult <- readRDS("umapResult.rds")
 
 nPC <- pcaResults$nf # number of (> 0) principal components
 nGrouping <- ncol(groupingVariables)
@@ -83,12 +83,6 @@ top_genes <- pc_loadings %>%
   arrange(desc(abs(loading)))
 
 
-### -------------------- MDS setup
-# mdsResults <- read.csv("plink.mds", sep="")
-
-# n_dim <- ncol(mds)-ncol(groupingVariables)-1   # number of dimensions kept in mds
-mdsTable <- data.frame(groupingVariables, mdsResults[, (ncol(groupingVariables)+2):ncol(mdsResults)], stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
-
 ### -------------------- t-SNE setup
 # distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
 
@@ -100,10 +94,20 @@ tsneResults <- Rtsne(distanceMatrixTSNE, perplexity=optimalPerplexity, check_dup
 
 tsneTable <- data.frame(groupingVariables, tsneResults$Y, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
 
+### -------------------- UMAP setup
+UMAPTable <- data.frame(groupingVariables, umapResult, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
+
+
+### -------------------- MDS setup
+# mdsResults <- read.csv("plink.mds", sep="")
+
+# n_dim <- ncol(mds)-ncol(groupingVariables)-1   # number of dimensions kept in mds
+mdsTable <- data.frame(groupingVariables, mdsResults[, (ncol(groupingVariables)+2):ncol(mdsResults)], stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
+
 ```
 
 ### PCA
-```{r PCA, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
+```{r PCA, fig.width=12, fig.height=10, echo=FALSE, message=FALSE, warning=FALSE}
 plot_pca <- ggplot(data = pcaTable, aes(x = PC1, y = PC2, color = pcaTable[,2], text = pcaTable[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
@@ -141,6 +145,7 @@ plot_pca <- ggplot(data = pcaTable, aes(x = PC1, y = PC2, color = pcaTable[,2], 
                 title = element_text(colour = "grey20", size = 10
                 )
               )
+  + coord_fixed(ratio = as.numeric(tabVarprop$pct[tabVarprop$PC == "PC2"])/as.numeric(tabVarprop$pct[tabVarprop$PC == "PC2"]))
             
 
 
@@ -151,53 +156,8 @@ ggplotly(plot_pca, tooltip = "text")
 ```
 
 
-### MDS
-```{r MDS, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
-plot_mds <- ggplot(data = mdsTable, aes(x = C1, y = C2, color = mdsTable[,2], text = mdsTable[,1])) +
-  geom_point() +
-  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
-  #   tooltip = sample.id, data_id = sample.id)) +
-  # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
-  theme_bw() +
-  xlab("Coordinate 1") +
-  ylab("Coordinate 2") +
-  labs(color = colnames(mdsTable)[2]) +
-    theme_bw() +
-              theme(
-                axis.text.x = element_text(
-                  colour = "grey20", size = 10, angle = 0, hjust = .5,
-                  vjust = .5, face = "plain"
-                ),
-                axis.text.y = element_text(
-                  colour = "grey20", size = 10, angle = 0, hjust = 1,
-                  vjust = 0.5, face = "plain"
-                ),
-                axis.title.x = element_text(
-                  colour = "grey20", size = 10, angle = 0, hjust = .5,
-                  vjust = 0, face = "plain"
-                ),
-                axis.title.y = element_text(
-                  colour = "grey20", size = 10, angle = 90,
-                  hjust = .5, vjust = .5, face = "plain"
-                ),
-                legend.text = element_text(
-                  colour = "grey20", size = 10
-                ),
-                legend.title = element_text(
-                  colour = "grey20", size = 12
-                ),
-                title = element_text(colour = "grey20", size = 10
-                )
-              )
-
-ggplotly(plot_mds, tooltip = "text")
-```
-
-
-
-
 ### t-SNE
-```{r tsne_plink, fig.width=14, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
+```{r tsne_plink, fig.width=12, fig.height=10, echo=FALSE, message=FALSE, warning=FALSE}
 plot_tsne <- ggplot(data = tsneTable, aes(x = X1, y = X2, color = tsneTable[,2], text = tsneTable[,1])) +
   geom_point() +
   # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
@@ -239,6 +199,90 @@ ggplotly(plot_tsne, tooltip = "text")
 ```
 
 
+### UMAP
+```{r UMAP, fig.width=12, fig.height=10, echo=FALSE, message=FALSE, warning=FALSE}
+plot_umap <- ggplot(data = umapTable, aes(x = C1, y = C2, color = umapTable[,2], text = umapTable[,1])) +
+  geom_point() +
+  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #   tooltip = sample.id, data_id = sample.id)) +
+  # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
+  theme_bw() +
+  xlab("Coordinate 1") +
+  ylab("Coordinate 2") +
+  labs(color = colnames(umapTable)[2]) +
+    theme_bw() +
+              theme(
+                axis.text.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = .5, face = "plain"
+                ),
+                axis.text.y = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = 1,
+                  vjust = 0.5, face = "plain"
+                ),
+                axis.title.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = 0, face = "plain"
+                ),
+                axis.title.y = element_text(
+                  colour = "grey20", size = 10, angle = 90,
+                  hjust = .5, vjust = .5, face = "plain"
+                ),
+                legend.text = element_text(
+                  colour = "grey20", size = 10
+                ),
+                legend.title = element_text(
+                  colour = "grey20", size = 12
+                ),
+                title = element_text(colour = "grey20", size = 10
+                )
+              )
+
+ggplotly(plot_umap, tooltip = "text")
+```
+
+
+### MDS
+```{r MDS, fig.width=12, fig.height=10, echo=FALSE, message=FALSE, warning=FALSE}
+plot_mds <- ggplot(data = mdsTable, aes(x = C1, y = C2, color = mdsTable[,2], text = mdsTable[,1])) +
+  geom_point() +
+  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #   tooltip = sample.id, data_id = sample.id)) +
+  # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
+  theme_bw() +
+  xlab("Coordinate 1") +
+  ylab("Coordinate 2") +
+  labs(color = colnames(mdsTable)[2]) +
+    theme_bw() +
+              theme(
+                axis.text.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = .5, face = "plain"
+                ),
+                axis.text.y = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = 1,
+                  vjust = 0.5, face = "plain"
+                ),
+                axis.title.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = 0, face = "plain"
+                ),
+                axis.title.y = element_text(
+                  colour = "grey20", size = 10, angle = 90,
+                  hjust = .5, vjust = .5, face = "plain"
+                ),
+                legend.text = element_text(
+                  colour = "grey20", size = 10
+                ),
+                legend.title = element_text(
+                  colour = "grey20", size = 12
+                ),
+                title = element_text(colour = "grey20", size = 10
+                )
+              )
+
+ggplotly(plot_mds, tooltip = "text")
+```
 
 <!-- ### Input Dataset -->
 <!-- ```{r, echo=FALSE, message=FALSE} -->

@@ -48,11 +48,22 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   datasetScaled <- scaleGen(vcfGenind, NA.method="mean")
   pcaResults <- dudi.pca(datasetScaled, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
   
+  
+  umapResult <- umap(
+    X = datasetUMAP,
+    n_neighbors = 15,
+    # nn_method = nnMethodChoice, # By default, if X has less than 4,096 vertices, the exact nearest neighbors are found
+    n_components = 2,
+    metric = "euclidean", # for nn_method = "fnn", the distance metric is always "euclidean")
+    scale = FALSE, # TRUE: Scale each column to zero mean and variance 1
+  ) # returns matrix
+  
   saveRDS(vcfRaw, file="vcfRaw.rds")
   saveRDS(vcfGenind, file="vcfGenind.rds")
   
   saveRDS(pcaResults, file="pcaResults.rds")
   saveRDS(groupingVariables, file="groupingVariables.rds")
+  saveRDS(umapResult, file="umapResult.rds")
   
   ### MDS
   # file for mds
