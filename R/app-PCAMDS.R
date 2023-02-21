@@ -26,6 +26,8 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   library(adegenet)
   library(ade4)
   library(vcfR)
+  library(uwot)
+  library(Rtsne)
   
   # vcf_f <- file.path("/srv/gstore/projects", input$getColumn("Filtered VCF"))
   # 
@@ -40,6 +42,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   # pca <- snpgdsPCA(genofile, autosome.only = F, verbose = F)
   
   groupingVariables <- read.delim(file.path("/srv/gstore/projects", input$getColumn("Grouping File")))
+  rownames(groupingVariables) <- groupingVariables[,1]
   
   vcfRaw <- read.vcfR(file.path("/srv/gstore/projects", input$getColumn("Filtered VCF")))
   vcfGenind <- vcfR2genind(vcfRaw)
