@@ -31,6 +31,7 @@ library(shinythemes)
 library(shinydashboard)
 library(Rtsne)
 library(readr)
+library(uwot)
 # knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, knitr.table.format = "html")
 
 ### -------------------- Test imports
@@ -45,7 +46,8 @@ pcaResults <- readRDS("pcaResults.rds")
 groupingVariables <- readRDS("groupingVariables.rds")
 mdsResults <- read.csv("plink.mds", sep="")
 distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
-umapResult <- readRDS("umapResult.rds")
+datasetScaled <- readRDS("datasetScaled.rds")
+# umapResult <- readRDS("umapResult.rds")
 
 rownames(groupingVariables) <- groupingVariables[,1] # not needed probably
 nPC <- pcaResults$nf # number of (> 0) principal components
@@ -95,6 +97,15 @@ tsneResults <- Rtsne(distanceMatrixTSNE, perplexity=optimalPerplexity, check_dup
 tsneTable <- data.frame(groupingVariables, tsneResults$Y, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
 
 ### -------------------- UMAP setup
+umapResult <- umap(
+  X = datasetScaled,
+  n_neighbors = 15,
+  # nn_method = nnMethodChoice, # By default, if X has less than 4,096 vertices, the exact nearest neighbors are found
+  n_components = 2,
+  metric = "euclidean", # for nn_method = "fnn", the distance metric is always "euclidean")
+  scale = FALSE # TRUE: Scale each column to zero mean and variance 1
+) # returns matrix
+  
 UMAPTable <- data.frame(groupingVariables, umapResult, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
 
 
