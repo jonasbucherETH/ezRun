@@ -56,7 +56,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   
 
   umapResult <- umap(
-    X = datasetUMAP,
+    X = datasetScaled,
     n_neighbors = 15,
     # nn_method = nnMethodChoice, # By default, if X has less than 4,096 vertices, the exact nearest neighbors are found
     n_components = 2,
