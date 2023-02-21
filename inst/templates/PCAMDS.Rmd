@@ -36,7 +36,6 @@ library(readr)
 ### -------------------- Test imports
 # pcaResults <- readRDS("~/git/ezRun/R/PCAMDS_shiny/data/PCA.rds")
 # groupingVariables <- read.delim("~/git/ezRun/R/PCAMDS_shiny/data/populations.txt")
-# rownames(groupingVariables) <- groupingVariables[,1]
 # mdsResults <- read.csv("~/git/ezRun/R/PCAMDS_shiny/data/plink_3101.mds", sep="")
 # distanceMatrixTSNE <- read_tsv("~/git/ezRun/R/PCAMDS_shiny/data/plink_3101.dist", col_names = F)
 
@@ -48,6 +47,7 @@ mdsResults <- read.csv("plink.mds", sep="")
 distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
 umapResult <- readRDS("umapResult.rds")
 
+rownames(groupingVariables) <- groupingVariables[,1] # not needed probably
 nPC <- pcaResults$nf # number of (> 0) principal components
 nGrouping <- ncol(groupingVariables)
 pcaVarprop <- pcaResults$eig
