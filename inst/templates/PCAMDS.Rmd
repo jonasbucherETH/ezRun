@@ -82,6 +82,16 @@ top_genes <- pc_loadings %>%
   group_by(PC) %>% 
   arrange(desc(abs(loading)))
 
+tabVarprop2 <- tabVarprop
+tabVarprop2$PC <- gsub("PC", "", tabVarprop2$PC)
+tabVarprop2$PC <- factor(tabVarprop2$PC, levels = tabVarprop2$PC)
+tabVarprop2$variance <- as.numeric(tabVarprop2$variance)
+tabVarprop2$pct <- as.numeric(tabVarprop2$pct)
+tabVarprop2$pct_cum <- as.numeric(tabVarprop2$pct_cum)
+
+if (nrow(tabVarprop2) > 10) {
+  tabVarprop2 <- tabVarprop2[1:10,]
+}
 
 ### -------------------- t-SNE setup
 # distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
@@ -155,13 +165,25 @@ plot_pca <- ggplot(data = pcaTable, aes(x = PC1, y = PC2, color = pcaTable[,2], 
                 )
               ) +
   coord_fixed(ratio = as.numeric(tabVarprop$pct[tabVarprop$PC == "PC2"])/as.numeric(tabVarprop$pct[tabVarprop$PC == "PC2"]))
-            
-
-
-
 
 # this works, but messes up the grouping
 ggplotly(plot_pca, tooltip = "text")
+```
+
+
+```{r screePlot, fig.width=6, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE}
+plot_pcaScree <- ggplot(data = tabVarprop2,
+  aes(x = PC)) +
+  geom_col(aes(y = pct)) +
+  geom_line(aes(y = pct_cum, group = 1)) +
+  geom_point(aes(y = pct_cum)) +
+  labs(x = "Principal component", y = "Fraction variance explained (%)") +
+  scale_y_continuous(n.breaks = 20) +
+  theme_classic()
+
+  # theme_classic(base_size = as.numeric(input$textSizePCA))
+# ggplotly(plot_pcaScree, tooltip = "text")
+plot_pcaScree
 ```
 
 
