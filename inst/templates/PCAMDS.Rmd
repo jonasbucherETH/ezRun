@@ -44,8 +44,8 @@ pcaResults <- readRDS("pcaResults.rds")
 groupingVariables <- readRDS("groupingVariables.rds")
 mdsResults <- read.csv("plink.mds", sep="")
 distanceMatrixTSNE <- read_tsv("plink.dist", col_names = F)
-# datasetScaled <- readRDS("datasetScaled.rds") ### (put this again later)
-# umapResults <- readRDS("umapResults.rds")
+datasetScaled <- readRDS("datasetScaled.rds") ### (put this again later)
+umapResults <- readRDS("umapResults.rds")
 
 rownames(groupingVariables) <- groupingVariables[,1] # not needed probably
 nPC <- pcaResults$nf # number of (> 0) principal components
@@ -104,7 +104,7 @@ tsneTable <- data.frame(groupingVariables, tsneResults$Y, stringsAsFactors = FAL
 #   scale = FALSE # TRUE: Scale each column to zero mean and variance 1
 # ) # returns matrix
   
-# UMAPTable <- data.frame(groupingVariables, umapResults, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
+UMAPTable <- data.frame(groupingVariables, umapResults, stringsAsFactors = FALSE, row.names = rownames(groupingVariables))
 
 
 ### -------------------- MDS setup
