@@ -55,7 +55,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   pcaResults <- dudi.pca(datasetScaled, center = TRUE, scale = TRUE, scan = FALSE, nf = 5)
   
 
-  umapResult <- umap(
+  umapResults <- umap(
     X = datasetScaled,
     n_neighbors = 15,
     # nn_method = nnMethodChoice, # By default, if X has less than 4,096 vertices, the exact nearest neighbors are found
@@ -70,7 +70,7 @@ ezMethodPCAMDS <- function(input = NA, output = NA, param = NA,
   
   saveRDS(pcaResults, file="pcaResults.rds")
   saveRDS(groupingVariables, file="groupingVariables.rds")
-  saveRDS(umapResult, file="umapResult.rds")
+  saveRDS(umapResults, file="umapResults.rds")
   
   ### MDS
   # file for mds
