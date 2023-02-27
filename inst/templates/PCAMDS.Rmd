@@ -89,8 +89,8 @@ tabVarprop2$variance <- as.numeric(tabVarprop2$variance)
 tabVarprop2$pct <- as.numeric(tabVarprop2$pct)
 tabVarprop2$pct_cum <- as.numeric(tabVarprop2$pct_cum)
 
-if (nrow(tabVarprop2) > 10) {
-  tabVarprop2 <- tabVarprop2[1:10,]
+if (nrow(tabVarprop2) > 20) {
+  tabVarprop2 <- tabVarprop2[1:20,]
 }
 
 ### -------------------- t-SNE setup
@@ -230,47 +230,47 @@ ggplotly(plot_tsne, tooltip = "text")
 ```
 
 
-<!-- ### UMAP -->
-<!-- ```{r UMAP, fig.width=12, fig.height=10, echo=FALSE, message=FALSE, warning=FALSE} -->
-<!-- plot_umap <- ggplot(data = UMAPTable, aes(x = X1, y = X2, color = UMAPTable[,2], text = UMAPTable[,1])) + -->
-<!--   geom_point() + -->
-<!--   # geom_point_interactive(aes(x = wt, y = qsec, color = disp, -->
-<!--   #   tooltip = sample.id, data_id = sample.id)) + -->
-<!--   # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) + -->
-<!--   theme_bw() + -->
-<!--   xlab("Coordinate 1") + -->
-<!--   ylab("Coordinate 2") + -->
-<!--   labs(color = colnames(UMAPTable)[2]) + -->
-<!--     theme_bw() + -->
-<!--               theme( -->
-<!--                 axis.text.x = element_text( -->
-<!--                   colour = "grey20", size = 10, angle = 0, hjust = .5, -->
-<!--                   vjust = .5, face = "plain" -->
-<!--                 ), -->
-<!--                 axis.text.y = element_text( -->
-<!--                   colour = "grey20", size = 10, angle = 0, hjust = 1, -->
-<!--                   vjust = 0.5, face = "plain" -->
-<!--                 ), -->
-<!--                 axis.title.x = element_text( -->
-<!--                   colour = "grey20", size = 10, angle = 0, hjust = .5, -->
-<!--                   vjust = 0, face = "plain" -->
-<!--                 ), -->
-<!--                 axis.title.y = element_text( -->
-<!--                   colour = "grey20", size = 10, angle = 90, -->
-<!--                   hjust = .5, vjust = .5, face = "plain" -->
-<!--                 ), -->
-<!--                 legend.text = element_text( -->
-<!--                   colour = "grey20", size = 10 -->
-<!--                 ), -->
-<!--                 legend.title = element_text( -->
-<!--                   colour = "grey20", size = 12 -->
-<!--                 ), -->
-<!--                 title = element_text(colour = "grey20", size = 10 -->
-<!--                 ) -->
-<!--               ) -->
+### UMAP
+```{r UMAP, fig.width=12, fig.height=10, echo=FALSE, message=FALSE, warning=FALSE}
+plot_umap <- ggplot(data = UMAPTable, aes(x = X1, y = X2, color = UMAPTable[,2], text = UMAPTable[,1])) +
+  geom_point() +
+  # geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+  #   tooltip = sample.id, data_id = sample.id)) +
+  # geom_text(hjust=0, vjust=0, label=mds_tab$Sample, label.size=0.1) +
+  theme_bw() +
+  xlab("Coordinate 1") +
+  ylab("Coordinate 2") +
+  labs(color = colnames(UMAPTable)[2]) +
+    theme_bw() +
+              theme(
+                axis.text.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = .5, face = "plain"
+                ),
+                axis.text.y = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = 1,
+                  vjust = 0.5, face = "plain"
+                ),
+                axis.title.x = element_text(
+                  colour = "grey20", size = 10, angle = 0, hjust = .5,
+                  vjust = 0, face = "plain"
+                ),
+                axis.title.y = element_text(
+                  colour = "grey20", size = 10, angle = 90,
+                  hjust = .5, vjust = .5, face = "plain"
+                ),
+                legend.text = element_text(
+                  colour = "grey20", size = 10
+                ),
+                legend.title = element_text(
+                  colour = "grey20", size = 12
+                ),
+                title = element_text(colour = "grey20", size = 10
+                )
+              )
 
-<!-- ggplotly(plot_umap, tooltip = "text") -->
-<!-- ``` -->
+ggplotly(plot_umap, tooltip = "text")
+```
 
 
 ### MDS
