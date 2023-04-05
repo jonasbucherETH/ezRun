@@ -42,10 +42,10 @@ ezMethoddmrseq <- function(input = NA, output = NA, param = NA,
   
   bsseqFiltered <- bsseq[lociCoverage, ]
   
-  testCovariate <- param$testCovariate
+  # testCovariate <- param$testCovariate
   
   dmRegions <- dmrseq(bs = bsseqFiltered,
-                               testCovariate = testCovariate, 
+                               testCovariate = param$testCovariate, 
                                cutoff = param$cutoff,
                                minNumRegion = 5,
                                smooth = TRUE,
