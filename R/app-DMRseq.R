@@ -6,7 +6,7 @@
 # www.fgcz.ch
 
 
-ezMethoddmrseq <- function(input = NA, output = NA, param = NA,
+ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
                            htmlFile = "00index.html") {
   # #setwdNew(basename(output$getColumn("Report")))
   dataset <- input$meta
@@ -123,14 +123,14 @@ ezMethoddmrseq <- function(input = NA, output = NA, param = NA,
 ##' }
 
 EzAppdmrseq <-
-  setRefClass("EzAppdmrseq",
+  setRefClass("EzAppDMRseq",
               contains = "EzApp",
               methods = list(
                 initialize = function() {
                   "Initializes the application using its specific defaults."
                   runMethod <<- ezMethoddmrseq
                   name <<- "EzAppdmrseq"
-                  appDefaults <<- rbind(perLibrary = ezFrame(Type = "logical", DefaultValue = TRUE, Description = "dmrseq brabra"))
+                  appDefaults <<- rbind(perLibrary = ezFrame(Type = "logical", DefaultValue = TRUE, Description = "DMRseq brabra"))
                 }
               )
   )
