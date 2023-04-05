@@ -186,9 +186,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                "--targets", input$getColumn("BedGraph"), 
                # "--annotate", input$getColumn("refBuild"), # optional; Format: UCSC, refFlat.txt or ensFlat.txt file (preferred), or BED, interval list, GFF, or similar.
                "--fasta", file.path(input$getColumn("refBuild"), "Genes/"), # required
-               "--access", data/access-5kb-mappable.hg19.bed, # difference to other bed graph?
+               "--access", input$getColumn("BedGraph"), # difference to other bed graph?
                "--output-reference reference.cnn",
-               "--output-dir" output_dir,
+               "--output-dir", output_dir,
                # --diagram
                # --scatter
                )
