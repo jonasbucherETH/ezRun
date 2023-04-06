@@ -31,38 +31,62 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   register(BPPARAM)
   require(future)
   plan("multicore", workers = param$cores)
+  
+  stopifnot(param$sampleGroup != param$refGroup)
+  
+  input <- cleanupTwoGroupsInput(input, param)
+  param$testCovariateName <- param$testCovariate
+  param$testCovariate <- input$getColumn(param$testCovariate)
+  bsseqColData <- param@testCovariate
+  
+  if (ezIsSpecified(param$adjustCovariate) && length(param$adjustCovariate) == 1) {
+    param$adjustCovariateName <- param$adjustCovariate
+    param$adjustCovariate <- input$getColumn(param$adjustCovariate)
+    bsseqColData <- cbind(bsseqColData, param$adjustCovariate)
+  }
+  
+  if (ezIsSpecified(param$testCovariate) && length(param$testCovariate) == 1) {
+    param$testCovariateName <- param$testCovariate
+    param$testCovariate <- input$getColumn(param$testCovariate)
+    bsseqColData <- cbind(bsseqColData, param$testCovariate)
+  }
 
-  bsseq <- bsseq::read.bismark(files = input$getFullPaths("COV [File]"),
+  # bsseqColData <- c(param@testCovariate, param@adjustCovariate, param@matchCovariate)
+  bsseq <- bsseq::read.bismark(files = input$getFullPaths("COV"),
                                            rmZeroCov = FALSE,
                                            strandCollapse = FALSE,
                                            verbose = FALSE,
-                                           colData = param@Factor)
+                                           colData = bsseqColData)
   
-  lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(coverageDmrseq_mm, type="Cov")==0) == 0)
+  lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
   
   bsseqFiltered <- bsseq[lociCoverage, ]
   
   # testCovariate <- param$testCovariate
   
-  dmRegions <- dmrseq(bs = bsseqFiltered,
-                               testCovariate = param$testCovariate, 
-                               cutoff = param$cutoff,
-                               minNumRegion = 5,
-                               smooth = TRUE,
-                               bpSpan = 1000,
-                               minInSpan = 30,
-                               maxGapSmooth = 5000,
-                               maxGap = 1000,
-                               verbose = TRUE,
-                               maxPerms = 10,
-                               # matchCovariate = deparse(substitute(matchCovariate)), # opt
-                               # eg if samples from different gender, but not covariate of interest
-                               # -> avoids to do permutation with all-male vs all-female
-                               BPPARAM = BPPARAM,
-                               stat = "stat",
-                               block = FALSE,
-                               blockSize = 5000,
-                               chrsPerChunk = 1
+  dmRegions <- dmrseq(
+                 bs = bsseqFiltered,
+                 testCovariate = param$testCovariate, 
+                 # A continuous covariate is assumed if the data type in the 'testCovariate' slot is continuous,
+                 # with the exception of if there are only two unique values (then a two group comparison is carried out)
+                 adjustCovariate = param$adjustCovariate,
+                 cutoff = param$cutoff,
+                 minNumRegion = param$minNumRegion,
+                 smooth = param$smooth,
+                 bpSpan = param$bpSpan,
+                 minInSpan = param$minInSpan,
+                 maxGapSmooth = param$maxGapSmooth,
+                 maxGap = param$maxGap,
+                 verbose = FALSE, # keep this
+                 maxPerms = param$maxPerms,
+                 matchCovariate = param$matchCovariate, # opt
+                 # eg if samples from different gender, but not covariate of interest
+                 # -> avoids to do permutation with all-male vs all-female
+                 BPPARAM = BPPARAM,
+                 stat = param$stat,
+                 block = param$block,
+                 blockSize = param$blockSize,
+                 chrsPerChunk = param$chrsPerChunk
   )
   
   # saveRDS(bsseq, file="bsseq.rds")
