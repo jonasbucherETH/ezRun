@@ -146,7 +146,7 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
 ##'   {Creates and returns the images used by \code{plotQualityMatrixAsHeatmap()}.}
 ##' }
 
-EzAppdmrseq <-
+EzAppDMRseq <-
   setRefClass("EzAppDMRseq",
               contains = "EzApp",
               methods = list(
