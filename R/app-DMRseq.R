@@ -53,6 +53,9 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   # }
   
   # bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment", row.names = param$samples)
+  print(input$getColumn("Treatment"))
+  print(type(input$getColumn("Treatment")))
+  print(input$getFullPaths("COV"))
   bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment")
   
   # bsseqColData <- c(param@testCovariate, param@adjustCovariate, param@matchCovariate)
@@ -115,10 +118,10 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   file.copy(from = styleFiles, to = ".", overwrite = TRUE)
   
   ### generate the main reports
-  rmarkdown::render(
-    input = "dmrseq.Rmd", envir = new.env(),
-    output_dir = ".", output_file = htmlFile, quiet = TRUE
-  )
+  # rmarkdown::render(
+  #   input = "dmrseq.Rmd", envir = new.env(),
+  #   output_dir = ".", output_file = htmlFile, quiet = TRUE
+  # )
   
   html_files <- c("00index.html",  "banner.png",  "fgcz.css",  "fgcz_header.html")
   
