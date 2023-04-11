@@ -52,8 +52,9 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   #   bsseqColData <- cbind(bsseqColData, param$testCovariate)
   # }
   
-  bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment", row.names = param$samples)
-
+  # bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment", row.names = param$samples)
+  bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment")
+  
   # bsseqColData <- c(param@testCovariate, param@adjustCovariate, param@matchCovariate)
   bsseq <- bsseq::read.bismark(files = input$getFullPaths("COV"),
                                            rmZeroCov = FALSE,
@@ -73,7 +74,7 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
                  testCovariate = testCovariate, 
                  # A continuous covariate is assumed if the data type in the 'testCovariate' slot is continuous,
                  # with the exception of if there are only two unique values (then a two group comparison is carried out)
-                 adjustCovariate = param$adjustCovariate,
+                 # adjustCovariate = param$adjustCovariate,
                  cutoff = param$cutoff,
                  minNumRegion = param$minNumRegion,
                  smooth = param$smooth,
@@ -83,7 +84,7 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
                  maxGap = param$maxGap,
                  verbose = FALSE, # keep this
                  maxPerms = param$maxPerms,
-                 matchCovariate = param$matchCovariate, # opt
+                 # matchCovariate = param$matchCovariate, # opt
                  # eg if samples from different gender, but not covariate of interest
                  # -> avoids to do permutation with all-male vs all-female
                  # BPPARAM = BPPARAM,
