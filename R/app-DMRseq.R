@@ -55,8 +55,13 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   # bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment", row.names = param$samples)
   print(input$getColumn("Treatment"))
   print(type(input$getColumn("Treatment")))
+  print(dim)
   print(input$getFullPaths("COV"))
-  bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment")
+  bsseqColData <- as.data.frame(t(input$getColumn("Treatment")), col.names = "Treatment")
+  print(bsseqColData)
+  
+
+  # bsseqColData <- as.data.frame("Treatment")
   
   # bsseqColData <- c(param@testCovariate, param@adjustCovariate, param@matchCovariate)
   bsseq <- bsseq::read.bismark(files = input$getFullPaths("COV"),
