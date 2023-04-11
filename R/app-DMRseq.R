@@ -111,6 +111,7 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
                  chrsPerChunk = param$chrsPerChunk
   )
   
+  
   # saveRDS(bsseq, file="bsseq.rds")
   significantRegions <- dmRegions[dmRegions$qval < 0.05, ]
   # sum(significantRegions$stat > 0) / length(significantRegions)
