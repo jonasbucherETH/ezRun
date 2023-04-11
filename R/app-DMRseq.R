@@ -155,8 +155,8 @@ EzAppDMRseq <-
               methods = list(
                 initialize = function() {
                   "Initializes the application using its specific defaults."
-                  runMethod <<- ezMethoddmrseq
-                  name <<- "EzAppdmrseq"
+                  runMethod <<- ezMethodDMRseq
+                  name <<- "EzAppDMRseq"
                   appDefaults <<- rbind(perLibrary = ezFrame(Type = "logical", DefaultValue = TRUE, Description = "DMRseq brabra"))
                 }
               )
