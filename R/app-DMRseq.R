@@ -23,16 +23,16 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   library("dmrseq")
   library("BiocParallel")
   
-  if (param$cores > 1){
-    BPPARAM <- MulticoreParam(workers = param$cores)
-  } else {
-    BPPARAM <- SerialParam() 
-  }
-  register(BPPARAM)
-  require(future)
-  plan("multicore", workers = param$cores)
+  # if (param$cores > 1){
+  #   BPPARAM <- MulticoreParam(workers = param$cores)
+  # } else {
+  #   BPPARAM <- SerialParam() 
+  # }
+  # register(BPPARAM)
+  # require(future)
+  # plan("multicore", workers = param$cores)
   
-  stopifnot(param$sampleGroup != param$refGroup)
+  # stopifnot(param$sampleGroup != param$refGroup)
   
   input <- cleanupTwoGroupsInput(input, param)
   param$testCovariateName <- param$testCovariate
@@ -82,7 +82,7 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
                  matchCovariate = param$matchCovariate, # opt
                  # eg if samples from different gender, but not covariate of interest
                  # -> avoids to do permutation with all-male vs all-female
-                 BPPARAM = BPPARAM,
+                 # BPPARAM = BPPARAM,
                  stat = param$stat,
                  block = param$block,
                  blockSize = param$blockSize,
