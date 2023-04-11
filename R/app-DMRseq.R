@@ -70,8 +70,10 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   bsseqColData <- data.frame(input_dataset$Treatment, row.names = input_dataset$Name)
   colnames(bsseqColData) <- "Treatment"
   
-  filesBismark <- input$getFullPaths("COV")
-  bsseq <- bsseq::read.bismark(files = filesBismark,
+  # covFilesBismark <- input$getFullPaths("COV")
+  covFilesBismark <- list.files(dataDirBismark, pattern = "cov", full.names = T)
+  
+  bsseq <- bsseq::read.bismark(files = covFilesBismark,
                                            rmZeroCov = FALSE,
                                            strandCollapse = FALSE,
                                            verbose = FALSE,
