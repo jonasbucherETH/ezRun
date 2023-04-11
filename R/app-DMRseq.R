@@ -34,22 +34,25 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   
   # stopifnot(param$sampleGroup != param$refGroup)
   
-  input <- cleanupTwoGroupsInput(input, param)
-  param$testCovariateName <- param$testCovariate
-  param$testCovariate <- input$getColumn(param$testCovariate)
-  bsseqColData <- param@testCovariate
+  ###### grouping input
+  # input <- cleanupTwoGroupsInput(input, param)
+  # param$testCovariateName <- param$testCovariate
+  # param$testCovariate <- input$getColumn(param$testCovariate)
+  # bsseqColData <- param@testCovariate
+  # 
+  # if (ezIsSpecified(param$adjustCovariate) && length(param$adjustCovariate) == 1) {
+  #   param$adjustCovariateName <- param$adjustCovariate
+  #   param$adjustCovariate <- input$getColumn(param$adjustCovariate)
+  #   bsseqColData <- cbind(bsseqColData, param$adjustCovariate)
+  # }
+  # 
+  # if (ezIsSpecified(param$testCovariate) && length(param$testCovariate) == 1) {
+  #   param$testCovariateName <- param$testCovariate
+  #   param$testCovariate <- input$getColumn(param$testCovariate)
+  #   bsseqColData <- cbind(bsseqColData, param$testCovariate)
+  # }
   
-  if (ezIsSpecified(param$adjustCovariate) && length(param$adjustCovariate) == 1) {
-    param$adjustCovariateName <- param$adjustCovariate
-    param$adjustCovariate <- input$getColumn(param$adjustCovariate)
-    bsseqColData <- cbind(bsseqColData, param$adjustCovariate)
-  }
-  
-  if (ezIsSpecified(param$testCovariate) && length(param$testCovariate) == 1) {
-    param$testCovariateName <- param$testCovariate
-    param$testCovariate <- input$getColumn(param$testCovariate)
-    bsseqColData <- cbind(bsseqColData, param$testCovariate)
-  }
+  bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment", row.names = input$getColumn("Name"))
 
   # bsseqColData <- c(param@testCovariate, param@adjustCovariate, param@matchCovariate)
   bsseq <- bsseq::read.bismark(files = input$getFullPaths("COV"),
@@ -63,10 +66,11 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   bsseqFiltered <- bsseq[lociCoverage, ]
   
   # testCovariate <- param$testCovariate
+  testCovariate <- "Treatment"
   
   dmRegions <- dmrseq(
                  bs = bsseqFiltered,
-                 testCovariate = param$testCovariate, 
+                 testCovariate = testCovariate, 
                  # A continuous covariate is assumed if the data type in the 'testCovariate' slot is continuous,
                  # with the exception of if there are only two unique values (then a two group comparison is carried out)
                  adjustCovariate = param$adjustCovariate,
