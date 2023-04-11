@@ -53,18 +53,25 @@ ezMethodDMRseq <- function(input = NA, output = NA, param = NA,
   # }
   
   # bsseqColData <- as.data.frame(input$getColumn("Treatment"), col.names = "Treatment", row.names = param$samples)
-  print(input$getColumn("Treatment"))
-  print(type(input$getColumn("Treatment")))
-  print(dim)
-  print(input$getFullPaths("COV"))
-  bsseqColData <- as.data.frame(t(input$getColumn("Treatment")), col.names = "Treatment")
-  print(bsseqColData)
+  # print(input$getColumn("Treatment"))
+  # print(type(input$getColumn("Treatment")))
+  # print(dim)
+  # print(input$getFullPaths("COV"))
+  # bsseqColData <- as.data.frame(t(input$getColumn("Treatment")), col.names = "Treatment")
+  # print(bsseqColData)
   
 
   # bsseqColData <- as.data.frame("Treatment")
   
   # bsseqColData <- c(param@testCovariate, param@adjustCovariate, param@matchCovariate)
-  bsseq <- bsseq::read.bismark(files = input$getFullPaths("COV"),
+  dataDirBismark <- "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43"
+  input_dataset <- read_tsv(file.path(dataDirBismark, "input_dataset.tsv"))
+  # bsseqColData <- base::as.data.frame(input_dataset$Treatment, row.names = input_dataset$Name, col.names = c("Treatment"))
+  bsseqColData <- data.frame(input_dataset$Treatment, row.names = input_dataset$Name)
+  colnames(bsseqColData) <- "Treatment"
+  
+  filesBismark <- input$getFullPaths("COV")
+  bsseq <- bsseq::read.bismark(files = filesBismark,
                                            rmZeroCov = FALSE,
                                            strandCollapse = FALSE,
                                            verbose = FALSE,
