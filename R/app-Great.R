@@ -13,11 +13,15 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   library("rGREAT")
   library("KEGGREST")
   library("biomaRt")
+  library("BioMartGOGeneSets")
+  library("parallel")
   
   # #setwdNew(basename(output$getColumn("Report")))
   dataset <- input$meta
   ans4Report <- list() # a list of results for rmarkdown report
   ans4Report[["dataset"]] <- dataset
+  
+  cores <- detectCores(all.tests = FALSE, logical = TRUE) - 1
   
   # output_dir <- basename(output$getColumn("Report"))
   dataDir <- "~/data/dmrseq"
@@ -27,8 +31,18 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   dmRegions <- readRDS(dmRegionsFilePath)
   significantRegions <- readRDS(significantRegionsFilePath)
   
+  getGeneSetsFromBioMart = function(dataset, ontology) {
+    BioMartGOGeneSets::getBioMartGOGeneSets(dataset, ontology)
+  }
+  # geneSetsBP <- getGeneSetsFromBioMart("athaliana_eg_gene", "BP")
+  
+  geneSetsBP <- getGeneSetsFromBioMart(param$biomart_dataset, "BP")
+  geneSetsCC <- getGeneSetsFromBioMart(param$biomart_dataset, "CC")
+  geneSetsMF <- getGeneSetsFromBioMart(param$biomart_dataset, "MF")
+  geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
+  
   ## Reactome pathways
-  if(param$reactome_kegg & param$biomart_dataset=="athaliana_eg_gene") {
+  if(param$biomart_dataset=="athaliana_eg_gene") {
     reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
     react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
     rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
@@ -55,38 +69,40 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
                                                sep = ": "
     ))
     
-    geneSetsAthaliana <- c("reactome_pathways" = reactome_pathways, "kegg_pathways" = kegg_pathways)
-    
-    # gs = read_gmt(url("http://dsigdb.tanlab.org/Downloads/D2_LINCS.gmt"), 
-    #               from = "SYMBOL", to = "ENTREZ", orgdb = "org.Hs.eg.db")
-    
-    ### TODO: add built-in gene set(s) to these
-    greatResult <- great(gr = dmRegions, gene_sets = geneSetsAthaliana, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
-                         min_gene_set_size = param$min_gene_set_size, mode = param$mode, basal_upstream = param$basal_upstream,
-                         basal_downstream = param$basal_downstream, extension = param$extension,
-                         background = dmRegions, exclude = param$exclude,
-                         cores = param$cores)
+    geneSetsAthaliana <- c("RP" = reactome_pathways, "KP" = kegg_pathways)
+    geneSetsAll <- c(geneSetsAll, geneSetsAthaliana)
+
   }
   
-  else {
-    # tssSource <- ""
-    geneSets <- param$gene_sets
-    
-    greatResult <- great(gr = significantRegions, gene_sets = geneSets, biomart_dataset = biomart_dataset,
-                         min_gene_set_size = param$min_gene_set_size, mode = param$mode, basal_upstream = param$basal_upstream,
-                         basal_downstream = param$basal_downstream, extension = param$extension,
-                         background = dmRegions, exclude = param$exclude, # gap regions for corresponding organism will be removed from the analysis
-                         cores = param$cores)
-  }
+  library(AnnotationHub)
+  ah <- AnnotationHub()
+  ensdb <- query(ah, c("TxDb"))
+  # ensdb_unique <- ensdb$ah_id[unique(ensdb$title, fromLast = TRUE), ]
+  # ensdb_unique <- unique(ensdb$title)
   
+  id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
+  id <- id[length(id)]
+  txdb <- ensdb[[id]]
+  
+  gene <- genes(txdb)
+  # gene = gene[seqnames(gene) %in% paste0("chr", c(1:50, "X", "Y"))]
+  # gl = seqlengths(gene)[paste0("chr", c(1:22, "X", "Y"))]  # restrict to normal chromosomes
+  # gl <- seqlengths(gene) # restrict to normal chromosomes
+  extendedTSS <- extendTSS(gene)
+  
+  greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
+                       background = dmRegions)
+
   # set.seed(123)
   # gr = randomRegions(nr = 1000, genome = "hg19")
   # gres <- great(gr, "GO:MF", "hg19")
-    
-  
+  # 
+  # 
   # greatResult <- gres
+  
   enrichmentTable <- getEnrichmentTable(greatResult)
-  # head(enrichmentTable)
+  regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
+                            use_symbols = TRUE)
   
   saveRDS(greatResult, file="greatResult.rds")
   saveRDS(enrichmentTable, file="enrichmentTable.rds")
