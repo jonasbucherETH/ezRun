@@ -29,7 +29,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   on.exit(setwd(cwd), add = TRUE)
   
   # output_dir <- basename(output$getColumn("Report"))
-  dataDir <- "~/data/dmrseq"
+  dataDir <- "/home/jobucher/data/dmrseq"
   dmRegionsFilePath <- file.path(dataDir, "dmRegions.rds")
   significantRegionsFilePath <- file.path(dataDir, "significantRegions.rds")
   
@@ -81,6 +81,8 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   ah <- AnnotationHub()
   ensdb <- query(ah, c("TxDb"))
+  # ensdb$title
+  # grep("musculus", ensdb$title)
   # ensdb_unique <- ensdb$ah_id[unique(ensdb$title, fromLast = TRUE), ]
   # ensdb_unique <- unique(ensdb$title)
   
@@ -110,7 +112,8 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   saveRDS(greatResult, file="greatResult.rds")
   saveRDS(enrichmentTable, file="enrichmentTable.rds")
-  
+  saveRDS(geneSetsAll, file="geneSetsAll.rds")
+
   ## Copy the style files and templates
   styleFiles <- file.path(
     system.file("templates", package = "ezRun"),
