@@ -15,6 +15,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   library("biomaRt")
   library("BioMartGOGeneSets")
   library("parallel")
+  library("AnnotationHub")
   
   # #setwdNew(basename(output$getColumn("Report")))
   dataset <- input$meta
@@ -22,6 +23,10 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   ans4Report[["dataset"]] <- dataset
   
   cores <- detectCores(all.tests = FALSE, logical = TRUE) - 1
+  
+  cwd <- getwd()
+  setwdNew(basename(output$getColumn("Report")))
+  on.exit(setwd(cwd), add = TRUE)
   
   # output_dir <- basename(output$getColumn("Report"))
   dataDir <- "~/data/dmrseq"
@@ -74,7 +79,6 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
 
   }
   
-  library(AnnotationHub)
   ah <- AnnotationHub()
   ensdb <- query(ah, c("TxDb"))
   # ensdb_unique <- ensdb$ah_id[unique(ensdb$title, fromLast = TRUE), ]
@@ -100,16 +104,12 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # 
   # greatResult <- gres
   
-  enrichmentTable <- getEnrichmentTable(greatResult)
-  regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
-                            use_symbols = TRUE)
+  enrichmentTable <- getEnrichmentTable(greatResult, min_region_hits = 5)
+  # regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
+                            # use_symbols = TRUE)
   
   saveRDS(greatResult, file="greatResult.rds")
   saveRDS(enrichmentTable, file="enrichmentTable.rds")
-  
-  cwd <- getwd()
-  setwdNew(basename(output$getColumn("Report")))
-  on.exit(setwd(cwd), add = TRUE)
   
   ## Copy the style files and templates
   styleFiles <- file.path(
