@@ -123,7 +123,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   extendedTSS <- extendTSS(gs)
   
   greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
-                       background = dmRegions)
+                       background = dmRegions, cores = cores)
 
   # set.seed(123)
   # gr = randomRegions(nr = 1000, genome = "hg19")
