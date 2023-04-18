@@ -48,14 +48,14 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   tableBiomart$genesets = paste0("BP (", tableBiomart$n_bp_genesets, "), CC (", tableBiomart$n_cc_genesets, "), MF (", tableBiomart$n_mf_genesets, ")")
   colnames(tableBiomart)[colnames(tableBiomart) == "n_gene"] = "genes"
   
-  getGeneSetsFromBioMart = function(dataset, ontology) {
+  getGeneSets = function(dataset, ontology) {
     BioMartGOGeneSets::getBioMartGOGeneSets(dataset, ontology)
   }
   # geneSetsBP <- getGeneSetsFromBioMart("athaliana_eg_gene", "BP")
   
-  geneSetsBP <- getGeneSetsFromBioMart(param$biomart_dataset, "BP")
-  geneSetsCC <- getGeneSetsFromBioMart(param$biomart_dataset, "CC")
-  geneSetsMF <- getGeneSetsFromBioMart(param$biomart_dataset, "MF")
+  geneSetsBP <- getGeneSets(param$biomart_dataset, "BP")
+  geneSetsCC <- getGeneSets(param$biomart_dataset, "CC")
+  geneSetsMF <- getGeneSets(param$biomart_dataset, "MF")
   geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
   
   # geneSetsBP <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "BP")
