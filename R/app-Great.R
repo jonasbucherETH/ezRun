@@ -91,29 +91,15 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   ah <- AnnotationHub()
   # hub <- subset(hub, hub$species=='Drosophila melanogaster')
-  ensdb <- query(ah, c("EnsDb"))
+  ensdb <- query(ah, c("EnsDb", param$species)) 
+  # ensdb <- query(ah, c("EnsDb", "Mus musculus")) 
   # ensdb <- query(ah, c("GRCm38", "EnsDb")) # 102 = latest version
   ensdb <- rev(ensdb) # reverse (latest versions come first)
-  # id <- ensdb$ah_id[1]
-  id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
-  id <- ensdb$ah_id[grep(pattern = "Mus musculus", x = ensdb$title)]
-  id <- id[1]
-  
-  gs <- genes(ensdb[[id]], columns = c("tx_id", "gene_id", "gene_biotype", "symbol"))
-  # ensdb$title
-  # head(ensdb)
-  # grep("musculus", ensdb$title)
-  # ensdb_unique <- ensdb$ah_id[unique(ensdb$title, fromLast = TRUE), ]
-  # ensdb_unique <- unique(ensdb$title)
-  
-  # ensdb$dataprovider
-  # ensdb$sourcetype
-  # ensdb$tags
-
-  
   # id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
-  # id <- ensdb$ah_id[grep(pattern = "TxDb.Mmusculus.UCSC.mm10.knownGene.sqlite", x = ensdb$title)]
+  id <- ensdb$ah_id[1]
+  # id <- ensdb$ah_id[grep(pattern = "Mus musculus", x = ensdb$title)]
 
+  gs <- genes(ensdb[[id]], columns = c("tx_id", "gene_id", "gene_biotype", "symbol"))
   # gene = gene[seqnames(gene) %in% paste0("chr", c(1:50, "X", "Y"))]
   # gl = seqlengths(gene)[paste0("chr", c(1:22, "X", "Y"))]  # restrict to normal chromosomes
   # gl <- seqlengths(gene) # restrict to normal chromosomes
