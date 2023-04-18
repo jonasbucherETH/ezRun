@@ -140,7 +140,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   # regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
                             # use_symbols = TRUE)
-  
+  dataDirSave_mm <- file.path(dataDirSave, "mm")
   saveRDS(greatResult, file = file.path(dataDirSave, "greatResult.rds"))
   saveRDS(enrichmentTable, file = file.path(dataDirSave, "enrichmentTable.rds"))
   saveRDS(geneSetsAll, file = file.path(dataDirSave, "geneSetsAll.rds"))
