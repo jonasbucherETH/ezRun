@@ -144,6 +144,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
 
   setwdNew("/home/jobucher/data/great/mm")
   on.exit(setwd(cwd), add = TRUE)
+  getwd()
   
   saveRDS(greatResult, file = "greatResult.rds")
   saveRDS(enrichmentTable, file = "enrichmentTable.rds")
