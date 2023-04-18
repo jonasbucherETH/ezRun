@@ -30,12 +30,17 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   on.exit(setwd(cwd), add = TRUE)
   
   # output_dir <- basename(output$getColumn("Report"))
-  dataDir <- "/home/jobucher/data/dmrseq"
-  dmRegionsFilePath <- file.path(dataDir, "dmRegions.rds")
-  significantRegionsFilePath <- file.path(dataDir, "significantRegions.rds")
-  
-  dmRegions <- readRDS(dmRegionsFilePath)
-  significantRegions <- readRDS(significantRegionsFilePath)
+  # dataDir <- "/home/jobucher/data/dmrseq"
+  # dmRegionsFilePath <- file.path(dataDir, "dmRegions.rds")
+  # significantRegionsFilePath <- file.path(dataDir, "significantRegions.rds")
+  # 
+  # dmRegions <- readRDS(dmRegionsFilePath)
+  # significantRegions <- readRDS(significantRegionsFilePath)
+  nRegions <- 10000
+  dmRegions <- randomRegionsFromBioMartGenome(param$biomart_dataset, nr = nRegions)
+  # dmRegions <- randomRegionsFromBioMartGenome("mmusculus_gene_ensembl", nr = nRegions)
+  randomSubset <- sample(nRegions, nRegions/10)
+  significantRegions <- dmRegions[randomSubset]
   
   tableBiomart <- readRDS(system.file("extdata", "all_supported_organisms.rds", package = "BioMartGOGeneSets"))
   tableBiomart$genesets = paste0("BP (", tableBiomart$n_bp_genesets, "), CC (", tableBiomart$n_cc_genesets, "), MF (", tableBiomart$n_mf_genesets, ")")
@@ -128,6 +133,9 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # greatResult <- gres
   
   enrichmentTable <- getEnrichmentTable(greatResult, min_region_hits = 5)
+  enrichmentTable$gene_set_collection <- substr(enrichmentTable$id, 1, 2)
+  enrichmentTable$gene_set_id <- substr(enrichmentTable$id, 4, 1000000L)
+  
   # regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
                             # use_symbols = TRUE)
   
