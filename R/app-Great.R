@@ -16,6 +16,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   library("BioMartGOGeneSets")
   library("parallel")
   library("AnnotationHub")
+  library("genekitr") # transId: gene id conversion
   
   # #setwdNew(basename(output$getColumn("Report")))
   dataset <- input$meta
@@ -36,6 +37,10 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   dmRegions <- readRDS(dmRegionsFilePath)
   significantRegions <- readRDS(significantRegionsFilePath)
   
+  tableBiomart <- readRDS(system.file("extdata", "all_supported_organisms.rds", package = "BioMartGOGeneSets"))
+  tableBiomart$genesets = paste0("BP (", tableBiomart$n_bp_genesets, "), CC (", tableBiomart$n_cc_genesets, "), MF (", tableBiomart$n_mf_genesets, ")")
+  colnames(tableBiomart)[colnames(tableBiomart) == "n_gene"] = "genes"
+  
   getGeneSetsFromBioMart = function(dataset, ontology) {
     BioMartGOGeneSets::getBioMartGOGeneSets(dataset, ontology)
   }
@@ -45,6 +50,11 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   geneSetsCC <- getGeneSetsFromBioMart(param$biomart_dataset, "CC")
   geneSetsMF <- getGeneSetsFromBioMart(param$biomart_dataset, "MF")
   geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
+  
+  # geneSetsBP <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "BP")
+  # geneSetsCC <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "CC")
+  # geneSetsMF <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "MF")
+  # geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
   
   ## Reactome pathways
   if(param$biomart_dataset=="athaliana_eg_gene") {
@@ -80,21 +90,46 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   }
   
   ah <- AnnotationHub()
-  ensdb <- query(ah, c("TxDb"))
+  # hub <- subset(hub, hub$species=='Drosophila melanogaster')
+  ensdb <- query(ah, c("EnsDb"))
+  # ensdb <- query(ah, c("GRCm38", "EnsDb")) # 102 = latest version
+  ensdb <- rev(ensdb) # reverse (latest versions come first)
+  # id <- ensdb$ah_id[1]
+  id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
+  id <- ensdb$ah_id[grep(pattern = "Mus musculus", x = ensdb$title)]
+  id <- id[1]
+  
+  gs <- genes(ensdb[[id]], columns = c("tx_id", "gene_id", "gene_biotype", "symbol"))
   # ensdb$title
+  # head(ensdb)
   # grep("musculus", ensdb$title)
   # ensdb_unique <- ensdb$ah_id[unique(ensdb$title, fromLast = TRUE), ]
   # ensdb_unique <- unique(ensdb$title)
   
-  id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
-  id <- id[length(id)]
-  txdb <- ensdb[[id]]
+  # ensdb$dataprovider
+  # ensdb$sourcetype
+  # ensdb$tags
+
   
-  gene <- genes(txdb)
+  # id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
+  # id <- ensdb$ah_id[grep(pattern = "TxDb.Mmusculus.UCSC.mm10.knownGene.sqlite", x = ensdb$title)]
+
   # gene = gene[seqnames(gene) %in% paste0("chr", c(1:50, "X", "Y"))]
   # gl = seqlengths(gene)[paste0("chr", c(1:22, "X", "Y"))]  # restrict to normal chromosomes
   # gl <- seqlengths(gene) # restrict to normal chromosomes
-  extendedTSS <- extendTSS(gene)
+
+  # speciesNameBiomart <- tableBiomart[tableBiomart$dataset == param$biomart_dataset, ]
+  # speciesNameBiomart <- tableBiomart[tableBiomart$dataset == "mmusculus_gene_ensembl", ]
+  # speciesNameBiomart <- speciesNameBiomart$name
+  # speciesToTransId <- c("hsapiens_gene_ensembl" ,"mmusculus_gene_ensembl")
+  # if(param$biomart_dataset %in% speciesToTransId) {
+  #   org <- substr(param$biomart_dataset, 1, 2) # turns it into hs / mm
+  #   newGeneId <- transId(gene$gene_id, transTo = "ensembl", org = org, keepNA = TRUE, unique = TRUE) # df with 2 columns (input_id, ensembl)
+  #   gene$gene_id <- newGeneId$ensembl
+  #   gene[is.na(gene$gene_id), ]
+  # }
+  
+  extendedTSS <- extendTSS(gs)
   
   greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
                        background = dmRegions)
