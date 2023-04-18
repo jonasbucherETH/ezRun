@@ -31,7 +31,8 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   on.exit(setwd(cwd), add = TRUE)
   
   # output_dir <- basename(output$getColumn("Report"))
-  # dataDir <- "/home/jobucher/data/dmrseq"
+  # dataDir<- "/home/jobucher/data/dmrseq"
+  dataDirSave <- "/home/jobucher/data/great"
   # dmRegionsFilePath <- file.path(dataDir, "dmRegions.rds")
   # significantRegionsFilePath <- file.path(dataDir, "significantRegions.rds")
   # 
@@ -140,9 +141,9 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
                             # use_symbols = TRUE)
   
-  saveRDS(greatResult, file="greatResult.rds")
-  saveRDS(enrichmentTable, file="enrichmentTable.rds")
-  saveRDS(geneSetsAll, file="geneSetsAll.rds")
+  saveRDS(greatResult, file = file.path(dataDirSave, "greatResult.rds"))
+  saveRDS(enrichmentTable, file = file.path(dataDirSave, "enrichmentTable.rds"))
+  saveRDS(geneSetsAll, file = file.path(dataDirSave, "geneSetsAll.rds"))
 
   ## Copy the style files and templates
   styleFiles <- file.path(
