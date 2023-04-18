@@ -16,7 +16,8 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   library("BioMartGOGeneSets")
   library("parallel")
   library("AnnotationHub")
-  library("genekitr") # transId: gene id conversion
+  # library("genekitr") # transId: gene id conversion
+  library("GenomicFeatures")
   
   # #setwdNew(basename(output$getColumn("Report")))
   dataset <- input$meta
