@@ -144,16 +144,13 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
                        background = dmRegions, cores = 5)
   # need to get geneset collection (subset from the greatResult)
   
-  enrichmentTable <- getEnrichmentTable(greatResult, min_region_hits = 5)
-  enrichmentTable$gene_set_collection <- substr(enrichmentTable$id, 1, 2)
-  enrichmentTable$id <- substr(enrichmentTable$id, 4, 1000000L)
-  
   resId <- which(names(geneSetsAll) %in% enrichmentTable$id)
   enrichmentTable$collection <- geneSetCollectionsAll[resId] # BP, CC, ...
-  
   # table(enrichmentTable$collection) # to get the amounts
   # BP   CC   MF 
   # 1304  216  203
+  regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
+                                                      use_symbols = TRUE)
   
   # set.seed(123)
   # gr = randomRegions(nr = 1000, genome = "hg19")
@@ -161,14 +158,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # 
   # 
   # greatResult <- gres
-  
-  enrichmentTable <- getEnrichmentTable(greatResult, min_region_hits = 5)
-  enrichmentTable$gene_set_collection <- substr(enrichmentTable$id, 1, 2)
-  enrichmentTable$id <- substr(enrichmentTable$id, 4, 1000000L)
-
-  regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
-                            use_symbols = TRUE)
-  
+ 
   setwdNew("/home/jobucher/data/great/mm")
   on.exit(setwd(cwd), add = TRUE)
 
