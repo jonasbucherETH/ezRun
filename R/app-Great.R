@@ -143,7 +143,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
                        background = dmRegions, cores = 5)
   # need to get geneset collection (subset from the greatResult)
-  
+  enrichmentTable <- getEnrichmentTable(greatResult)
   resId <- which(names(geneSetsAll) %in% enrichmentTable$id)
   enrichmentTable$collection <- geneSetCollectionsAll[resId] # BP, CC, ...
   # table(enrichmentTable$collection) # to get the amounts
