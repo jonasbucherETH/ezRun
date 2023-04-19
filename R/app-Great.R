@@ -18,6 +18,7 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   library("AnnotationHub")
   # library("genekitr") # transId: gene id conversion
   library("GenomicFeatures")
+  library("biomartr") # for getGO
   
   # #setwdNew(basename(output$getColumn("Report")))
   dataset <- input$meta
@@ -44,10 +45,17 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   randomSubset <- sample(nRegions, nRegions/10)
   significantRegions <- dmRegions[randomSubset]
   
-  tableBiomart <- readRDS(system.file("extdata", "all_supported_organisms.rds", package = "BioMartGOGeneSets"))
-  tableBiomart$genesets = paste0("BP (", tableBiomart$n_bp_genesets, "), CC (", tableBiomart$n_cc_genesets, "), MF (", tableBiomart$n_mf_genesets, ")")
-  colnames(tableBiomart)[colnames(tableBiomart) == "n_gene"] = "genes"
-  
+  # tableBiomart <- readRDS(system.file("extdata", "all_supported_organisms.rds", package = "BioMartGOGeneSets"))
+  # tableBiomart$genesets = paste0("BP (", tableBiomart$n_bp_genesets, "), CC (", tableBiomart$n_cc_genesets, "), MF (", tableBiomart$n_mf_genesets, ")")
+  # colnames(tableBiomart)[colnames(tableBiomart) == "n_gene"] = "genes"
+  # df_genes = tableBiomart[tableBiomart$mart == "genes_mart", c("dataset", "name", "version", "taxon_id", "genbank_accession", "genesets"), drop = FALSE]
+  # df_plants = tableBiomart[tableBiomart$mart == "plants_mart", c("dataset", "name", "version", "taxon_id", "genbank_accession", "genesets"), drop = FALSE]
+  # df_metazoa = tableBiomart[tableBiomart$mart == "metazoa_mart", c("dataset", "name", "version", "taxon_id", "genbank_accession", "genesets"), drop = FALSE]
+  # df_fungi = tableBiomart[tableBiomart$mart == "fungi_mart", c("dataset", "name", "version", "taxon_id", "genbank_accession", "genesets"), drop = FALSE]
+  # df_protists = tableBiomart[tableBiomart$mart == "protists_mart", c("dataset", "name", "version", "taxon_id", "genbank_accession", "genesets"), drop = FALSE]
+  # 
+  # saveRDS(tableBiomart, file = "tableBiomart.rds")
+
   getGeneSets = function(dataset, ontology) {
     BioMartGOGeneSets::getBioMartGOGeneSets(dataset, ontology)
   }
@@ -98,10 +106,13 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   ah <- AnnotationHub()
   # hub <- subset(hub, hub$species=='Drosophila melanogaster')
-  ensdb <- query(ah, c("EnsDb", param$species)) 
+  ensdb <- query(ah, c("EnsDb", param$species))
+  # ensdb <- query(ah, c("EnsDb", "Mus musculus")) 
   # ensdb <- query(ah, c("EnsDb", "Mus musculus")) 
   # ensdb <- query(ah, c("GRCm38", "EnsDb")) # 102 = latest version
   ensdb <- rev(ensdb) # reverse (latest versions come first)
+  # mcols(ensdb) # species, taxonomyid
+
   # id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
   id <- ensdb$ah_id[1]
   # id <- ensdb$ah_id[grep(pattern = "Mus musculus", x = ensdb$title)]
@@ -124,9 +135,26 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   extendedTSS <- extendTSS(gs)
   
-  greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
-                       background = dmRegions, cores = cores)
+  geneSetCollectionsAll <- substr(names(geneSetsAll), 1, 2) # BP, CC, ...
+  goTermsAll <- substr(names(geneSetsAll), 4, 1000000L)
+  # geneSetsAll_new <- geneSetsAll
+  names(geneSetsAll) <- goTermsAll
 
+  greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
+                       background = dmRegions, cores = 5)
+  # need to get geneset collection (subset from the greatResult)
+  
+  enrichmentTable <- getEnrichmentTable(greatResult, min_region_hits = 5)
+  enrichmentTable$gene_set_collection <- substr(enrichmentTable$id, 1, 2)
+  enrichmentTable$id <- substr(enrichmentTable$id, 4, 1000000L)
+  
+  resId <- which(names(geneSetsAll) %in% enrichmentTable$id)
+  enrichmentTable$collection <- geneSetCollectionsAll[resId] # BP, CC, ...
+  
+  # table(enrichmentTable$collection) # to get the amounts
+  # BP   CC   MF 
+  # 1304  216  203
+  
   # set.seed(123)
   # gr = randomRegions(nr = 1000, genome = "hg19")
   # gres <- great(gr, "GO:MF", "hg19")
@@ -136,24 +164,18 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   
   enrichmentTable <- getEnrichmentTable(greatResult, min_region_hits = 5)
   enrichmentTable$gene_set_collection <- substr(enrichmentTable$id, 1, 2)
-  enrichmentTable$gene_set_id <- substr(enrichmentTable$id, 4, 1000000L)
-  
-  # regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
-                            # use_symbols = TRUE)
-  
+  enrichmentTable$id <- substr(enrichmentTable$id, 4, 1000000L)
 
+  regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
+                            use_symbols = TRUE)
+  
   setwdNew("/home/jobucher/data/great/mm")
   on.exit(setwd(cwd), add = TRUE)
-  getwd()
-  
+
   saveRDS(greatResult, file = "greatResult.rds")
   saveRDS(enrichmentTable, file = "enrichmentTable.rds")
+  saveRDS(regionGeneAssociations, file = "regionGeneAssociations.rds")
   saveRDS(geneSetsAll, file = "geneSetsAll.rds")
-
-  # dataDirSave_mm <- file.path(dataDirSave, "mm")
-  # saveRDS(greatResult, file = file.path(dataDirSave, "greatResult.rds"))
-  # saveRDS(enrichmentTable, file = file.path(dataDirSave, "enrichmentTable.rds"))
-  # saveRDS(geneSetsAll, file = file.path(dataDirSave, "geneSetsAll.rds"))
   
   ## Copy the style files and templates
   styleFiles <- file.path(
