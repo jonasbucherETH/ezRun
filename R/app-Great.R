@@ -40,7 +40,8 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # dmRegions <- readRDS(dmRegionsFilePath)
   # significantRegions <- readRDS(significantRegionsFilePath)
   nRegions <- 10000
-  dmRegions <- randomRegionsFromBioMartGenome(param$biomart_dataset, nr = nRegions)
+  # dmRegions <- randomRegionsFromBioMartGenome(param$biomart_dataset, nr = nRegions)
+  dmRegions <- randomRegionsFromBioMartGenome(param$biomart_selector, nr = nRegions)
   # dmRegions <- randomRegionsFromBioMartGenome("mmusculus_gene_ensembl", nr = nRegions)
   randomSubset <- sample(nRegions, nRegions/10)
   significantRegions <- dmRegions[randomSubset]
@@ -55,15 +56,20 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # df_protists = tableBiomart[tableBiomart$mart == "protists_mart", c("dataset", "name", "version", "taxon_id", "genbank_accession", "genesets"), drop = FALSE]
   # 
   # saveRDS(tableBiomart, file = "tableBiomart.rds")
+  
+  # write_csv(tableBiomart, "/srv/GT/analysis/jonas/jonas_test_sushi_20221115/master/selector_tests/biomart.csv")
 
   getGeneSets = function(dataset, ontology) {
     BioMartGOGeneSets::getBioMartGOGeneSets(dataset, ontology)
   }
   # geneSetsBP <- getGeneSetsFromBioMart("athaliana_eg_gene", "BP")
   
-  geneSetsBP <- getGeneSets(param$biomart_dataset, "BP")
-  geneSetsCC <- getGeneSets(param$biomart_dataset, "CC")
-  geneSetsMF <- getGeneSets(param$biomart_dataset, "MF")
+  # geneSetsBP <- getGeneSets(param$biomart_dataset, "BP")
+  # geneSetsCC <- getGeneSets(param$biomart_dataset, "CC")
+  # geneSetsMF <- getGeneSets(param$biomart_dataset, "MF")
+  geneSetsBP <- getGeneSets(param$biomart_selector, "BP")
+  geneSetsCC <- getGeneSets(param$biomart_selector, "CC")
+  geneSetsMF <- getGeneSets(param$biomart_selector, "MF")
   geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
   
   # geneSetsBP <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "BP")
@@ -72,7 +78,8 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
   
   ## Reactome pathways
-  if(param$biomart_dataset=="athaliana_eg_gene") {
+  # if(param$biomart_dataset=="athaliana_eg_gene") {
+  if(param$biomart_selector=="athaliana_eg_gene") {
     reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
     react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
     rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
