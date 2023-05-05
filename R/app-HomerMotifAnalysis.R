@@ -9,6 +9,10 @@
 ezMethodHomerMotifAnalysis <- function(input = NA, output = NA, param = NA,
                           htmlFile = "00index.html") {
   
+  cwd <- getwd()
+  setwdNew(basename(output$getColumn("Report")))
+  on.exit(setwd(cwd), add = TRUE)
+  
   ### libraries
   library("marge")
   library(monaLisa)
@@ -140,8 +144,8 @@ ezMethodHomerMotifAnalysis <- function(input = NA, output = NA, param = NA,
   # findMotifsGenome.pl ~/data/MethylKit/doc/dml.bed hg18 . -size 100 
   
   cmd <- paste("findMotifsGenome.pl", bed_file_25p, genome, output_dir, "-size", region_size, "-len", motif_length, "-bg", bed_file)
-  ezSystem(cmd)
-  # gc()
+  result <- ezSystem(cmd)
+  gc()
   
 
   
