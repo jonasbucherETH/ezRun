@@ -42,9 +42,9 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   nRegions <- 10000
   # dmRegions <- randomRegionsFromBioMartGenome(param$biomart_dataset, nr = nRegions)
   
-  print(param$biomart_selector)
+  print(param$biomart_selection)
   
-  dmRegions <- randomRegionsFromBioMartGenome(param$biomart_selector, nr = nRegions)
+  dmRegions <- randomRegionsFromBioMartGenome(param$biomart_selection, nr = nRegions)
   # dmRegions <- randomRegionsFromBioMartGenome("mmusculus_gene_ensembl", nr = nRegions)
   randomSubset <- sample(nRegions, nRegions/10)
   significantRegions <- dmRegions[randomSubset]
@@ -67,22 +67,15 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   }
   # geneSetsBP <- getGeneSetsFromBioMart("athaliana_eg_gene", "BP")
   
-  # geneSetsBP <- getGeneSets(param$biomart_dataset, "BP")
-  # geneSetsCC <- getGeneSets(param$biomart_dataset, "CC")
-  # geneSetsMF <- getGeneSets(param$biomart_dataset, "MF")
-  geneSetsBP <- getGeneSets(param$biomart_selector, "BP")
-  geneSetsCC <- getGeneSets(param$biomart_selector, "CC")
-  geneSetsMF <- getGeneSets(param$biomart_selector, "MF")
+
+  geneSetsBP <- getGeneSets(param$biomart_selection, "BP")
+  geneSetsCC <- getGeneSets(param$biomart_selection, "CC")
+  geneSetsMF <- getGeneSets(param$biomart_selection, "MF")
   geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
-  
-  # geneSetsBP <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "BP")
-  # geneSetsCC <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "CC")
-  # geneSetsMF <- getGeneSetsFromBioMart("mmusculus_gene_ensembl", "MF")
-  # geneSetsAll <- c("BP" = geneSetsBP, "CC" = geneSetsCC, "MF" = geneSetsMF)
   
   ## Reactome pathways
   # if(param$biomart_dataset=="athaliana_eg_gene") {
-  if(param$biomart_selector=="athaliana_eg_gene") {
+  if(param$biomart_selection=="athaliana_eg_gene") {
     reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
     react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
     rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
@@ -159,11 +152,11 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
   #                      background = dmRegions, cores = 5)
   
-  greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selector,
+  greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
                        background = dmRegions, cores = cores)
-  greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selector,
+  greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
                           background = dmRegions, cores = cores)
-  greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selector,
+  greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selection,
                           background = dmRegions, cores = cores)
   # greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = "mmusculus_gene_ensembl",
   #                         background = dmRegions, cores = 5)
