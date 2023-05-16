@@ -41,6 +41,9 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # significantRegions <- readRDS(significantRegionsFilePath)
   nRegions <- 10000
   # dmRegions <- randomRegionsFromBioMartGenome(param$biomart_dataset, nr = nRegions)
+  
+  print(param$biomart_selector)
+  
   dmRegions <- randomRegionsFromBioMartGenome(param$biomart_selector, nr = nRegions)
   # dmRegions <- randomRegionsFromBioMartGenome("mmusculus_gene_ensembl", nr = nRegions)
   randomSubset <- sample(nRegions, nRegions/10)
@@ -106,58 +109,75 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
                                                sep = ": "
     ))
     
-    geneSetsAthaliana <- c("RP" = reactome_pathways, "KP" = kegg_pathways)
-    geneSetsAll <- c(geneSetsAll, geneSetsAthaliana)
+    # ah <- AnnotationHub()
+    # ensdb <- query(ah, c("EnsDb"))
+    # ensdb <- ensdb[ensdb$species==""]
+    # 
+    # ensdb <- query(ah, c("EnsDb", param$species))
+    # ensdb <- query(ah, c("EnsDb", "athaliana_eg_gene"))
+    # # taxonomyid, genome, description, coordinate_1_based, maintainer, rdatadateadded, preparerclass, tags, rdatapath, sourceurl, sourcetype 
+    # head(ensdb$taxonomyid)
+    # ensdb <- rev(ensdb) # reverse (latest versions come first)
+    # id <- ensdb$ah_id[1]
+    # gs <- genes(ensdb[[id]], columns = c("tx_id", "gene_id", "gene_biotype", "symbol"))
+    # extendedTSS <- extendTSS(gs)
+
+    greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, extended_tss = extendedTSS,
+                          background = dmRegions, cores = cores)
+    
+    # nRegions <- 10000
+    # # dmRegions <- randomRegionsFromBioMartGenome(param$biomart_dataset, nr = nRegions)
+    # dmRegions <- randomRegionsFromBioMartGenome("athaliana_eg_gene", nr = nRegions)
+    # # dmRegions <- randomRegionsFromBioMartGenome("mmusculus_gene_ensembl", nr = nRegions)
+    # randomSubset <- sample(nRegions, nRegions/10)
+    # significantRegions <- dmRegions[randomSubset]
+    greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
+                            background = dmRegions, cores = 5)
+    greatResult_KE <- great(gr = significantRegions, gene_sets = kegg_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
+                            background = dmRegions, cores = 5)
+    
+    enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
+    enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
+    
+    setwd("/home/jobucher/data/great/ath")
+    saveRDS(greatResult_RE, file = paste0("greatResult_RE", ".rds"))
+    saveRDS(greatResult_KE, file = paste0("greatResult_KE", ".rds"))
+    saveRDS(enrichmentTable_RE, file = paste0("enrichmentTable_RE", ".rds"))
+    saveRDS(enrichmentTable_KE, file = paste0("enrichmentTable_KE", ".rds"))
 
   }
   
-  ah <- AnnotationHub()
-  # hub <- subset(hub, hub$species=='Drosophila melanogaster')
-  ensdb <- query(ah, c("EnsDb", param$species))
-  # ensdb <- query(ah, c("EnsDb", "Mus musculus")) 
-  # ensdb <- query(ah, c("EnsDb", "Mus musculus")) 
-  # ensdb <- query(ah, c("GRCm38", "EnsDb")) # 102 = latest version
-  ensdb <- rev(ensdb) # reverse (latest versions come first)
-  # mcols(ensdb) # species, taxonomyid
-
-  # id <- ensdb$ah_id[grep(pattern = param$txdb_dataset, x = ensdb$title)]
-  id <- ensdb$ah_id[1]
-  # id <- ensdb$ah_id[grep(pattern = "Mus musculus", x = ensdb$title)]
-
-  gs <- genes(ensdb[[id]], columns = c("tx_id", "gene_id", "gene_biotype", "symbol"))
-  # gene = gene[seqnames(gene) %in% paste0("chr", c(1:50, "X", "Y"))]
-  # gl = seqlengths(gene)[paste0("chr", c(1:22, "X", "Y"))]  # restrict to normal chromosomes
-  # gl <- seqlengths(gene) # restrict to normal chromosomes
-
-  # speciesNameBiomart <- tableBiomart[tableBiomart$dataset == param$biomart_dataset, ]
-  # speciesNameBiomart <- tableBiomart[tableBiomart$dataset == "mmusculus_gene_ensembl", ]
-  # speciesNameBiomart <- speciesNameBiomart$name
-  # speciesToTransId <- c("hsapiens_gene_ensembl" ,"mmusculus_gene_ensembl")
-  # if(param$biomart_dataset %in% speciesToTransId) {
-  #   org <- substr(param$biomart_dataset, 1, 2) # turns it into hs / mm
-  #   newGeneId <- transId(gene$gene_id, transTo = "ensembl", org = org, keepNA = TRUE, unique = TRUE) # df with 2 columns (input_id, ensembl)
-  #   gene$gene_id <- newGeneId$ensembl
-  #   gene[is.na(gene$gene_id), ]
-  # }
+  # ah <- AnnotationHub()
+  # ensdb <- query(ah, c("EnsDb", param$species))
+  # ensdb <- rev(ensdb) # reverse (latest versions come first)
+  # id <- ensdb$ah_id[1]
+  # gs <- genes(ensdb[[id]], columns = c("tx_id", "gene_id", "gene_biotype", "symbol"))
+  # extendedTSS <- extendTSS(gs)
+  # geneSetCollectionsAll <- substr(names(geneSetsAll), 1, 2) # BP, CC, ...
+  # goTermsAll <- substr(names(geneSetsAll), 4, 1000000L)
+  # names(geneSetsAll) <- goTermsAll
+  # greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
+  #                      background = dmRegions, cores = 5)
   
-  extendedTSS <- extendTSS(gs)
+  greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selector,
+                       background = dmRegions, cores = cores)
+  greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selector,
+                          background = dmRegions, cores = cores)
+  greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selector,
+                          background = dmRegions, cores = cores)
+  # greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = "mmusculus_gene_ensembl",
+  #                         background = dmRegions, cores = 5)
+  # greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = "mmusculus_gene_ensembl",
+  #                         background = dmRegions, cores = 5)
+  # greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = "mmusculus_gene_ensembl",
+  #                         background = dmRegions, cores = 5)
   
-  geneSetCollectionsAll <- substr(names(geneSetsAll), 1, 2) # BP, CC, ...
-  goTermsAll <- substr(names(geneSetsAll), 4, 1000000L)
-  # geneSetsAll_new <- geneSetsAll
-  names(geneSetsAll) <- goTermsAll
+  enrichmentTable_BP <- getEnrichmentTable(greatResult_BP)
+  enrichmentTable_CC <- getEnrichmentTable(greatResult_CC)
+  enrichmentTable_MF <- getEnrichmentTable(greatResult_MF)
 
-  greatResult <- great(gr = significantRegions, gene_sets = geneSetsAll, extended_tss = extendedTSS,
-                       background = dmRegions, cores = 5)
-  # need to get geneset collection (subset from the greatResult)
-  enrichmentTable <- getEnrichmentTable(greatResult)
-  resId <- which(names(geneSetsAll) %in% enrichmentTable$id)
-  enrichmentTable$collection <- geneSetCollectionsAll[resId] # BP, CC, ...
-  # table(enrichmentTable$collection) # to get the amounts
-  # BP   CC   MF 
-  # 1304  216  203
-  regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
-                                                      use_symbols = TRUE)
+#   regionGeneAssociations <- getRegionGeneAssociations(greatResult, term_id = NULL, by_middle_points = FALSE,
+#                                                       use_symbols = TRUE)
   
   # set.seed(123)
   # gr = randomRegions(nr = 1000, genome = "hg19")
@@ -166,13 +186,15 @@ ezMethodGreat <- function(input = NA, output = NA, param = NA,
   # 
   # greatResult <- gres
  
-  setwdNew("/home/jobucher/data/great/mm")
-  on.exit(setwd(cwd), add = TRUE)
-
-  saveRDS(greatResult, file = "greatResult.rds")
-  saveRDS(enrichmentTable, file = "enrichmentTable.rds")
-  saveRDS(regionGeneAssociations, file = "regionGeneAssociations.rds")
-  saveRDS(geneSetsAll, file = "geneSetsAll.rds")
+  # setwdNew("/home/jobucher/data/great/mm")
+  # on.exit(setwd(cwd), add = TRUE)
+  setwd("/home/jobucher/data/great/mm")
+  saveRDS(greatResult_BP, file = paste0("greatResult_BP", ".rds"))
+  saveRDS(greatResult_CC, file = paste0("greatResult_CC", ".rds"))
+  saveRDS(greatResult_MF, file = paste0("greatResult_MF", ".rds"))
+  saveRDS(enrichmentTable_BP, file = paste0("enrichmentTable_BP", ".rds"))
+  saveRDS(enrichmentTable_CC, file = paste0("enrichmentTable_CC", ".rds"))
+  saveRDS(enrichmentTable_MF, file = paste0("enrichmentTable_MF", ".rds"))
   
   ## Copy the style files and templates
   styleFiles <- file.path(
