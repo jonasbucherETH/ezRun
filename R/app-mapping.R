@@ -723,6 +723,16 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   cmd <- paste("bismark2bedGraph --scaffolds", CpGFile, "-o", names(bamFile))
   ezSystem(cmd)
   ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
+  
+  CHGFile <- list.files(".", pattern = "^CHG.*txt$")
+  cmd <- paste("bismark2bedGraph --scaffolds", CHGFile, "-o", names(bamFile))
+  ezSystem(cmd)
+  ezSystem(paste("mv ", CHGFile, paste0(names(bamFile), ".CHG_context.txt")))
+  
+  CHHFile <- list.files(".", pattern = "^CHH.*txt$")
+  cmd <- paste("bismark2bedGraph --scaffolds", CHHFile, "-o", names(bamFile))
+  ezSystem(cmd)
+  ezSystem(paste("mv ", CHHFile, paste0(names(bamFile), ".CHH_context.txt")))
 
   splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
   ezSystem(paste("cat ", splittingReportFile, ">>", reportFile))
