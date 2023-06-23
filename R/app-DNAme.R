@@ -70,8 +70,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleIDs)
   colnames(bsseqColData) <- param$grouping
-  # covFilesBismark <- input$getFullPaths("COV")
-  covFilesBismark <- input$getColumn("COV")
+  covFilesBismark <- input$getFullPaths("COV")
   
   bsseq <- bsseq::read.bismark(files = covFilesBismark,
                                rmZeroCov = FALSE,
