@@ -35,6 +35,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   require(ChIPpeakAnno)
   library("methylKit")
   library("genomation") # annotation of DML/R
+  library(BiocParallel)
   
   ##### ----- input & output paths
   # #setwdNew(basename(output$getColumn("Report")))
