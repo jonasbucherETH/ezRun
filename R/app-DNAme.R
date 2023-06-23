@@ -52,7 +52,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ###################### actual app ######################
   ### General preparation
   # sampleIDs <- input$getColumn("Name")
-  sampleIDs <- c("a","b","c","d","e","f")
+  sampleIDs <- c("a","b","c","d","e","f","g")
   
   if (param$cores > 1){
     BPPARAM <- MulticoreParam(workers = param$cores)
