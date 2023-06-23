@@ -68,15 +68,43 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   # testCovariateData <- input$getColumn(param$grouping)
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
-  bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = sampleIDs)
-  
-  covFilesBismark <- input$getFullPaths("COV")
+  bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleIDs)
+  colnames(bsseqColData) <- param$grouping
+  # covFilesBismark <- input$getFullPaths("COV")
+  covFilesBismark <- input$getColumn("COV")
   
   bsseq <- bsseq::read.bismark(files = covFilesBismark,
                                rmZeroCov = FALSE,
                                strandCollapse = FALSE,
                                verbose = FALSE,
                                colData = bsseqColData)
+  
+  ### test
+  # sampleIDs <- c("a","b","c","d","e","f","g")
+  # bsseqColData <- as.data.frame(c("40","40","40","40","60","60","60"), row.names = sampleIDs)
+  # colnames(bsseqColData) <- "Treatment"
+  # 
+  # covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/", pattern = "cov", full.names = T)
+  # 
+  # bsseq <- bsseq::read.bismark(files = covFilesBismark,
+  #                              rmZeroCov = FALSE,
+  #                              strandCollapse = FALSE,
+  #                              verbose = FALSE,
+  #                              colData = bsseqColData)
+  # 
+  # lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
+  # bsseqFiltered <- bsseq[lociCoverage, ]
+  # 
+  # dmRegions <- dmrseq(
+  #   bs = bsseqFiltered,
+  #   testCovariate = "Treatment", 
+  #   # A continuous covariate is assumed if the data type in the 'testCovariate' slot is continuous,
+  #   # with the exception of if there are only two unique values (then a two group comparison is carried out)
+  #   # adjustCovariate = param$adjustCovariate,
+  #   verbose = T # keep this
+  # 
+  # )
+  ### test end
   
   lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
   
@@ -92,7 +120,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     BPPARAM = BPPARAM
   )
   
-  significantRegions <- dmRegions[dmRegions$qval < 0.05, ]
+  significantRegions <- dmRegions[dmRegions$qval < 0.10, ]
   
   ### setwd before saving results
   setwd("dmr")
