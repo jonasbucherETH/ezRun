@@ -51,6 +51,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ###################### actual app ######################
   ### General preparation
   sampleIDs <- input$getColumn("Name")
+  sampleIDs <- c("a","b","c","d","e","f")
   
   if (param$cores > 1){
     BPPARAM <- MulticoreParam(workers = param$cores)
@@ -58,13 +59,16 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     BPPARAM <- SerialParam()
   }
   
+  
   ### DMR
   # TODO: check if COV contain all contexts
   mkdirDMR = paste("mkdir dmr")
   ezSystem(mkdirDMR)
   
   # testCovariateData <- input$getColumn(param$grouping)
-  bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
+  # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
+  bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = sampleIDs)
+  
   covFilesBismark <- input$getColumn("COV")
   
   bsseq <- bsseq::read.bismark(files = covFilesBismark,
