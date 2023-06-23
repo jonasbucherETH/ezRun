@@ -50,7 +50,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ###################### actual app ######################
   ### General preparation
-  sampleIDs <- input$getColumn("Name")
+  # sampleIDs <- input$getColumn("Name")
   sampleIDs <- c("a","b","c","d","e","f")
   
   if (param$cores > 1){
