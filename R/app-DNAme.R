@@ -178,7 +178,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ezSystem(mkdirDML)
 
   treatmentMethylKit <- rep(0, length(sampleNames))
-  treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup, ] <- 1
+  treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
 
   # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
   methylRawCpG <- methRead(input$getColumn("CpG_Context"),
