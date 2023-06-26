@@ -70,15 +70,15 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
   cat("0")
   
-  bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleIDs)
-  colnames(bsseqColData) <- param$grouping
   # bsseqColData <- as.data.frame(c(40,40,40,60,60,60,60), row.names = sampleIDs)
   # colnames(bsseqColData) <- "Treatment"
   # type(bsseqColData)
   
   covFilesBismark <- input$getFullPaths("COV")
   sampleNames <- names(covFilesBismark)
-  print(sampleNames)
+  bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleNames)
+  colnames(bsseqColData) <- param$grouping
+  # print(sampleNames)
   covFilesBismark <- unname(covFilesBismark)
   # saveRDS(covFilesBismark, file="dmr/covFilesBismark.rds")
   
@@ -98,12 +98,12 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   bsseq <- bsseq::read.bismark(files = covFilesBismark,
                                rmZeroCov = FALSE,
                                strandCollapse = FALSE,
-                               verbose = TRUE) #,
-                               # colData = bsseqColData)
+                               verbose = TRUE,
+                               colData = bsseqColData)
   
   cat("2")
   
-  pData(bsseq)$Treatment <- input$getColumn(param$grouping)
+  # pData(bsseq)$Treatment <- input$getColumn(param$grouping)
   
   # bsseq <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/bsseq.rds")
   # dmRegions <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/dmRegions.rds")
