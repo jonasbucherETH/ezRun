@@ -68,15 +68,21 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   # testCovariateData <- input$getColumn(param$grouping)
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
+  cat("0")
+  
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleIDs)
   colnames(bsseqColData) <- param$grouping
   covFilesBismark <- input$getFullPaths("COV")
   
+  cat("1")
+  
   bsseq <- bsseq::read.bismark(files = covFilesBismark,
                                rmZeroCov = FALSE,
                                strandCollapse = FALSE,
-                               verbose = FALSE,
+                               verbose = TRUE,
                                colData = bsseqColData)
+  
+  cat("2")
   
   ### test
   # sampleIDs <- c("a","b","c","d","e","f","g")
@@ -107,7 +113,11 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
   
+  cat("3")
+  
   bsseqFiltered <- bsseq[lociCoverage, ]
+  
+  cat("4")
   
   dmRegions <- dmrseq(
     bs = bsseqFiltered,
@@ -115,14 +125,18 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # A continuous covariate is assumed if the data type in the 'testCovariate' slot is continuous,
     # with the exception of if there are only two unique values (then a two group comparison is carried out)
     # adjustCovariate = param$adjustCovariate,
-    verbose = FALSE, # keep this
+    verbose = TRUE, # keep this
     BPPARAM = BPPARAM
   )
+  
+  cat("4")
   
   significantRegions <- dmRegions[dmRegions$qval < 0.10, ]
   
   ### setwd before saving results
   setwd("dmr")
+  
+  cat("5")
 
   saveRDS(bsseq, file="bsseq.rds")
   saveRDS(bsseqFiltered, file="bsseqFiltered.rds")
