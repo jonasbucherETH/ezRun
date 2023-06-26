@@ -183,7 +183,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   cat("6")
 
   # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
-  methylKitFiles <- unname(input$getFullpaths("CpG_Context"))
+  methylKitFiles <- unname(input$getFullPaths("CpG_Context"))
   methylRawCpG <- methRead(methylKitFiles,
                            sample.id=sampleNames,
                            treatment=treatmentMethylKit, # 0 = control, 1 = test
