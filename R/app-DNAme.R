@@ -77,12 +77,18 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # type(bsseqColData)
   
   covFilesBismark <- input$getFullPaths("COV")
-  saveRDS(covFilesBismark, file="dmr/covFilesBismark.rds")
+  sampleNames <- names(covFilesBismark)
+  print(sampleNames)
+  covFilesBismark <- unname(covFilesBismark)
+  # saveRDS(covFilesBismark, file="dmr/covFilesBismark.rds")
   
-  covFilesBismark <- as.list(covFilesBismark)
-  print(class(covFilesBismark))
-  print(covFilesBismark)
-  print(covFilesBismark[[1]])
+  # covFilesBismark <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/covFilesBismark.rds")
+  
+  
+  # covFilesBismark <- as.list(covFilesBismark)
+  # print(class(covFilesBismark))
+  # print(covFilesBismark)
+  # print(covFilesBismark[[1]])
   
   # covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
   # cat(class(covFilesBismark))
