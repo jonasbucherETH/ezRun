@@ -72,17 +72,25 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleIDs)
   colnames(bsseqColData) <- param$grouping
-  covFilesBismark <- input$getFullPaths("COV")
+  # bsseqColData <- as.data.frame(c(40,40,40,60,60,60,60), row.names = sampleIDs)
+  # colnames(bsseqColData) <- "Treatment"
+  # type(bsseqColData)
+  
+  # covFilesBismark <- input$getFullPaths("COV")
+  covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
+  # cat(class(covFilesBismark))
   
   cat("1")
   
   bsseq <- bsseq::read.bismark(files = covFilesBismark,
                                rmZeroCov = FALSE,
                                strandCollapse = FALSE,
-                               verbose = TRUE,
-                               colData = bsseqColData)
+                               verbose = TRUE) #,
+                               # colData = bsseqColData)
   
   cat("2")
+  
+  pData(bsseq)$Treatment <- input$getColumn(param$grouping)
   
   ### test
   # sampleIDs <- c("a","b","c","d","e","f","g")
