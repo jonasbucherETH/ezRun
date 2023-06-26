@@ -76,8 +76,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # colnames(bsseqColData) <- "Treatment"
   # type(bsseqColData)
   
-  # covFilesBismark <- input$getFullPaths("COV")
-  covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
+  covFilesBismark <- input$getFullPaths("COV")
+  print(class(covFilesBismark))
+  print(covFilesBismark)
+  # covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
   # cat(class(covFilesBismark))
   
   cat("1")
@@ -91,6 +93,12 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   cat("2")
   
   pData(bsseq)$Treatment <- input$getColumn(param$grouping)
+  
+  # bsseq <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/bsseq.rds")
+  # dmRegions <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/dmRegions.rds")
+  # significantRegions <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/significantRegions.rds")
+  
+  
   
   ### test
   # sampleIDs <- c("a","b","c","d","e","f","g")
