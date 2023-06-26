@@ -162,7 +162,6 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ### setwd before saving results
   setwd("dmr")
-  
   cat("5")
 
   saveRDS(bsseq, file="bsseq.rds")
@@ -174,19 +173,25 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ########################### DML ###########################
   # TODO: what pipeline to use for methRead?
+  setwdNew(basename(output$getColumn("Report")))
   mkdirDML = paste("mkdir dml")
   ezSystem(mkdirDML)
 
   treatmentMethylKit <- rep(0, length(sampleNames))
   treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
+  
+  cat("6")
 
   # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
-  methylRawCpG <- methRead(input$getColumn("CpG_Context"),
+  methylKitFiles <- unname(input$getFullpaths("CpG_Context"))
+  methylRawCpG <- methRead(methylKitFiles,
                            sample.id=sampleNames,
                            treatment=treatmentMethylKit, # 0 = control, 1 = test
                            context="CpG",
                            mincov = 0
   )
+  
+  cat("7")
 
   # methylRawCHG <- methRead(input$getColumn("CHG_Context"),
   #                          sample.id=sampleNames,
@@ -230,6 +235,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
     hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
   )
+  
+  cat("8")
   # 
   # filteredMethylRawCHG  <- filterByCoverage(
   #   methylRawCHG,
@@ -259,6 +266,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # covariates = bsseqColData, # data.frame, to separate from treatment effect
     mc.cores = param$cores
     )
+  
+  cat("9")
   # 
   # diffMeth_CHG <- calculateDiffMeth(
   #   methylBase_CHG,
