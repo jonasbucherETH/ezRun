@@ -51,8 +51,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ###################### actual app ######################
   ### General preparation
-  # sampleIDs <- input$getColumn("Name")
-  sampleIDs <- c("a","b","c","d","e","f","g")
+  # sampleNames <- input$getColumn("Name")
+  # sampleNames <- c("a","b","c","d","e","f","g")
   
   if (param$cores > 1){
     BPPARAM <- MulticoreParam(workers = param$cores)
@@ -70,7 +70,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
   cat("0")
   
-  # bsseqColData <- as.data.frame(c(40,40,40,60,60,60,60), row.names = sampleIDs)
+  # bsseqColData <- as.data.frame(c(40,40,40,60,60,60,60), row.names = sampleNames)
   # colnames(bsseqColData) <- "Treatment"
   # type(bsseqColData)
   
@@ -112,8 +112,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   
   ### test
-  # sampleIDs <- c("a","b","c","d","e","f","g")
-  # bsseqColData <- as.data.frame(c("40","40","40","40","60","60","60"), row.names = sampleIDs)
+  # sampleNames <- c("a","b","c","d","e","f","g")
+  # bsseqColData <- as.data.frame(c("40","40","40","40","60","60","60"), row.names = sampleNames)
   # colnames(bsseqColData) <- "Treatment"
   # 
   # covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/", pattern = "cov", full.names = T)
@@ -174,61 +174,62 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ########################### DML ###########################
   # TODO: what pipeline to use for methRead?
-  # mkdirDML = paste("mkdir dml")
-  # ezSystem(mkdirDML)
-  # 
-  # treatmentMethylKit <- rep(0, length(sampleIDs))
-  # treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup, ] <- 1
-  # 
-  # # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
-  # methylRawCpG <- methRead(input$getColumn("CpG_Context"),
-  #                          sample.id=sampleIDs,
-  #                          treatment=treatmentMethylKit, # 0 = control, 1 = test
-  #                          context="CpG",
-  #                          mincov = 10
-  # )
-  # 
+  mkdirDML = paste("mkdir dml")
+  ezSystem(mkdirDML)
+
+  treatmentMethylKit <- rep(0, length(sampleNames))
+  treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup, ] <- 1
+
+  # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
+  methylRawCpG <- methRead(input$getColumn("CpG_Context"),
+                           sample.id=sampleNames,
+                           treatment=treatmentMethylKit, # 0 = control, 1 = test
+                           context="CpG",
+                           mincov = 0
+  )
+
   # methylRawCHG <- methRead(input$getColumn("CHG_Context"),
-  #                          sample.id=sampleIDs,
+  #                          sample.id=sampleNames,
   #                          treatment=treatmentMethylKit, # 0 = control, 1 = test
   #                          context="CHG",
   #                          mincov = 10
   # )
   # 
   # methylRawCHH <- methRead(input$getColumn("CHH_Context"),
-  #                          sample.id=sampleIDs,
+  #                          sample.id=sampleNames,
   #                          treatment=treatmentMethylKit, # 0 = control, 1 = test
   #                          context="CHH",
   #                          mincov = 10
   # )
+  
   # 
-  # for(i in seq_along(sampleIDs)){
+  # for(i in seq_along(sampleNames)){
   #   methylationStats <- getMethylationStats(methylRawCpG[[i]],plot=FALSE,both.strands=FALSE)
-  #   assign(x = paste0("methylationStats_CpG_", sampleIDs[i]), value = methylationStats)
+  #   assign(x = paste0("methylationStats_CpG_", sampleNames[i]), value = methylationStats)
   #   methylationStats <- getMethylationStats(methylRawCHG[[i]],plot=FALSE,both.strands=FALSE)
-  #   assign(x = paste0("methylationStats_CHG_", sampleIDs[i]), value = methylationStats)
+  #   assign(x = paste0("methylationStats_CHG_", sampleNames[i]), value = methylationStats)
   #   methylationStats <- getMethylationStats(methylRawCHH[[i]],plot=FALSE,both.strands=FALSE)
-  #   assign(x = paste0("methylationStats_CHH_", sampleIDs[i]), value = methylationStats)
+  #   assign(x = paste0("methylationStats_CHH_", sampleNames[i]), value = methylationStats)
   # 
   #   coverageStats <- getCoverageStats(methylRawCpG[[i]],plot=FALSE,both.strands=FALSE)
-  #   assign(x = paste0("coverageStats_CpG_", sampleIDs[i]), value = coverageStats)
+  #   assign(x = paste0("coverageStats_CpG_", sampleNames[i]), value = coverageStats)
   #   coverageStats <- getCoverageStats(methylRawCHG[[i]],plot=FALSE,both.strands=FALSE)
-  #   assign(x = paste0("coverageStats_CHG_", sampleIDs[i]), value = coverageStats)
+  #   assign(x = paste0("coverageStats_CHG_", sampleNames[i]), value = coverageStats)
   #   coverageStats <- getCoverageStats(methylRawCHH[[i]],plot=FALSE,both.strands=FALSE)
-  #   assign(x = paste0("coverageStats_CHH_", sampleIDs[i]), value = coverageStats)
+  #   assign(x = paste0("coverageStats_CHH_", sampleNames[i]), value = coverageStats)
   # }
   # 
   # 
   # 
   # 
   # # TODO: adapt values (ask Deepak)
-  # filteredMethylRawCpG  <- filterByCoverage(
-  #   methylRawCpG,
-  #   lo.count=10, # Bases/regions having lower coverage than this count is discarded
-  #   lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
-  #   hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
-  #   hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
-  # )
+  filteredMethylRawCpG  <- filterByCoverage(
+    methylRawCpG,
+    lo.count=5, # Bases/regions having lower coverage than this count is discarded
+    lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
+    hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
+    hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+  )
   # 
   # filteredMethylRawCHG  <- filterByCoverage(
   #   methylRawCHG,
@@ -249,15 +250,15 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # # TODO: normalizeCoverage (?)
   # # TODO: 3.1 and 3.2 (?)
   # 
-  # methylBase_CpG <- unite(filteredMethylRawCpG, destrand=TRUE) # destrand = T only for CpG
+  methylBase_CpG <- unite(filteredMethylRawCpG, destrand=TRUE) # destrand = T only for CpG
   # methylBase_CHG <- unite(filteredMethylRawCHG, destrand=FALSE) # destrand = T only for CpG
   # methylBase_CHH <- unite(filteredMethylRawCHH, destrand=FALSE) # destrand = T only for CpG
   # 
-  # diffMeth_CpG <- calculateDiffMeth(
-  #   methylBase_CpG,
-  #   # covariates = bsseqColData, # data.frame, to separate from treatment effect
-  #   mc.cores = param$cores
-  #   )
+  diffMeth_CpG <- calculateDiffMeth(
+    methylBase_CpG,
+    # covariates = bsseqColData, # data.frame, to separate from treatment effect
+    mc.cores = param$cores
+    )
   # 
   # diffMeth_CHG <- calculateDiffMeth(
   #   methylBase_CHG,
@@ -272,9 +273,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # )
   # 
   # # TODO: ask deepak whether to split into hypo-/hyper-methylated bases
-  # diff25p_hyper_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="hyper")
-  # diff25p_hypo_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="hypo")
-  # diff25p_both_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="all")
+  diff25p_hyper_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="hyper")
+  diff25p_hypo_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="hypo")
+  diff25p_both_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="all")
   # 
   # diff25p_hyper_CHG <- getMethylDiff(diffMeth_CHG, difference=25, qvalue=0.01, type="hyper")
   # diff25p_hypo_CHG <- getMethylDiff(diffMeth_CHG, difference=25, qvalue=0.01, type="hypo")
@@ -285,16 +286,16 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # diff25p_both_CHH <- getMethylDiff(diffMeth_CHH, difference=25, qvalue=0.01, type="all")
   # 
   # ### setwd before saving results
-  # setwd("dml")
+  setwd("dml")
   # 
-  # saveRDS(diffMeth_CpG, file=paste0(diffMeth_CpG, ".rds"))
+  saveRDS(diffMeth_CpG, file=paste0(diffMeth_CpG, ".rds"))
   # saveRDS(diffMeth_CHG, file=paste0(diffMeth_CHG, ".rds"))
   # saveRDS(diffMeth_CHH, file=paste0(diffMeth_CHH, ".rds"))
-  # saveRDS(diff25p_both_CpG, file=paste0(diff25p_both_CpG, ".rds"))
+  saveRDS(diff25p_both_CpG, file=paste0(diff25p_both_CpG, ".rds"))
   # saveRDS(diff25p_both_CHG, file=paste0(diff25p_both_CHG, ".rds"))
   # saveRDS(diff25p_both_CHH, file=paste0(diff25p_both_CHH, ".rds"))
   # 
-  # saveRDS(methylRawCpG, file=paste0(methylRawCpG, ".rds"))
+  saveRDS(methylRawCpG, file=paste0(methylRawCpG, ".rds"))
   # saveRDS(methylRawCHG, file=paste0(methylRawCHG, ".rds"))
   # saveRDS(methylRawCHH, file=paste0(methylRawCHH, ".rds"))
   # 
