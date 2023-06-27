@@ -720,13 +720,14 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   }
 
   CpGFile <- list.files(".", pattern = "^CpG.*txt$")
+  CHGFile <- list.files(".", pattern = "^CHG.*txt$")
+  CHHFile <- list.files(".", pattern = "^CHH.*txt$")
+  CFILE <- c(CpGFile, CHGFile, CHHFile)
   # cmd <- paste("bismark2bedGraph --scaffolds", CpGFile, "-o", names(bamFile))
-  cmd <- paste("bismark2bedGraph --scaffolds --CX", CpGFile, "-o", names(bamFile))
+  cmd <- paste("bismark2bedGraph --scaffolds --CX", CFILE, "-o", names(bamFile))
   ezSystem(cmd)
   ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
-  CHGFile <- list.files(".", pattern = "^CHG.*txt$")
   ezSystem(paste("mv ", CHGFile, paste0(names(bamFile), ".CHG_context.txt")))
-  CHHFile <- list.files(".", pattern = "^CHH.*txt$")
   ezSystem(paste("mv ", CHHFile, paste0(names(bamFile), ".CHH_context.txt")))
   
   # CHGFile <- list.files(".", pattern = "^CHG.*txt$")
