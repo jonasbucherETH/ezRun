@@ -699,6 +699,8 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   filesCHG <- list.files(".", pattern = "CHG.*txt$")
   filesCHH <- list.files(".", pattern = "CHH.*txt$")
   
+  cmd <- paste("mkdir", names(bamFile))
+  ezSystem(cmd)
   cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "-o", names(bamFile), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
   ezSystem(cmd)
   
@@ -714,6 +716,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # ezSystem(cmd)
   
   cmd <- paste("cd", names(bamFile))
+  ezSystem(cmd)
   cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", "CpG*")
   ezSystem(cmd)
   cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "--ample_memory", "CHG*")
