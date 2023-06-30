@@ -704,6 +704,13 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "-o", names(bamFile), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
   ezSystem(cmd)
   
+  cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
+  ezSystem(cmd)
+  ezSortIndexBam("bismark.bam", basename(bamFile),
+                 ram = param$ram, removeBam = TRUE,
+                 cores = param$cores
+  )
+  
   bedGraphCpG <- paste0("CpG_", names(bamFile), ".bedGraph")
   bedGraphCHG <- paste0("CHG_", names(bamFile), ".bedGraph")
   bedGraphCHH <- paste0("CHH_", names(bamFile), ".bedGraph")
