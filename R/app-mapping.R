@@ -701,7 +701,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   
   cmd <- paste("mkdir", names(bamFile))
   ezSystem(cmd)
-  cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "-o", names(bamFile), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
+  cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
   ezSystem(cmd)
   
   cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
@@ -722,14 +722,19 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", filesCHH)
   # ezSystem(cmd)
   
-  cmd <- paste("cd", names(bamFile))
+  cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "CpG*")
   ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", "CpG*")
+  cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "CHG*")
   ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "--ample_memory", "CHG*")
+  cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "CHH*")
   ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", "CHH*")
-  ezSystem(cmd)
+  
+  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", "CpG*")
+  # ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "--ample_memory", "CHG*")
+  # ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", "CHH*")
+  # ezSystem(cmd)
 
   # cmd <- paste("bismark_methylation_extractor", ifelse(param$paired, "-p", "-s"), "--comprehensive", bamFileNameBismark)
   # ezSystem(cmd)
