@@ -730,7 +730,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   filesCpG <- list.files(".", pattern = "CpG.*txt")
   filesCHG <- list.files(".", pattern = "CHG.*txt")
   filesCHH <- list.files(".", pattern = "CHH.*txt")  
-  cmd <- paste("bismark2bedGraph", filesCpG "-o", paste0("CpG_", names(bamFile))) # adds .gz automatically if not already there
+  cmd <- paste("bismark2bedGraph", filesCpG, "-o", paste0("CpG_", names(bamFile))) # adds .gz automatically if not already there
   ezSystem(cmd)
   cmd <- paste("bismark2bedGraph", filesCHG, "--CX", "-o", paste0("CHG_", names(bamFile)))
   ezSystem(cmd)
