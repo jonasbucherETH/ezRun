@@ -709,9 +709,6 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
                  cores = param$cores
   )
   
-  bedGraphCpG <- paste0("CpG_", names(bamFile), ".bedGraph")
-  bedGraphCHG <- paste0("CHG_", names(bamFile), ".bedGraph")
-  bedGraphCHH <- paste0("CHH_", names(bamFile), ".bedGraph")
   
   # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", filesCpG)
   # ezSystem(cmd)
@@ -726,6 +723,14 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # ezSystem(cmd)
   # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "CHH*")
   # ezSystem(cmd)
+  
+  # bedGraphCpG <- paste0("CpG_", names(bamFile), ".bedGraph")
+  # bedGraphCHG <- paste0("CHG_", names(bamFile), ".bedGraph")
+  # bedGraphCHH <- paste0("CHH_", names(bamFile), ".bedGraph")
+  
+  bedGraphCpG <- paste0("CpG_", names(bamFile))
+  bedGraphCHG <- paste0("CHG_", names(bamFile))
+  bedGraphCHH <- paste0("CHH_", names(bamFile))
   
   filesCpG <- list.files(".", pattern = "CpG.*txt")
   filesCHG <- list.files(".", pattern = "CHG.*txt")
