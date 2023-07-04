@@ -699,8 +699,6 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   filesCHG <- list.files(".", pattern = "CHG.*txt$")
   filesCHH <- list.files(".", pattern = "CHH.*txt$")
   
-  cmd <- paste("mkdir", names(bamFile))
-  ezSystem(cmd)
   cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
   ezSystem(cmd)
   
@@ -722,12 +720,28 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", filesCHH)
   # ezSystem(cmd)
   
-  cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "CpG*")
+  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "CpG*")
+  # ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "CHG*")
+  # ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "CHH*")
+  # ezSystem(cmd)
+  
+  filesCpG <- list.files(".", pattern = "CpG.*txt")
+  filesCHG <- list.files(".", pattern = "CHG.*txt")
+  filesCHH <- list.files(".", pattern = "CHH.*txt")  
+  cmd <- paste("bismark2bedGraph", filesCpG "-o", bedGraphCpG)
   ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "CHG*")
+  cmd <- paste("bismark2bedGraph", filesCHG, "--CX", "-o", bedGraphCHG)
   ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "CHH*")
+  cmd <- paste("bismark2bedGraph", filesCHH, "--CX", "-o", bedGraphCHH)
   ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", filesCpG "-o", bedGraphCpG)
+  # ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", filesCHG, "--CX", "-o", bedGraphCHG)
+  # ezSystem(cmd)
+  # cmd <- paste("bismark2bedGraph", filesCHH, "--CX", "-o", bedGraphCHH)
+  # ezSystem(cmd)
   
   # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", "CpG*")
   # ezSystem(cmd)
@@ -782,7 +796,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
       # filesCpG <- list.files(".", pattern = "CpG.*txt")
       # filesCHG <- list.files(".", pattern = "CHG.*txt")
       # filesCHH <- list.files(".", pattern = "CHH.*txt")
-      
+    
       # bedGraphCpG <- paste0("CpG_", names(bamFile), ".bedGraph.gz")
       # bedGraphCHG <- paste0("CHG_", names(bamFile), ".bedGraph.gz")
       # bedGraphCHH <- paste0("CHH_", names(bamFile), ".bedGraph.gz")
