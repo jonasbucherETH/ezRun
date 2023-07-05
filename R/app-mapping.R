@@ -695,19 +695,15 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
     ezSystem(paste("cat ", deduplicationReportFile, ">>", reportFile))
   }
   
-  filesCpG <- list.files(".", pattern = "CpG.*txt$")
-  filesCHG <- list.files(".", pattern = "CHG.*txt$")
-  filesCHH <- list.files(".", pattern = "CHH.*txt$")
-  
-  cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
-  ezSystem(cmd)
-  
-  cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
-  ezSystem(cmd)
-  ezSortIndexBam("bismark.bam", basename(bamFile),
-                 ram = param$ram, removeBam = TRUE,
-                 cores = param$cores
-  )
+  # cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
+  # ezSystem(cmd)
+  # 
+  # cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
+  # ezSystem(cmd)
+  # ezSortIndexBam("bismark.bam", basename(bamFile),
+  #                ram = param$ram, removeBam = TRUE,
+  #                cores = param$cores
+  # )
   
   
   # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", filesCpG)
@@ -728,45 +724,23 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # bedGraphCHG <- paste0("CHG_", names(bamFile), ".bedGraph")
   # bedGraphCHH <- paste0("CHH_", names(bamFile), ".bedGraph")
   
-  bedGraphCpG <- paste0("CpG_", names(bamFile))
-  bedGraphCHG <- paste0("CHG_", names(bamFile))
-  bedGraphCHH <- paste0("CHH_", names(bamFile))
+  # bedGraphCpG <- paste0("CpG_", names(bamFile))
+  # bedGraphCHG <- paste0("CHG_", names(bamFile))
+  # bedGraphCHH <- paste0("CHH_", names(bamFile))
   
-  filesCpG <- list.files(".", pattern = "CpG.*txt")
-  filesCHG <- list.files(".", pattern = "CHG.*txt")
-  filesCHH <- list.files(".", pattern = "CHH.*txt")  
-  cmd <- paste("bismark2bedGraph", filesCpG, "-o", paste0("CpG_", names(bamFile))) # adds .gz automatically if not already there
+  cmd <- paste("bismark_methylation_extractor", ifelse(param$paired, "-p", "-s"), "--comprehensive", bamFileNameBismark)
   ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", filesCHG, "--CX", "-o", paste0("CHG_", names(bamFile)))
-  ezSystem(cmd)
-  cmd <- paste("bismark2bedGraph", filesCHH, "--CX", "-o", paste0("CHH_", names(bamFile)))
-  ezSystem(cmd)
-  # cmd <- paste("bismark2bedGraph", filesCpG "-o", bedGraphCpG)
-  # ezSystem(cmd)
-  # cmd <- paste("bismark2bedGraph", filesCHG, "--CX", "-o", bedGraphCHG)
-  # ezSystem(cmd)
-  # cmd <- paste("bismark2bedGraph", filesCHH, "--CX", "-o", bedGraphCHH)
-  # ezSystem(cmd)
   
-  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", "CpG*")
-  # ezSystem(cmd)
-  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "--ample_memory", "CHG*")
-  # ezSystem(cmd)
-  # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", "CHH*")
-  # ezSystem(cmd)
-
-  # cmd <- paste("bismark_methylation_extractor", ifelse(param$paired, "-p", "-s"), "--comprehensive", bamFileNameBismark)
-  # ezSystem(cmd)
-  # cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
-  # ezSystem(cmd)
-  # ezSortIndexBam("bismark.bam", basename(bamFile),
-  #   ram = param$ram, removeBam = TRUE,
-  #   cores = param$cores
-  # )
+  cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
+  ezSystem(cmd)
+  ezSortIndexBam("bismark.bam", basename(bamFile),
+                 ram = param$ram, removeBam = TRUE,
+                 cores = param$cores
+  )
   
   if (param$generateBigWig) {
-      destination = sub("\\.bam$", "_Cov.bw", basename(bamFile), ignore.case = TRUE)
-      bam2bw(file = basename(bamFile), destination = destination, paired = param$paired, method = "Bioconductor", cores = param$cores)
+    destination = sub("\\.bam$", "_Cov.bw", basename(bamFile), ignore.case = TRUE)
+    bam2bw(file = basename(bamFile), destination = destination, paired = param$paired, method = "Bioconductor", cores = param$cores)
   }
   
   mBiasImages <- list.files(".", pattern = "png$")
@@ -778,70 +752,24 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
     ezSystem(paste("touch", paste0(names(bamFile), ".M-bias_R1.png")))
     ezSystem(paste("touch", paste0(names(bamFile), ".M-bias_R2.png")))
   }
-
-  # CpGFile <- list.files(".", pattern = "^CpG.*txt$")
-  # cmd <- paste("bismark2bedGraph --scaffolds", CpGFile, "-o", names(bamFile))
-  # ezSystem(cmd)
-  # ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
-  # 
-  # splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
-  # ezSystem(paste("cat ", splittingReportFile, ">>", reportFile))
   
-  # if (param$allCytosineContexts) {
-      # cat("here ------ 1")
-      # cmd <- paste("bismark_methylation_extractor", bamFileNameBismark, ifelse(param$paired, "-p", "-s"), "--bedGraph", "--cytosine_report", "--genome_folder", ref)
-      # ezSystem(cmd)
-      # cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
-      # ezSystem(cmd)
-      # ezSortIndexBam("bismark.bam", basename(bamFile),
-      #                ram = param$ram, removeBam = TRUE,
-      #                cores = param$cores
-      # )
-      
-      # filesCpG <- list.files(".", pattern = "CpG.*txt")
-      # filesCHG <- list.files(".", pattern = "CHG.*txt")
-      # filesCHH <- list.files(".", pattern = "CHH.*txt")
-    
-      # bedGraphCpG <- paste0("CpG_", names(bamFile), ".bedGraph.gz")
-      # bedGraphCHG <- paste0("CHG_", names(bamFile), ".bedGraph.gz")
-      # bedGraphCHH <- paste0("CHH_", names(bamFile), ".bedGraph.gz")
-      # 
-      # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", "CpG*")
-      # ezSystem(cmd)
-      # 
-      # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "--ample_memory", "CHG*")
-      # ezSystem(cmd)
-      # 
-      # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", "CHH*")
-      # ezSystem(cmd)
-      
-      # cmd <- paste("bismark2bedGraph", "-o", bedGraphCpG, "--ample_memory", filesCpG)
-      # ezSystem(cmd)
-      # 
-      # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHG, "--CX", "--ample_memory", filesCHG)
-      # ezSystem(cmd)
-      # 
-      # cmd <- paste("bismark2bedGraph", "-o", bedGraphCHH, "--CX", "--ample_memory", filesCHH)
-      # ezSystem(cmd)
-      
-  # } else {
-  #     cmd <- paste("bismark_methylation_extractor", ifelse(param$paired, "-p", "-s"), "--comprehensive", bamFileNameBismark)
-  #     ezSystem(cmd)
-  #     cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
-  #     ezSystem(cmd)
-  #     ezSortIndexBam("bismark.bam", basename(bamFile),
-  #                    ram = param$ram, removeBam = TRUE,
-  #                    cores = param$cores
-  #     )
-  #     
-  #     CpGFile <- list.files(".", pattern = "^CpG.*txt$")
-  #     cmd <- paste("bismark2bedGraph --scaffolds", CpGFile, "-o", names(bamFile))
-  #     ezSystem(cmd)
-  #     ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
-  #     
-  #     splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
-  #     ezSystem(paste("cat ", splittingReportFile, ">>", reportFile))
-  # }
+  CpGFile <- list.files(".", pattern = "^CpG.*txt$")
+  CHGFile <- list.files(".", pattern = "^CHG.*txt$")
+  CHHFile <- list.files(".", pattern = "^CHH.*txt$")  
+  cmd <- paste("bismark2bedGraph", CpGFile, "-o", names(bamFile)) # adds .gz automatically if not already there
+  ezSystem(cmd)
+  cmd <- paste("bismark2bedGraph", CHGFile, "--CX", "-o", paste0("CHG_", names(bamFile)))
+  ezSystem(cmd)
+  cmd <- paste("bismark2bedGraph", CHHFile, "--CX", "-o", paste0("CHH_", names(bamFile)))
+  ezSystem(cmd)
+  
+  ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
+  ezSystem(paste("mv ", CHGFile, paste0(names(bamFile), ".CHG_context.txt")))
+  ezSystem(paste("mv ", CHHFile, paste0(names(bamFile), ".CHH_context.txt")))
+  
+  
+  splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
+  ezSystem(paste("cat ", splittingReportFile, ">>", reportFile))
   
   ## write an igv link
   # if (param$writeIgvSessionLink){
