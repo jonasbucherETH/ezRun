@@ -756,24 +756,31 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   }
   
   CpGFile <- list.files(".", pattern = "^CpG.*txt$")
-  CHGFile <- list.files(".", pattern = "^CHG.*txt$")
-  CHHFile <- list.files(".", pattern = "^CHH.*txt$")  
   cmd <- paste("bismark2bedGraph --scaffolds", CpGFile, "-o", names(bamFile)) # adds .gz automatically if not already there
   ezSystem(cmd)
-  ezSystem("echo aaa")
-  cat(CHGFile)
-  cat(paste0(names(bamFile), ".CHG"))
-  cmd <- paste("bismark2bedGraph --scaffolds", CHGFile, "--CX", "-o", paste0(names(bamFile), ".CHG"))
-  ezSystem(cmd)
-  ezSystem("echo bbb")
-  cmd <- paste("bismark2bedGraph --scaffolds", CHHFile, "--CX", "-o", paste0(names(bamFile), ".CHH"))
-  ezSystem(cmd)
-  
-  
   ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
-  ezSystem(paste("mv ", CHGFile, paste0(names(bamFile), ".CHG_context.txt")))
-  ezSystem(paste("mv ", CHHFile, paste0(names(bamFile), ".CHH_context.txt")))
   
+  covFileCpG <- list.files(".", pattern = paste0(names(bamFile), ".gz.bismark.cov.gz$") 
+  cmd <- paste("coverage2cytosine", "--gzip", "--genome_folder", ref, "-o", paste0(names(bamFile), ".CpG_report.txt"), covFileCpG)
+  ezSystem(cmd)
+  
+  if (param$allCytosineContexts) {
+    CHGFile <- list.files(".", pattern = "^CHG.*txt$")
+    CHHFile <- list.files(".", pattern = "^CHH.*txt$")  
+    cmd <- paste("bismark2bedGraph --scaffolds", CHGFile, "--CX", "-o", paste0(names(bamFile), ".CHG"))
+    ezSystem(cmd)
+    cmd <- paste("bismark2bedGraph --scaffolds", CHHFile, "--CX", "-o", paste0(names(bamFile), ".CHH"))
+    ezSystem(cmd)
+    ezSystem(paste("mv ", CHGFile, paste0(names(bamFile), ".CHG_context.txt")))
+    ezSystem(paste("mv ", CHHFile, paste0(names(bamFile), ".CHH_context.txt")))
+    
+    covFileCHG <- list.files(".", pattern = "*CHG.gz.bismark.cov.gz$")
+    cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", paste0(names(bamFile), ".CHG_report.txt"), covFileCHG)
+                                                                                   
+    covFileCHH <- list.files(".", pattern = "*CHH.gz.bismark.cov.gz$") 
+    cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", paste0(names(bamFile), ".CHH_report.txt"), covFileCHH)
+    ezSystem(cmd)
+  }
   
   splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
   ezSystem(paste("cat ", splittingReportFile, ">>", reportFile))
