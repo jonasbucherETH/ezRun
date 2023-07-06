@@ -661,6 +661,8 @@ EzAppBWATrimmomatic <-
 
 
 ezMethodBismark <- function(input = NA, output = NA, param = NA) {
+  
+  cat("000")
 
   ref <- getBismarkReference(param)
   bamFile <- output$getColumn("BAM")
