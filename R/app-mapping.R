@@ -783,8 +783,8 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
     # ezSystem(cmd)
   }
   
-  # covFiles <- list.files(".", pattern = paste0(names(bamFile), "*.gz.bismark.cov.gz$")) 
-  covFiles <- list.files(".", pattern = "*.gz.bismark.cov.gz$")
+  covFiles <- list.files(".", pattern = paste0(names(bamFile), "*.gz.bismark.cov.gz$"))
+  # covFiles <- list.files(".", pattern = "*.gz.bismark.cov.gz$")
   cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", names(bamFile), covFiles)
   ezSystem(cmd)
   
