@@ -746,7 +746,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
       cmd <- paste(
         "bismark", "--se", "--local", 
         "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
-        unmappedReads1, 
+        unmappedReads1 
       )
       ezSystem(cmd)
       cmd <- paste(
