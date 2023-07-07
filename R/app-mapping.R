@@ -676,6 +676,9 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
       if (param$paired) paste("-2", trimmedInput$getColumn("Read2")),
       "2> bismark.log"
     )
+    if (param$dirty_harry) {
+      cmd <- paste(cmd, "--unmapped")
+    }
   } else {
     cmd <- paste(
       "bismark", param$cmdOptions,
@@ -684,6 +687,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
       "2> bismark.log"
     )
   }
+  
   ezSystem(cmd)
   bamFileNameBismark <- list.files(".", pattern = "bam$")
   reportFileNameBismark <- list.files(".", pattern = "report.txt$")
@@ -730,8 +734,49 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # bedGraphCHG <- paste0("CHG_", names(bamFile))
   # bedGraphCHH <- paste0("CHH_", names(bamFile))
   
+  
+  
   cmd <- paste("bismark_methylation_extractor", ifelse(param$paired, "-p", "-s"), "--comprehensive", bamFileNameBismark)
   ezSystem(cmd)
+  
+  if (param$dirty_harry) {
+    unmappedReads1 <- list.files(".", pattern = "*unmapped_reads_1.fq.gz")
+    unmappedReads2 <- list.files(".", pattern = "*unmapped_reads_2.fq.gz")
+    if (param$directional) {
+      cmd <- paste(
+        "bismark", "--se", "--local", 
+        "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
+        unmappedReads1, 
+      )
+      ezSystem(cmd)
+      cmd <- paste(
+        "bismark", "--se", "--local", "--pbat",
+        "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
+        unmappedReads2
+      )
+      ezSystem(cmd)
+    } else {
+      cmd <- paste(
+        "bismark", "--se", "--local", "--pbat",
+        "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
+        unmappedReads1
+      )
+      ezSystem(cmd)
+      cmd <- paste(
+        "bismark", "--se", "--local", 
+        "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
+        unmappedReads2
+      )
+      ezSystem(cmd)
+    }
+    
+    unmappedBam1 <- list.files(".", pattern = paste0(names(bamFile), "*unmapped_reads_1_bismark_bt2.bam"))
+    unmappedBam2 <- list.files(".", pattern = paste0(names(bamFile), "*unmapped_reads_2_bismark_bt2.bam"))
+    cmd <- paste("bismark_methylation_extractor", "-s", "--comprehensive", unmappedBam1)
+    ezSystem(cmd)
+    cmd <- paste("bismark_methylation_extractor", "-s", "--comprehensive", unmappedBam2)
+    ezSystem(cmd)
+  }
   
   cmd <- paste("samtools", "view -S -b ", bamFileNameBismark, " > bismark.bam")
   ezSystem(cmd)
