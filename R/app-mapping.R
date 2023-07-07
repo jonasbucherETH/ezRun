@@ -744,28 +744,28 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
     unmappedReads2 <- list.files(".", pattern = "*unmapped_reads_2.fq.gz")
     if (param$directional) {
       cmd <- paste(
-        "bismark", "--se", "--local", 
+        "bismark", "--se", unmappedReads1, 
         "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
-        unmappedReads1 
+        "--local" 
       )
       ezSystem(cmd)
       cmd <- paste(
-        "bismark", "--se", "--local", "--pbat",
+        "bismark", "--se", unmappedReads2, "--pbat",
         "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
-        unmappedReads2
+        "--local"
       )
       ezSystem(cmd)
     } else {
       cmd <- paste(
-        "bismark", "--se", "--local", "--pbat",
+        "bismark", "--se", unmappedReads1, "--pbat",
         "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
-        unmappedReads1
+        "--local"
       )
       ezSystem(cmd)
       cmd <- paste(
-        "bismark", "--se", "--local", 
+        "bismark", "--se", unmappedReads2, 
         "--path_to_bowtie", paste0("$Bowtie2", "/bin"), defOpt, ref,
-        unmappedReads2
+        "--local"
       )
       ezSystem(cmd)
     }
