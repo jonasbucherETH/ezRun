@@ -770,8 +770,12 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
       ezSystem(cmd)
     }
     
-    unmappedBam1 <- list.files(".", pattern = paste0(names(bamFile), "*unmapped_reads_1_bismark_bt2.bam"))
-    unmappedBam2 <- list.files(".", pattern = paste0(names(bamFile), "*unmapped_reads_2_bismark_bt2.bam"))
+    # unmappedBam1 <- list.files(".", pattern = paste0(names(bamFile), "*unmapped_reads_1_bismark_bt2.bam"))
+    # unmappedBam2 <- list.files(".", pattern = paste0(names(bamFile), "*unmapped_reads_2_bismark_bt2.bam"))
+    cat("#################################")
+    cat(names(bamFile))
+    unmappedBam1 <- list.files(".", pattern = "*unmapped_reads_1_bismark_bt2.bam")
+    unmappedBam2 <- list.files(".", pattern = "*unmapped_reads_2_bismark_bt2.bam")
     cmd <- paste("bismark_methylation_extractor", "-s", "--comprehensive", unmappedBam1)
     ezSystem(cmd)
     cmd <- paste("bismark_methylation_extractor", "-s", "--comprehensive", unmappedBam2)
