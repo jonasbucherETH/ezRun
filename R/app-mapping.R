@@ -838,7 +838,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   ezSystem(cmd)
   
   splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
-  ezSystem(paste("cat ", splittingReportFile, ">>", reportFile))
+  ezSystem(paste("cat ", splittingReportFile[1], ">>", reportFile))
   
   ## write an igv link
   # if (param$writeIgvSessionLink){
