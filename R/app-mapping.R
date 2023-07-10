@@ -804,8 +804,8 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
     ezSystem(paste("touch", paste0(names(bamFile), ".M-bias_R2.png")))
   }
   
-  CpGFile <- list.files(".", pattern = "^CpG.*txt$")
-  cmd <- paste("bismark2bedGraph --scaffolds", CpGFile, "-o", names(bamFile)) # adds .gz automatically if not already there
+  # CpGFile <- list.files(".", pattern = "^CpG.*txt$")
+  cmd <- paste("bismark2bedGraph --scaffolds", "CpG*", "-o", names(bamFile)) # adds .gz automatically if not already there
   ezSystem(cmd)
   ezSystem(paste("mv ", CpGFile, paste0(names(bamFile), ".CpG_context.txt")))
   
@@ -814,11 +814,11 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # ezSystem(cmd)
   
   if (param$allCytosineContexts) {
-    CHGFile <- list.files(".", pattern = "^CHG.*txt$")
-    CHHFile <- list.files(".", pattern = "^CHH.*txt$")  
-    cmd <- paste("bismark2bedGraph --scaffolds", CHGFile, "--CX", "-o", paste0(names(bamFile), ".CHG"))
+    # CHGFile <- list.files(".", pattern = "^CHG.*txt$")
+    # CHHFile <- list.files(".", pattern = "^CHH.*txt$")  
+    cmd <- paste("bismark2bedGraph --scaffolds", "CHG*", "--CX", "-o", paste0(names(bamFile), ".CHG"))
     ezSystem(cmd)
-    cmd <- paste("bismark2bedGraph --scaffolds", CHHFile, "--CX", "-o", paste0(names(bamFile), ".CHH"))
+    cmd <- paste("bismark2bedGraph --scaffolds", "CHH*", "--CX", "-o", paste0(names(bamFile), ".CHH"))
     ezSystem(cmd)
     ezSystem(paste("mv ", CHGFile, paste0(names(bamFile), ".CHG_context.txt")))
     ezSystem(paste("mv ", CHHFile, paste0(names(bamFile), ".CHH_context.txt")))
