@@ -834,9 +834,18 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   
   # covFiles <- list.files(".", pattern = paste0(names(bamFile), "*.gz.bismark.cov.gz$"))
   # covFiles <- list.files(".", pattern = "*.gz.bismark.cov.gz$")
-  cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", names(bamFile), "*.gz.bismark.cov.gz")
+  
+  # cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", names(bamFile), "*.gz.bismark.cov.gz")
+  cmd <- paste("coverage2cytosine", "--CX", "--genome_folder", ref, "-o", names(bamFile), "*.gz.bismark.cov.gz")
   ezSystem(cmd)
   
+  if (param$allCytosineContexts) {
+    cmd <- paste("awk -F'\t' '{print > ($6", paste0("_report", names(bamFile), ".txt)}", "*CX_report*")
+    ezSystem(cmd)
+  }
+
+  # awk -F'\t' '{print > ($6 "_report.A04_BB.txt")}' A04_BB.CX_report.txt
+
   splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
   ezSystem(paste("cat ", splittingReportFile[1], ">>", reportFile))
   
