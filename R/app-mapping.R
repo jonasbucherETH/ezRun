@@ -840,7 +840,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   ezSystem(cmd)
   
   if (param$allCytosineContexts) {
-    cmd <- paste("awk -F'\t' '{print > ($6", paste0("_report", names(bamFile), ".txt)}'", "*CX_report*")
+    cmd <- paste("awk -F'\t' '{print > ($6", paste0("_report", names(bamFile), ".txt)}'"), "*CX_report*")
     ezSystem(cmd)
   }
 
