@@ -212,7 +212,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # bsseqFilteredCHG <- bsseqCHG[lociCoverageCHG, ]
   # bsseqFilteredCHH <- bsseqCHH[lociCoverageCHH, ]
   
- # cat("4")
+ cat("3")
   
   dmRegionsCpG <- dmrseq(
     bs = bsseqFilteredCpG,
@@ -255,7 +255,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   #   cutoff = 0.001
   # )
 
- # cat("4")
+  cat("4")
   
   qvalCutoff <- 0.8
   significantRegionsCpG <- dmRegionsCpG[dmRegionsCpG$qval < qvalCutoff, ]
@@ -273,7 +273,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                        ends=end(regions),
                        names=paste0("peakID_", seq(1:length(regions))), # col 4 = unique Peak ID (?)
                        scores=c(rep(".", length(regions))), # col 5 = not used
-                       strands=strand(regions))
+                       # strands=strand(regions))
+                       strands=c(rep("+", length(regions))))
     write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F)
   }
   writeBedFileRegions(regions = dmRegionsCpG, nameBed = "dmRegionsCpG")
@@ -308,6 +309,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ######################################## DML ########################################
   # TODO: what pipeline to use for methRead?
+  cat("5")
+  
   setwdNew(basename(output$getColumn("Report")))
   mkdirDML = paste("mkdir dml")
   ezSystem(mkdirDML)
@@ -321,7 +324,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # treatmentMethylKit[bsseqColData$"Treatment" == 40] <- 1
   
   
-  ## cat("6")
+  cat("6")
 
   # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
   # TODO: check out readBismarkCoverage: https://gist.github.com/al2na/4839e615e2401d73fe51
