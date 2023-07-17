@@ -36,6 +36,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   library("methylKit")
   library("genomation") # annotation of DML/R
   library(BiocParallel)
+  library(valr) # GRanges to bed
   
   ##### ----- input & output paths
   # #setwdNew(basename(output$getColumn("Report")))
@@ -68,40 +69,101 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   # testCovariateData <- input$getColumn(param$grouping)
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
-  cat("0")
+ # cat("0")
   
   # bsseqColData <- as.data.frame(c(40,40,40,60,60,60,60), row.names = sampleNames)
   # colnames(bsseqColData) <- "Treatment"
   # type(bsseqColData)
   
-  covFilesBismark <- input$getFullPaths("COV")
-  sampleNames <- names(covFilesBismark)
+  coverageFilesCpG <- input$getFullPaths("COV")
+  sampleNames <- names(coverageCpG)
+  # coverageFilesCpG <- unname(coverageFilesCpG)
+  # sampleNames <- param$samples
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleNames)
   colnames(bsseqColData) <- param$grouping
   # print(sampleNames)
-  covFilesBismark <- unname(covFilesBismark)
-  # saveRDS(covFilesBismark, file="dmr/covFilesBismark.rds")
   
-  # covFilesBismark <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/covFilesBismark.rds")
+  # coverageFilesCHG <- input$getFullPaths("COV_CHG")
+  # coverageFilesCHG <- unname(coverageFilesCHG)
+  # coverageFilesCHH <- input$getFullPaths("COV_CHH")
+  # coverageFilesCHH <- unname(coverageFilesCHH)
+  
+  # testDir <- "/srv/gstore/projects/p1535/Bismark_ath_full8_2023-07-12--17-27-56"
+  # testDir <- "/srv/gstore/projects/p1535/Bismark_mm_full3_2023-07-13--11-55-16"
+  # CpG_report_files <- list.files(testDir, pattern = "CG_report.txt", full.names = T)
+  # CHG_report_files <- list.files(testDir, pattern = "CHG_report.txt", full.names = T)
+  # CHH_report_files <- list.files(testDir, pattern = "CHH_report.txt", full.names = T)
+  # bsseqColData <- as.data.frame(c("BB","BB","AN","AN","BB","AN","AN"), row.names = c('A04_BB','A06_BB','A07_AN','A08_AN','A09_BB','A10_AN','A15_AN'))
+  # bsseqColData <- as.data.frame(c(40,40,50,50,60,60,60), row.names = c('SRR4105496','SRR4105497','SRR4105498','SRR4105499','SRR4105500','SRR4105501','SRR4105502'))
+  # colnames(bsseqColData) <- "Treatment"
+  
+  CpG_report_files <- input$getFullPaths("CpG_report")
+  # CHG_report_files <- input$getFullPaths("CHG_report")
+  # CHH_report_files <- input$getFullPaths("CHH_report")
+  
+  # coverageFilesAll <- list.files(testDir, pattern = ".gz.bismark.cov.gz", full.names = T)
+  # coverageFilesCHG <- list.files(testDir, pattern = "CHG.gz.bismark.cov.gz", full.names = T)
+  # coverageFilesCHH <- list.files(testDir, pattern = "CHH.gz.bismark.cov.gz", full.names = T)
+  # coverageFilesCpG <- coverageFilesAll[!(coverageFilesAll %in% coverageFilesCHG)]
+  # coverageFilesCpG <- coverageFilesCpG[!(coverageFilesCpG %in% coverageFilesCHH)]
+  
+  # saveRDS(coverageCpG, file="dmr/coverageCpG.rds")
+  
+  # coverageCpG <- readRDS("/scratch/Bismark_JBmm_test3_2023-03-27--15-58-43_temp18497/DNAme/dmr/coverageCpG.rds")
   
   
-  # covFilesBismark <- as.list(covFilesBismark)
-  # print(class(covFilesBismark))
-  # print(covFilesBismark)
-  # print(covFilesBismark[[1]])
+  # coverageCpG <- as.list(coverageCpG)
+  # print(class(coverageCpG))
+  # print(coverageCpG)
+  # print(coverageCpG[[1]])
   
-  # covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
-  # cat(class(covFilesBismark))
+  # coverageCpG <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
+  ## cat(class(coverageCpG))
   
-  cat("1")
+ # cat("1")
   
-  bsseq <- bsseq::read.bismark(files = covFilesBismark,
+  # bsseq <- bsseq::read.bismark(files = CX_reportFiles,
+  #                                 rmZeroCov = FALSE,
+  #                                 strandCollapse = FALSE,
+  #                                 verbose = TRUE,
+  #                                 colData = bsseqColData)
+  
+  bsseqCpG <- bsseq::read.bismark(files = unname(coverageFilesCpG),
                                rmZeroCov = FALSE,
                                strandCollapse = FALSE,
-                               verbose = TRUE,
+                               verbose = FALSE,
                                colData = bsseqColData)
   
-  cat("2")
+  # bsseqCHG <- bsseq::read.bismark(files = unname(coverageFilesCpG),
+  #                                 rmZeroCov = FALSE,
+  #                                 strandCollapse = FALSE,
+  #                                 verbose = FALSE,
+  #                                 colData = bsseqColData)
+  # 
+  # bsseqCHH <- bsseq::read.bismark(files = unname(coverageFilesCpG),
+  #                                 rmZeroCov = FALSE,
+  #                                 strandCollapse = FALSE,
+  #                                 verbose = FALSE,
+  #                                 colData = bsseqColData)
+  
+  
+  # 
+  # 
+  # bsseqColData <- as.data.frame(c("BB","BB","BB","AN","AN","AN","AN"), row.names = c('A04_BB','A06_BB','A09_BB','A07_AN','A08_AN','A10_AN','A15_AN'))
+  # colnames(bsseqColData) <- "Treatment"
+  
+  # bsseqCX <- bsseq::read.bismark(files = CX_reportFiles,
+  #                                rmZeroCov = FALSE,
+  #                                strandCollapse = FALSE,
+  #                                verbose = TRUE,
+  #                                colData = bsseqColData,
+  #                                loci = NULL,
+  #                                nThread = 2)
+                                 # BACKEND = "HDF5Array" ,
+                                 # dir = "/scratch/jonas/bsseq_temp")
+    
+
+ # cat("2")
   
   # pData(bsseq)$Treatment <- input$getColumn(param$grouping)
   
@@ -116,9 +178,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # bsseqColData <- as.data.frame(c("40","40","40","40","60","60","60"), row.names = sampleNames)
   # colnames(bsseqColData) <- "Treatment"
   # 
-  # covFilesBismark <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/", pattern = "cov", full.names = T)
+  # coverageCpG <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/", pattern = "cov", full.names = T)
   # 
-  # bsseq <- bsseq::read.bismark(files = covFilesBismark,
+  # bsseq <- bsseq::read.bismark(files = coverageCpG,
   #                              rmZeroCov = FALSE,
   #                              strandCollapse = FALSE,
   #                              verbose = FALSE,
@@ -137,75 +199,199 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # 
   # )
   ### test end
+  # lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
   
-  lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
+  lociCoverageCpG <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseqCpG, type="Cov")==0) == 0)
+  # lociCoverageCHG <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseqCHG, type="Cov")==0) == 0)
+  # lociCoverageCHH <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseqCHH, type="Cov")==0) == 0)
   
-  cat("3")
+ # cat("3")
+  # bsseqFiltered <- bsseq[lociCoverage, ]
   
-  bsseqFiltered <- bsseq[lociCoverage, ]
+  bsseqFilteredCpG <- bsseqCpG[lociCoverageCpG, ]
+  # bsseqFilteredCHG <- bsseqCHG[lociCoverageCHG, ]
+  # bsseqFilteredCHH <- bsseqCHH[lociCoverageCHH, ]
   
-  cat("4")
+ # cat("4")
   
-  dmRegions <- dmrseq(
-    bs = bsseqFiltered,
-    testCovariate = param$grouping, 
-    # A continuous covariate is assumed if the data type in the 'testCovariate' slot is continuous,
-    # with the exception of if there are only two unique values (then a two group comparison is carried out)
-    # adjustCovariate = param$adjustCovariate,
+  dmRegionsCpG <- dmrseq(
+    bs = bsseqFilteredCpG,
+    # bs = bsseqCpG,
+    testCovariate = param$grouping,
     verbose = TRUE, # keep this
     BPPARAM = BPPARAM
   )
   
-  cat("4")
+  # dmRegionsCHG <- dmrseq(
+  #   bs = bsseqFilteredCHG,
+  #   testCovariate = param$grouping, 
+  #   verbose = TRUE, # keep this
+  #   BPPARAM = BPPARAM
+  # )
+  # 
+  # dmRegionsCHH <- dmrseq(
+  #   bs = bsseqFilteredCHH,
+  #   testCovariate = param$grouping, 
+  #   verbose = TRUE, # keep this
+  #   BPPARAM = BPPARAM
+  # )
   
-  significantRegions <- dmRegions[dmRegions$qval < 0.10, ]
+  # dmRegionsCpG <- dmrseq(
+  #   bs = bsseqFilteredCpG,
+  #   testCovariate = "Treatment",
+  #   verbose = TRUE,
+  #   cutoff = 0.001
+  # )
+  # dmRegionsCHG <- dmrseq(
+  #   bs = bsseqFilteredCHG,
+  #   testCovariate = "Treatment",
+  #   verbose = TRUE,
+  #   cutoff = 0.001
+  # )
+  # dmRegionsCHH <- dmrseq(
+  #   bs = bsseqFilteredCHH,
+  #   testCovariate = "Treatment",
+  #   verbose = TRUE,
+  #   cutoff = 0.001
+  # )
+
+ # cat("4")
   
+  qvalCutoff <- 0.5
+  significantRegionsCpG <- dmRegionsCpG[dmRegionsCpG$qval < qvalCutoff, ]
+  significantRegionsCHG <- dmRegionsCHG[dmRegionsCHG$qval < qvalCutoff, ]
+  significantRegionsCHH <- dmRegionsCHH[dmRegionsCHH$qval < qvalCutoff, ]
+  
+  # TODO: transform to bedGraph for HOMER
   ### setwd before saving results
   setwd("dmr")
-  cat("5")
-
-  saveRDS(bsseq, file="bsseq.rds")
-  saveRDS(bsseqFiltered, file="bsseqFiltered.rds")
-  # saveRDS(bsseqColData, file="bsseqColData.rds")
-  saveRDS(dmRegions, file="dmRegions.rds")
-  saveRDS(significantRegions, file="significantRegions.rds")
-  saveRDS(bsseqColData, file="bsseqColData.rds")
+ # cat("5")
   
-  ########################### DML ###########################
+  writeBedFileRegions <- function(regions, nameBed) {
+    dfGR <- data.frame(chr=seqnames(regions),
+                       starts=start(regions),
+                       ends=end(regions),
+                       names=paste0("peakID_", seq(1:length(regions))), # col 4 = unique Peak ID (?)
+                       scores=c(rep(".", length(regions))), # col 5 = not used
+                       strands=strand(regions))
+    write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F)
+  }
+  writeBedFileRegions(regions = dmRegionsCpG, nameBed = "dmRegionsCpG")
+  # writeBedFileRegions(regions = dmRegionsCHG, nameBed = "dmRegionsCHG")
+  # writeBedFileRegions(regions = dmRegionsCHH, nameBed = "dmRegionsCHH")
+  writeBedFileRegions(regions = significantRegionsCpG, nameBed = "significantRegionsCpG")
+  # writeBedFileRegions(regions = significantRegionsCHG, nameBed = "significantRegionsCHG")
+  # writeBedFileRegions(regions = significantRegionsCHH, nameBed = "significantRegionsCHH")
+
+  saveRDS(bsseqCpG, file=paste0(bsseqCpG, ".rds"))
+  # saveRDS(bsseqCHG, file=paste0(bsseqCHG, ".rds"))
+  # saveRDS(bsseqCHH, file=paste0(bsseqCHH, ".rds"))
+  saveRDS(dmRegionsCpG, file=paste0(dmRegionsCpG, ".rds"))
+  # saveRDS(dmRegionsCHG, file=paste0(dmRegionsCHG, ".rds"))
+  # saveRDS(dmRegionsCHH, file=paste0(dmRegionsCHH, ".rds"))
+  ### maybe don't save significantRegions, as it is merely a subset of dmRegions
+  saveRDS(significantRegionsCpG, file=paste0(significantRegionsCpG, ".rds"))
+  # saveRDS(significantRegionsCHG, file=paste0(significantRegionsCHG, ".rds"))
+  # saveRDS(significantRegionsCHH, file=paste0(significantRegionsCHH, ".rds"))
+  # saveRDS(bsseq, file=paste0(bsseq, ".rds"))
+  
+  # awk -F "\t" ' if($6==CHH) { print $0}' /srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz > ./CHH_report.txt.gz
+  # awk -F "\t" '$6==CG' /srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz > ./CG_report.txt.gz
+  # awk -F "\t" '$6==CHG' /srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz > ./CHG_report.txt.gz
+  # awk -F "\t" '{ if($6 == CHH) { print $0} }' /srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz > ./CHH_report.txt.gz
+  # awk -F "\t" '{ if($6 == "CG") { print $0} }' /srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz > ./CG_report.txt.gz
+  # awk -F '\t' ' $6 == "CG" ' /srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz > ./CG_report.txt.gz
+  # scp jobucher@fgcz-c-047.uzh.ch:/srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CX_report.txt.gz .
+  # scp jobucher@fgcz-c-047.uzh.ch:/srv/gstore/projects/p1535/Bismark_ath_full7_2023-07-10--13-01-23/A04_BB.CHG.gz.bismark.cov.gz .
+  # awk -F '\t' '{ if($6 == CHH) { print } }' A04_BB.CX_report.txt > CG_report.txt
+  # awk -F'\t' '{print > ($6 ".txt")}' A04_BB.CX_report.txt
+  
+  ######################################## DML ########################################
   # TODO: what pipeline to use for methRead?
   setwdNew(basename(output$getColumn("Report")))
   mkdirDML = paste("mkdir dml")
   ezSystem(mkdirDML)
+  
 
+  # sampleNames <- c("SRR4105496","SRR4105497","SRR4105498","SRR4105499","SRR4105500","SRR4105501","SRR4105502")
+  # treatmentMethylKit <- c(rep(0, 4), rep(1, 3))
+                          
   treatmentMethylKit <- rep(0, length(sampleNames))
   treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
+  # treatmentMethylKit[bsseqColData$"Treatment" == 40] <- 1
   
-  cat("6")
+  
+  ## cat("6")
 
   # TODO: ask Deepak for mincov value (probably = 0, because filtering happening afterwards)
-  methylKitFiles <- unname(input$getFullPaths("CpG_Context"))
-  methylRawCpG <- methRead(methylKitFiles,
-                           sample.id=sampleNames,
-                           treatment=treatmentMethylKit, # 0 = control, 1 = test
-                           context="CpG",
-                           mincov = 0
+  # TODO: check out readBismarkCoverage: https://gist.github.com/al2na/4839e615e2401d73fe51
+  # methylKitFiles <- unname(input$getFullPaths("COV"))
+  
+  # methylKitFiles <- list.files("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43", pattern = "cov", full.names = T)
+  
+  
+  # methylKitFiles <- as.list(c("/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105496.CpG_context.txt",
+  #                     "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105497.CpG_context.txt",
+  #                     "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105498.CpG_context.txt",
+  #                     "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105499.CpG_context.txt",
+  #                     "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105500.CpG_context.txt",
+  #                     "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105501.CpG_context.txt",
+  #                     "/srv/gstore/projects/p1535/Bismark_JBmm_test3_2023-03-27--15-58-43/SRR4105502.CpG_context.txt"))
+  
+  # CX_reportFiles <- input$getFullPaths("CX_report")
+  # CX_reportFiles <- unname(CX_reportFiles)
+  # CX_reportFiles <- list.files(testDir, pattern = "*CX_report.txt.gz", full.names = T)
+  # COV_Files <- list.files(testDir, pattern = "*cov*", full.names = T)
+  
+  # methylRawL <- methRead(location = as.list(CpG_report_files),
+  #                          sample.id = as.list(rownames(bsseqColData)),
+  #                          treatment = c(1,1,1,0,0,0,0), # 0 = control, 1 = test
+  #                          pipeline = list(fraction=FALSE,chr.col=1,start.col=2,end.col=2,
+  #                                          coverage.col=4,strand.col=3,freqC.col=5),
+  #                          assembly = "Ath",
+  #                          context= "CpG",
+  #                          mincov = 0,
+  #                          skip = 0
+  # )
+  
+  # sampleNames <- rownames(bsseqColData)
+  # treatmentMethylKit <- rep(0, length(rownames(bsseqColData)))
+  # treatmentMethylKit[bsseqColData$Treatment == "BB"] <- 1
+
+                          
+  methylRawCpG <- methRead(location = as.list(coverageFilesCpG),
+                           sample.id = as.list(sampleNames),
+                           treatment = treatmentMethylKit,
+                           pipeline = "bismarkCoverage",
+                           assembly = param$biomart_selection,
+                           # assembly = "Ath",
+                           context= "CpG",
+                           mincov = 0,
+                           skip = 0
   )
   
-  cat("7")
-
-  # methylRawCHG <- methRead(input$getColumn("CHG_Context"),
-  #                          sample.id=sampleNames,
-  #                          treatment=treatmentMethylKit, # 0 = control, 1 = test
-  #                          context="CHG",
-  #                          mincov = 10
+  # methylRawCHG <- methRead(location = as.list(coverageFilesCHG),
+  #                          sample.id = as.list(sampleNames),
+  #                          treatment = c(1,1,1,0,0,0,0),
+  #                          pipeline = "bismarkCoverage",
+  #                          assembly = param$biomart_selection,
+  #                          # assembly = "Ath",
+  #                          context= "CHG",
+  #                          mincov = 0,
+  #                          skip = 0
   # )
   # 
-  # methylRawCHH <- methRead(input$getColumn("CHH_Context"),
-  #                          sample.id=sampleNames,
-  #                          treatment=treatmentMethylKit, # 0 = control, 1 = test
-  #                          context="CHH",
-  #                          mincov = 10
+  # methylRawCHH <- methRead(location = as.list(coverageFilesCHH),
+  #                          sample.id = as.list(sampleNames),
+  #                          treatment = c(1,1,1,0,0,0,0), # 0 = control, 1 = test
+  #                          pipeline = "bismarkCoverage",
+  #                          assembly = param$biomart_selection,
+  #                          # assembly = "Ath",
+  #                          context= "CHH",
+  #                          mincov = 0,
+  #                          skip = 0
   # )
+  
   
   # 
   # for(i in seq_along(sampleNames)){
@@ -230,13 +416,29 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # # TODO: adapt values (ask Deepak)
   filteredMethylRawCpG  <- filterByCoverage(
     methylRawCpG,
-    lo.count=5, # Bases/regions having lower coverage than this count is discarded
+    lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
     lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
     hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
     hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
   )
   
-  cat("8")
+  # filteredMethylRawCHG  <- filterByCoverage(
+  #   methylRawCHG,
+  #   lo.count=1, # Bases/regions having lower coverage than this count is discarded
+  #   lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
+  #   hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
+  #   hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+  # )
+  # 
+  # filteredMethylRawCHH  <- filterByCoverage(
+  #   methylRawCHH,
+  #   lo.count=1, # Bases/regions having lower coverage than this count is discarded
+  #   lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
+  #   hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
+  #   hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+  # )
+  
+  ## cat("8")
   # 
   # filteredMethylRawCHG  <- filterByCoverage(
   #   methylRawCHG,
@@ -257,17 +459,21 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # # TODO: normalizeCoverage (?)
   # # TODO: 3.1 and 3.2 (?)
   # 
-  methylBase_CpG <- unite(filteredMethylRawCpG, destrand=TRUE) # destrand = T only for CpG
-  # methylBase_CHG <- unite(filteredMethylRawCHG, destrand=FALSE) # destrand = T only for CpG
-  # methylBase_CHH <- unite(filteredMethylRawCHH, destrand=FALSE) # destrand = T only for CpG
+  methylBaseCpG <- unite(filteredMethylRawCpG, destrand=FALSE) # destrand = T only for CpG
+  # methylBaseCHG <- unite(filteredMethylRawCHG, destrand=FALSE) # destrand = T only for CpG
+  # methylBaseCHH <- unite(filteredMethylRawCHH, destrand=FALSE) # destrand = T only for CpG
+
   # 
-  diffMeth_CpG <- calculateDiffMeth(
-    methylBase_CpG,
-    # covariates = bsseqColData, # data.frame, to separate from treatment effect
-    mc.cores = param$cores
-    )
+  dmLociCpG <- calculateDiffMeth(methylBaseCpG, mc.cores = param$cores)
+  # dmLociCHG <- calculateDiffMeth(methylBaseCHG, mc.cores = param$cores)
+  # dmLociCHH <- calculateDiffMeth(methylBaseCHH, mc.cores = param$cores)
   
-  cat("9")
+  # dmLociCpG <- calculateDiffMeth(methylBaseCpG)
+  # dmLociCHG <- calculateDiffMeth(methylBaseCHG)
+  # dmLociCHH <- calculateDiffMeth(methylBaseCHH)
+  
+  
+  ## cat("9")
   # 
   # diffMeth_CHG <- calculateDiffMeth(
   #   methylBase_CHG,
@@ -282,32 +488,90 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # )
   # 
   # # TODO: ask deepak whether to split into hypo-/hyper-methylated bases
-  diff25p_hyper_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="hyper")
-  diff25p_hypo_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="hypo")
-  diff25p_both_CpG <- getMethylDiff(diffMeth_CpG, difference=25, qvalue=0.01, type="all")
-  # 
-  # diff25p_hyper_CHG <- getMethylDiff(diffMeth_CHG, difference=25, qvalue=0.01, type="hyper")
-  # diff25p_hypo_CHG <- getMethylDiff(diffMeth_CHG, difference=25, qvalue=0.01, type="hypo")
-  # diff25p_both_CHG <- getMethylDiff(diffMeth_CHG, difference=25, qvalue=0.01, type="all")
-  # 
-  # diff25p_hyper_CHH <- getMethylDiff(diffMeth_CHH, difference=25, qvalue=0.01, type="hyper")
-  # diff25p_hypo_CHH <- getMethylDiff(diffMeth_CHH, difference=25, qvalue=0.01, type="hypo")
-  # diff25p_both_CHH <- getMethylDiff(diffMeth_CHH, difference=25, qvalue=0.01, type="all")
-  # 
+  significantLociCpG <- getMethylDiff(dmLociCpG, difference=25, qvalue=0.01, type="all")
+  # significantLociCpG_hyper <- getMethylDiff(dmLociCpG, difference=25, qvalue=0.01, type="hyper")
+  # significantLociCpG_hypo <- getMethylDiff(dmLociCpG, difference=25, qvalue=0.01, type="hypo")
+
+  # significantLociCHG <- getMethylDiff(dmLociCHG, difference=25, qvalue=0.01, type="all")
+  # significantLociCHG_hyper <- getMethylDiff(dmLociCHG, difference=25, qvalue=0.01, type="hyper")
+  # significantLociCHG_hypo <- getMethylDiff(dmLociCHG, difference=25, qvalue=0.01, type="hypo")
+
+  # significantLociCHH <- getMethylDiff(dmLociCHH, difference=25, qvalue=0.01, type="all")
+  # significantLociCHH_hyper <- getMethylDiff(dmLociCHH, difference=25, qvalue=0.01, type="hyper")
+  # significantLociCHH_hypo <- getMethylDiff(dmLociCHH, difference=25, qvalue=0.01, type="hypo")
+
+  # setwd("homer/dml_test/")
+  # getwd()
+  
+  ### methylKit objects to bedGraph file / data.frame
+  # bedgraph(
+  #   file.name = paste0("significantLociCpG", ".bed"),
+  #   methylObj = significantLociCpG,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )
+  # bedgraph(
+  #   file.name = paste0("significantLociCHG", ".bed"),
+  #   methylObj = significantLociCHG,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )
+  # bedgraph(
+  #   file.name = paste0("significantLociCHH", ".bed"),
+  #   methylObj = significantLociCHH,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )
+  # bedgraph(
+  #   file.name = paste0("dmLociCpG", ".bed"),
+  #   methylObj = dmLociCpG,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )
+  # bedgraph(
+  #   file.name = paste0("dmLociCHG", ".bed"),
+  #   methylObj = dmLociCHG,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )
+  # bedgraph(
+  #   file.name = paste0("dmLociCHH", ".bed"),
+  #   methylObj = dmLociCHH,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )
+  
+  # gr_cpg <- as(dmLociCpG,"GRanges")
+  # export(gr_cpg, "dm.bed", "bed")
+  # gr_cpg_sig <- as(significantLociCpG,"GRanges")
+  # export(gr_cpg_sig, "sl.bed", "bed")
+  # gr_cpg$peakID <- paste0("peakID_", seq(1:length(gr_cpg)))
+  
+  # indeces_25p <- which(lmr@ranges@start %in% lmr_25p@ranges@start)
+  
+  # paste0("peakID_", seq(1:length(lmr)))
+  
+  # df <- data.frame(chr=seqnames(gr_cpg),
+  #                  starts=start(gr_cpg),
+  #                  ends=end(gr_cpg),
+  #                  # names=c(rep(".", length(lmr))), # col 4 = unique Peak ID (?)
+  #                  names=paste0("peakID_", seq(1:length(gr_cpg))), # col 4 = unique Peak ID (?)
+  #                  scores=c(rep(".", length(gr_cpg))), # col 5 = not used
+  #                  strands=strand(gr_cpg))
+  
+
+
+
   # ### setwd before saving results
   setwd("dml")
-  # 
-  saveRDS(diffMeth_CpG, file=paste0(diffMeth_CpG, ".rds"))
-  # saveRDS(diffMeth_CHG, file=paste0(diffMeth_CHG, ".rds"))
-  # saveRDS(diffMeth_CHH, file=paste0(diffMeth_CHH, ".rds"))
-  saveRDS(diff25p_both_CpG, file=paste0(diff25p_both_CpG, ".rds"))
-  # saveRDS(diff25p_both_CHG, file=paste0(diff25p_both_CHG, ".rds"))
-  # saveRDS(diff25p_both_CHH, file=paste0(diff25p_both_CHH, ".rds"))
-  # 
-  saveRDS(methylRawCpG, file=paste0(methylRawCpG, ".rds"))
-  # saveRDS(methylRawCHG, file=paste0(methylRawCHG, ".rds"))
-  # saveRDS(methylRawCHH, file=paste0(methylRawCHH, ".rds"))
-  # 
+  
+  # significantLociCpG_bedGraph <- bedgraph(
+  #   methylObj = significantLociCHG,
+  #   col.name = 'qvalue' # 'pvalue','qvalue', 'meth.diff'
+  # )# saveRDS(methylBaseCpG, file=paste0(methylBaseCpG, ".rds"))
+  # saveRDS(methylBaseCHG, file=paste0(methylBaseCHG, ".rds"))
+  # saveRDS(methylBaseCHH, file=paste0(methylBaseCHH, ".rds"))
+  saveRDS(dmLociCpG, file=paste0(dmLociCpG, ".rds"))
+  # saveRDS(dmLociCHG, file=paste0(dmLociCHG, ".rds"))
+  # saveRDS(dmLociCHH, file=paste0(dmLociCHH, ".rds"))
+  saveRDS(significantLociCpG, file=paste0(significantLociCpG, ".rds"))
+  # saveRDS(significantLociCHG, file=paste0(diffMeth_CpG, ".rds"))
+  # saveRDS(significantLociCHH, file=paste0(diffMeth_CpG, ".rds"))
+
   # transcriptFeatures <- readTranscriptFeatures(paste0(param$refBuild), "Genes/genes.bed") # bed file
   # # transcriptFeatures <- readTranscriptFeatures("/srv/GT/reference/Mus_musculus/UCSC/mm10/Annotation/Version-2012-05-23/Genes/genes.bed")
   # 
@@ -325,120 +589,125 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   #                                     cpg.obj$CpGi,cpg.obj$shores,
   #                                     feature.name="CpGi",flank.name="shores")
   # 
-  # ######## HOMER Motif Analysis
-  # # TODO: conversion to bed files (?)
-  # setwd(report_dir)
-  # 
-  # lmr <- as(diffMethLoci,"GRanges")
-  # lmr_25p <- as(diffMeth_25p,"GRanges")
-  # 
-  # indeces_25p <- which(lmr@ranges@start %in% lmr_25p@ranges@start)
-  # 
-  # # paste0("peakID_", seq(1:length(lmr)))
-  # 
-  # df <- data.frame(seqnames=seqnames(lmr),
-  #                  starts=start(lmr)-1,
-  #                  ends=end(lmr),
-  #                  # names=c(rep(".", length(lmr))), # col 4 = unique Peak ID (?)
-  #                  names=paste0("peakID_", seq(1:length(lmr))), # col 4 = unique Peak ID (?)
-  #                  scores=c(rep(".", length(lmr))), # col 5 = not used
-  #                  strands=strand(lmr))
-  # 
-  # df_25p <- df[indeces_25p, ]
-  # 
-  # mkdirHomer = paste("mkdir homer")
-  # ezSystem(mkdirHomer)
-  # setwd("./homer")
-  # 
-  # mkdirHomerDMR = paste("mkdir region")
-  # ezSystem(mkdirHomerDMR)
-  # 
+  ##################### HOMER Motif Analysis ########################
+  # TODO: conversion to bed files (?)
+  setwdNew(basename(output$getColumn("Report")))
+
+  mkdirHomer = paste("mkdir homer")
+  ezSystem(mkdirHomer)
+  setwd("homer")
+
+  mkdirHomerDMR = paste("mkdir region")
+  ezSystem(mkdirHomerDMR)
+  
   # mkdirHomerDML = paste("mkdir locus")
   # ezSystem(mkdirHomerDML)
-  # 
-  # region_size <- 200
-  # motif_length <- "8,10,12"
-  # # genome = fasta file
-  # # genome <- "hg38" # fasta file
-  # genomeHomer <- file.path(param$ref_selector, '../../Sequence/WholeGenomeFasta/genome.fa')
+
+  region_size <- 200
+  motif_length <- "8,10,12"
+  # genome = fasta file
+  # genome <- "hg38" # fasta file
+  genomeHomer <- file.path(param$ref_selector, '../../Sequence/WholeGenomeFasta/genome.fa')
   # output_dir <- "homer"
-  # ### needed: bed file DMR/L, bed file background x2
-  # cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "region", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
-  # ezSystem(cmd)
-  # 
+  ### needed: bed file DMR/L, bed file background x2
+  cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "region", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
+  ezSystem(cmd)
+
   # cmd <- paste("findMotifsGenome.pl", bedDML, genomeHomer, "locus", "-size", region_size, "-len", motif_length, "-bg", bedBGDML)
   # ezSystem(cmd)
-  # 
-  # ### Functional analysis (GREAT)
-  # setwd(report_dir)
-  # mkdirGreat = paste("mkdir great")
-  # ezSystem(mkdirGreat)
-  # 
-  # greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
-  #                         background = dmRegions, cores = param$cores)
-  # greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
-  #                         background = dmRegions, cores = param$cores)
-  # greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selection,
-  #                         background = dmRegions, cores = param$cores)
-  # 
-  # enrichmentTable_BP <- getEnrichmentTable(greatResult_BP)
-  # enrichmentTable_CC <- getEnrichmentTable(greatResult_CC)
-  # enrichmentTable_MF <- getEnrichmentTable(greatResult_MF)
-  # 
-  # if(param$biomart_selection=="athaliana_eg_gene") {
-  #   reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
-  #   react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
-  #   rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
-  #   reactome_pathways <- split(rdb$V4, paste(rdb$V1, rdb$V2, sep = ": "))
-  #   
-  #   ## KEGG pathways
-  #   kg <- keggList("organism")
-  #   
-  #   pathway2gene <- keggLink("pathway", "ath")
-  #   pathwayName <- keggList("pathway", "ath")
-  #   df1 <- data.frame(
-  #     gene = gsub("ath:", "", names(pathway2gene)),
-  #     pathID = gsub("path:", "", pathway2gene)
-  #   )
-  #   
-  #   df2 <- data.frame(
-  #     pathID = gsub("path:", "", names(pathwayName)),
-  #     name = pathwayName
-  #   )
-  #   
-  #   df_kegg <- merge(df2, df1)
-  #   
-  #   kegg_pathways <- split(df_kegg$gene, paste(df_kegg$pathID, df_kegg$name,
-  #                                              sep = ": "
-  #   ))
-  #   
-  #   greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, extended_tss = extendedTSS,
-  #                           background = dmRegions, cores = cores)
-  #   
-  # 
-  #   greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
-  #                           background = dmRegions, cores = param$cores)
-  #   greatResult_KE <- great(gr = significantRegions, gene_sets = kegg_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
-  #                           background = dmRegions, cores = param$cores)
-  #   
-  #   enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
-  #   enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
-  #   
-  #   setwd("great")
-  #   saveRDS(greatResult_RE, file = paste0("greatResult_RE", ".rds"))
-  #   saveRDS(greatResult_KE, file = paste0("greatResult_KE", ".rds"))
-  #   saveRDS(enrichmentTable_RE, file = paste0("enrichmentTable_RE", ".rds"))
-  #   saveRDS(enrichmentTable_KE, file = paste0("enrichmentTable_KE", ".rds"))
-  # }
-  # 
-  # setwd("great")
-  # saveRDS(greatResult_BP, file = paste0("greatResult_BP", ".rds"))
-  # saveRDS(greatResult_CC, file = paste0("greatResult_CC", ".rds"))
-  # saveRDS(greatResult_MF, file = paste0("greatResult_MF", ".rds"))
-  # saveRDS(enrichmentTable_BP, file = paste0("enrichmentTable_BP", ".rds"))
-  # saveRDS(enrichmentTable_CC, file = paste0("enrichmentTable_CC", ".rds"))
-  # saveRDS(enrichmentTable_MF, file = paste0("enrichmentTable_MF", ".rds"))
   
+  # findMotifsGenome.pl significantLociCpG.bed /srv/GT/reference/Arabidopsis_thaliana/TAIR/TAIR10/Sequence/WholeGenomeFasta/genome.fa CpG -size 200 -len 8,10,12 -bg dmLociCpG.bed
+  # findMotifsGenome.pl significantLociCHG.bed /srv/GT/reference/Arabidopsis_thaliana/TAIR/TAIR10/Sequence/WholeGenomeFasta/genome.fa CHG -size 200 -len 8,10,12 -bg dmLociCHG.bed
+  # 
+  # findMotifsGenome.pl sl.bed /srv/GT/reference/Arabidopsis_thaliana/TAIR/TAIR10/Sequence/WholeGenomeFasta/genome.fa CHG -size 200 -len 8,10,12 -bg dm.bed
+  # 
+  # findMotifsGenome.pl dmRegionsCHG.bed /srv/GT/reference/Arabidopsis_thaliana/TAIR/TAIR10/Sequence/WholeGenomeFasta/genome.fa CHG -size 200 -len 8,10,12
+  # findMotifsGenome.pl dmRegionsCHG.bed /srv/GT/reference/Arabidopsis_thaliana/TAIR/TAIR10/Sequence/WholeGenomeFasta CHG -size 200 -len 8,10,12
+  
+  
+  ######################## Functional analysis (GREAT) ##############################
+  setwdNew(basename(output$getColumn("Report")))
+  mkdirGreat = paste("mkdir great")
+  ezSystem(mkdirGreat)
+  
+  setwd("great")
+  mkdirGreatDMR = paste("mkdir region")
+  ezSystem(mkdirGreatDMR)
+  
+  # mkdirGreatDML = paste("mkdir locus")
+  # ezSystem(mkdirGreatDML)
+  
+  greatFun <- function(dmRegions, significantRegions, context) { # dmType = region / locus
+    greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
+                            background = dmRegions, cores = param$cores)
+    greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
+                            background = dmRegions, cores = param$cores)
+    greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selection,
+                            background = dmRegions, cores = param$cores)
+    
+    enrichmentTable_BP <- getEnrichmentTable(greatResult_BP)
+    enrichmentTable_CC <- getEnrichmentTable(greatResult_CC)
+    enrichmentTable_MF <- getEnrichmentTable(greatResult_MF)
+    
+    if(param$biomart_selection=="athaliana_eg_gene") {
+      reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
+      react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
+      rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
+      reactome_pathways <- split(rdb$V4, paste(rdb$V1, rdb$V2, sep = ": "))
+      
+      ## KEGG pathways
+      kg <- keggList("organism")
+      
+      pathway2gene <- keggLink("pathway", "ath")
+      pathwayName <- keggList("pathway", "ath")
+      df1 <- data.frame(
+        gene = gsub("ath:", "", names(pathway2gene)),
+        pathID = gsub("path:", "", pathway2gene)
+      )
+      
+      df2 <- data.frame(
+        pathID = gsub("path:", "", names(pathwayName)),
+        name = pathwayName
+      )
+      
+      df_kegg <- merge(df2, df1)
+      
+      kegg_pathways <- split(df_kegg$gene, paste(df_kegg$pathID, df_kegg$name,
+                                                 sep = ": "
+      ))
+      
+      greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, extended_tss = extendedTSS,
+                              background = dmRegions, cores = cores)
+      
+      
+      greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
+                              background = dmRegions, cores = param$cores)
+      greatResult_KE <- great(gr = significantRegions, gene_sets = kegg_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
+                              background = dmRegions, cores = param$cores)
+      
+      enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
+      enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
+      
+      # setwd("great")
+      saveRDS(greatResult_RE, file = paste0("greatResultRE_", context, ".rds"))
+      saveRDS(greatResult_KE, file = paste0("greatResultKE_", context, ".rds"))
+      # saveRDS(enrichmentTable_RE, file = paste0(dmType, "/", "enrichmentTable_RE_", ".rds"))
+      # saveRDS(enrichmentTable_KE, file = paste0(dmType, "/", "enrichmentTable_KE_", ".rds"))
+    }
+    
+    # setwd("great")
+    saveRDS(greatResult_BP, file = paste0("greatResultBP_", context, ".rds"))
+    saveRDS(greatResult_CC, file = paste0("greatResultCC_", context, ".rds"))
+    saveRDS(greatResult_MF, file = paste0("greatResultMF_", context, ".rds"))
+    # saveRDS(enrichmentTable_BP, file = paste0(dmType, "/", "enrichmentTable_BP", ".rds"))
+    # saveRDS(enrichmentTable_CC, file = paste0(dmType, "/", "enrichmentTable_CC", ".rds"))
+    # saveRDS(enrichmentTable_MF, file = paste0(dmType, "/", "enrichmentTable_MF", ".rds"))
+    
+  }
+
+  greatFun(dmRegions = dmRegionsCpG, significantRegions = significantRegionsCpG, context = "CpG")
+  # greatFun(dmRegions = dmRegionsCHG, significantRegions = significantRegionsCHG, context = "CHG")
+  # greatFun(dmRegions = dmRegionsCHH, significantRegions = significantRegionsCHH, context = "CHH")
 
   ###################### testing ######################
   
