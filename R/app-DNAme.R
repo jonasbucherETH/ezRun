@@ -76,7 +76,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # type(bsseqColData)
   
   coverageFilesCpG <- input$getFullPaths("COV")
-  sampleNames <- names(coverageCpG)
+  sampleNames <- names(coverageFilesCpG)
   # coverageFilesCpG <- unname(coverageFilesCpG)
   # sampleNames <- param$samples
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleNames)
