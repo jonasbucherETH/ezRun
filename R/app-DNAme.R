@@ -257,10 +257,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
 
  # cat("4")
   
-  qvalCutoff <- 0.5
+  qvalCutoff <- 0.8
   significantRegionsCpG <- dmRegionsCpG[dmRegionsCpG$qval < qvalCutoff, ]
-  significantRegionsCHG <- dmRegionsCHG[dmRegionsCHG$qval < qvalCutoff, ]
-  significantRegionsCHH <- dmRegionsCHH[dmRegionsCHH$qval < qvalCutoff, ]
+  # significantRegionsCHG <- dmRegionsCHG[dmRegionsCHG$qval < qvalCutoff, ]
+  # significantRegionsCHH <- dmRegionsCHH[dmRegionsCHH$qval < qvalCutoff, ]
   
   # TODO: transform to bedGraph for HOMER
   ### setwd before saving results
@@ -610,6 +610,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   genomeHomer <- file.path(param$ref_selector, '../../Sequence/WholeGenomeFasta/genome.fa')
   # output_dir <- "homer"
   ### needed: bed file DMR/L, bed file background x2
+
+  bedDMR <- "../dmr/dmRegionsCpG.bed"
+  bedBGDMR <- "../dmr/significantRegionsCpG.bed"
   cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "region", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
   ezSystem(cmd)
 
