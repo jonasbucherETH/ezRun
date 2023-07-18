@@ -612,7 +612,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   motif_length <- "8,10,12"
   # genome = fasta file
   # genome <- "hg38" # fasta file
-  genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$ref_selector)), 'Sequence/WholeGenomeFasta/genome.fa')
+  genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
   
   # genomeHomer <- "/srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta/genome.fa"
   # dirname(dirname(genomeHomer))
