@@ -257,7 +257,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
 
   cat("4")
   
-  qvalCutoff <- 0.8
+  qvalCutoff <- 0.5
   significantRegionsCpG <- dmRegionsCpG[dmRegionsCpG$qval < qvalCutoff, ]
   # significantRegionsCHG <- dmRegionsCHG[dmRegionsCHG$qval < qvalCutoff, ]
   # significantRegionsCHH <- dmRegionsCHH[dmRegionsCHH$qval < qvalCutoff, ]
@@ -266,6 +266,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ### setwd before saving results
   # setwd("dmr")
  # cat("5")
+  seqlevelsStyle(dmRegionsCpG) <- "UCSC"
+  seqlevelsStyle(significantRegionsCpG) <- "UCSC"
   
   writeBedFileRegions <- function(regions, nameBed) {
     dfGR <- data.frame(chr=seqnames(regions),
@@ -610,16 +612,25 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   motif_length <- "8,10,12"
   # genome = fasta file
   # genome <- "hg38" # fasta file
-  genomeHomer <- file.path(param$ref_selector, '../../Sequence/WholeGenomeFasta/genome.fa')
+  genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$ref_selector)), 'Sequence/WholeGenomeFasta/genome.fa')
+  
+  # genomeHomer <- "/srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta/genome.fa"
+  # dirname(dirname(genomeHomer))
   # output_dir <- "homer"
   ### needed: bed file DMR/L, bed file background x2
 
-  bedDMR <- "../dmr/dmRegionsCpG.bed"
-  bedBGDMR <- "../dmr/significantRegionsCpG.bed"
+  bedDMR <- "significantRegionsCpG.bed"
+  bedBGDMR <- "dmRegionsCpG.bed"
   # cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "region", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
-  cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, ".", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
+  cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "homer", "-size 200", "-bg", bedBGDMR, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
   ezSystem(cmd)
-
+  # module load Tools/HOMER/4.11
+  # findMotifsGenome.pl significantRegionsCpG.bed /srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta/genome.fa homer -size 200 -bg dmRegionsCpG.bed -len 8,10,12 -keepOverlappingBg
+  # findMotifsGenome.pl significantRegionsCpG.bed /srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta homer -size 200 -bg dmRegionsCpG.bed -len 8,10,12 -keepOverlappingBg
+  # findMotifsGenome.pl significantRegionsCpG.bed /srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta homer -size 200 -len 8,10,12 -preparsedDir .
+  # findMotifsGenome.pl significantRegionsCpG.bed /srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta/genome.fa homer -size 200 -len 8,10,12 -preparsedDir .
+  # findMotifsGenome.pl significantRegionsCpG.bed /srv/GT/reference/Mus_musculus/GENCODE/GRCm39/Sequence/WholeGenomeFasta/genome.fa homer -len 8,10,12 -preparsedDir . -nlen 0
+  
   # cmd <- paste("findMotifsGenome.pl", bedDML, genomeHomer, "locus", "-size", region_size, "-len", motif_length, "-bg", bedBGDML)
   # ezSystem(cmd)
   
