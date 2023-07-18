@@ -64,8 +64,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   ### DMR
   # TODO: check if COV contain all contexts
-  mkdirDMR = paste("mkdir dmr")
-  ezSystem(mkdirDMR)
+  # mkdirDMR = paste("mkdir dmr")
+  # ezSystem(mkdirDMR)
   
   # testCovariateData <- input$getColumn(param$grouping)
   # bsseqColData <- as.data.frame(input$getColumn(param$grouping), col.names = param$grouping, row.names = input$getColumn("Name"))
@@ -97,7 +97,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # bsseqColData <- as.data.frame(c(40,40,50,50,60,60,60), row.names = c('SRR4105496','SRR4105497','SRR4105498','SRR4105499','SRR4105500','SRR4105501','SRR4105502'))
   # colnames(bsseqColData) <- "Treatment"
   
-  CpG_report_files <- input$getFullPaths("CpG_report")
+  # CpG_report_files <- input$getFullPaths("CpG_report")
   # CHG_report_files <- input$getFullPaths("CHG_report")
   # CHH_report_files <- input$getFullPaths("CHH_report")
   
@@ -264,7 +264,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   # TODO: transform to bedGraph for HOMER
   ### setwd before saving results
-  setwd("dmr")
+  # setwd("dmr")
  # cat("5")
   
   writeBedFileRegions <- function(regions, nameBed) {
@@ -284,14 +284,14 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # writeBedFileRegions(regions = significantRegionsCHG, nameBed = "significantRegionsCHG")
   # writeBedFileRegions(regions = significantRegionsCHH, nameBed = "significantRegionsCHH")
 
-  saveRDS(bsseqCpG, file=paste0(bsseqCpG, ".rds"))
+  saveRDS(bsseqCpG, file=paste0("bsseqCpG", ".rds"))
   # saveRDS(bsseqCHG, file=paste0(bsseqCHG, ".rds"))
   # saveRDS(bsseqCHH, file=paste0(bsseqCHH, ".rds"))
-  saveRDS(dmRegionsCpG, file=paste0(dmRegionsCpG, ".rds"))
+  saveRDS(dmRegionsCpG, file=paste0("dmRegionsCpG", ".rds"))
   # saveRDS(dmRegionsCHG, file=paste0(dmRegionsCHG, ".rds"))
   # saveRDS(dmRegionsCHH, file=paste0(dmRegionsCHH, ".rds"))
   ### maybe don't save significantRegions, as it is merely a subset of dmRegions
-  saveRDS(significantRegionsCpG, file=paste0(significantRegionsCpG, ".rds"))
+  saveRDS(significantRegionsCpG, file=paste0("significantRegionsCpG", ".rds"))
   # saveRDS(significantRegionsCHG, file=paste0(significantRegionsCHG, ".rds"))
   # saveRDS(significantRegionsCHH, file=paste0(significantRegionsCHH, ".rds"))
   # saveRDS(bsseq, file=paste0(bsseq, ".rds"))
@@ -311,9 +311,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # TODO: what pipeline to use for methRead?
   cat("5")
   
-  setwdNew(basename(output$getColumn("Report")))
-  mkdirDML = paste("mkdir dml")
-  ezSystem(mkdirDML)
+  # setwdNew(basename(output$getColumn("Report")))
+  # mkdirDML = paste("mkdir dml")
+  # ezSystem(mkdirDML)
   
 
   # sampleNames <- c("SRR4105496","SRR4105497","SRR4105498","SRR4105499","SRR4105500","SRR4105501","SRR4105502")
@@ -560,7 +560,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
 
 
   # ### setwd before saving results
-  setwd("dml")
+  # setwd("dml")
   
   # significantLociCpG_bedGraph <- bedgraph(
   #   methylObj = significantLociCHG,
@@ -568,10 +568,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # )# saveRDS(methylBaseCpG, file=paste0(methylBaseCpG, ".rds"))
   # saveRDS(methylBaseCHG, file=paste0(methylBaseCHG, ".rds"))
   # saveRDS(methylBaseCHH, file=paste0(methylBaseCHH, ".rds"))
-  saveRDS(dmLociCpG, file=paste0(dmLociCpG, ".rds"))
+  saveRDS(dmLociCpG, file=paste0("dmLociCpG", ".rds"))
   # saveRDS(dmLociCHG, file=paste0(dmLociCHG, ".rds"))
   # saveRDS(dmLociCHH, file=paste0(dmLociCHH, ".rds"))
-  saveRDS(significantLociCpG, file=paste0(significantLociCpG, ".rds"))
+  saveRDS(significantLociCpG, file=paste0("significantLociCpG", ".rds"))
   # saveRDS(significantLociCHG, file=paste0(diffMeth_CpG, ".rds"))
   # saveRDS(significantLociCHH, file=paste0(diffMeth_CpG, ".rds"))
 
@@ -594,14 +594,14 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # 
   ##################### HOMER Motif Analysis ########################
   # TODO: conversion to bed files (?)
-  setwdNew(basename(output$getColumn("Report")))
-
-  mkdirHomer = paste("mkdir homer")
-  ezSystem(mkdirHomer)
-  setwd("homer")
-
-  mkdirHomerDMR = paste("mkdir region")
-  ezSystem(mkdirHomerDMR)
+  # setwdNew(basename(output$getColumn("Report")))
+  # 
+  # mkdirHomer = paste("mkdir homer")
+  # ezSystem(mkdirHomer)
+  # setwd("homer")
+  # 
+  # mkdirHomerDMR = paste("mkdir region")
+  # ezSystem(mkdirHomerDMR)
   
   # mkdirHomerDML = paste("mkdir locus")
   # ezSystem(mkdirHomerDML)
@@ -616,7 +616,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
 
   bedDMR <- "../dmr/dmRegionsCpG.bed"
   bedBGDMR <- "../dmr/significantRegionsCpG.bed"
-  cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "region", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
+  # cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, "region", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
+  cmd <- paste("findMotifsGenome.pl", bedDMR, genomeHomer, ".", "-size", region_size, "-len", motif_length, "-bg", bedBGDMR)
   ezSystem(cmd)
 
   # cmd <- paste("findMotifsGenome.pl", bedDML, genomeHomer, "locus", "-size", region_size, "-len", motif_length, "-bg", bedBGDML)
@@ -632,13 +633,13 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   
   
   ######################## Functional analysis (GREAT) ##############################
-  setwdNew(basename(output$getColumn("Report")))
-  mkdirGreat = paste("mkdir great")
-  ezSystem(mkdirGreat)
-  
-  setwd("great")
-  mkdirGreatDMR = paste("mkdir region")
-  ezSystem(mkdirGreatDMR)
+  # setwdNew(basename(output$getColumn("Report")))
+  # mkdirGreat = paste("mkdir great")
+  # ezSystem(mkdirGreat)
+  # 
+  # setwd("great")
+  # mkdirGreatDMR = paste("mkdir region")
+  # ezSystem(mkdirGreatDMR)
   
   # mkdirGreatDML = paste("mkdir locus")
   # ezSystem(mkdirGreatDML)
