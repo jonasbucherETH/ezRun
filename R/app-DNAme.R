@@ -143,6 +143,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     } else {
       covColumnName <- paste0("COV_", contexts[i])
     } 
+    setwd("..")
     setwd(basename(output$getColumn("Report")))
     setwdNew(contexts[i])
     # ezSystem(paste("mkdir", contexts[i]))
