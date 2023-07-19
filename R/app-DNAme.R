@@ -45,7 +45,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ans4Report <- list() # a list of results for rmarkdown report
   ans4Report[["dataset"]] <- dataset
   
-  report_dir <- basename(output$getColumn("Report"))
+  # report_dir <- basename(output$getColumn("Report"))
   
   cwd <- getwd()
   setwdNew(basename(output$getColumn("Report")))
@@ -73,7 +73,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F)
   }
   
-  greatFun <- function(dmRegions, significantRegions, context) { # dmType = region / locus
+  greatFun <- function(dmRegions, significantRegions) { # dmType = region / locus
     greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
                             background = dmRegions, cores = param$cores)
     greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
@@ -118,12 +118,12 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       
       enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
       enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
-      saveRDS(greatResult_RE, file = paste0("greatResultRE_", context, ".rds"))
-      saveRDS(greatResult_KE, file = paste0("greatResultKE_", context, ".rds"))
+      saveRDS(greatResult_RE, file = paste0("greatResultRE", ".rds"))
+      saveRDS(greatResult_KE, file = paste0("greatResultKE", ".rds"))
     }
-    saveRDS(greatResult_BP, file = paste0("greatResultBP_", context, ".rds"))
-    saveRDS(greatResult_CC, file = paste0("greatResultCC_", context, ".rds"))
-    saveRDS(greatResult_MF, file = paste0("greatResultMF_", context, ".rds"))
+    saveRDS(greatResult_BP, file = paste0("greatResultBP", ".rds"))
+    saveRDS(greatResult_CC, file = paste0("greatResultCC", ".rds"))
+    saveRDS(greatResult_MF, file = paste0("greatResultMF", ".rds"))
   }
   
   coverageFiles <- input$getFullPaths("COV")
@@ -143,7 +143,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     } else {
       covColumnName <- paste0("COV_", contexts[i])
     } 
-    setwdNew(basename(output$getColumn("Report")))
+    setwd(basename(output$getColumn("Report")))
     setwdNew(contexts[i])
     # ezSystem(paste("mkdir", contexts[i]))
     
@@ -211,7 +211,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     cmd <- paste("findMotifsGenome.pl", bedFile, genomeHomer, "homer", "-size 200", "-bg", bedFileBG, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
     ezSystem(cmd)
 
-    greatFun(dmRegions = dmRegions, significantRegions = significantRegions, context = contexts[i])
+    greatFun(dmRegions = dmRegions, significantRegions = significantRegions)
   }
 
   # print(sampleNames)
