@@ -1012,7 +1012,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ##### ----- dmrseq
 
   # setwd again before saving these
-  setwd(basename(output$getColumn("Report")))
+  # setwd(basename(output$getColumn("Report")))
   
   ## Copy the style files and templates
   styleFiles <- file.path(
