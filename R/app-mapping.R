@@ -836,15 +836,20 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # covFiles <- list.files(".", pattern = "*.gz.bismark.cov.gz$")
   
   # cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", names(bamFile), "*.gz.bismark.cov.gz")
-  cmd <- paste("coverage2cytosine", "--CX", "--genome_folder", ref, "-o", names(bamFile), "*.gz.bismark.cov.gz")
+  cmd <- paste("coverage2cytosine", "--CX", "--gzip", "--genome_folder", ref, "-o", names(bamFile), "*.gz.bismark.cov.gz")
   ezSystem(cmd)
   
   if (param$allCytosineContexts) {
     # cmd <- paste("awk -F'\t' '{print > ($6", paste0("\"_report.txt\")}'"), paste0(names(bamFile), "*CX_report*"))
-    cmd <- paste("awk -F'\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 ", "\"_report.txt\")}'"), paste0(names(bamFile), "*CX_report*"))
+    cmd <- paste("awk -F'\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 ", "\"_report.txt.gz\")}'"), paste0("<(zcat ", names(bamFile), "*CX_report.txt.gz)"))
     ezSystem(cmd)
   }
-
+  
+  # bamFile <- "a"
+  # names(bamFile) <- "SRR4105496"
+  # awk -F'\t' '{print > \"SRR4105496.\"($6 \"_report.txt.gz\")}' <(zcat SRR4105496*CX_report)
+  # awk -F'\t' '{print > "SRR4105496."($1 "_report.txt.gz")}' <(zcat /srv/gstore/projects/p1535/Bismark_mm_full3_2023-07-13--11-55-16/SRR4105496.CHG.gz)
+  
   # awk -F'\t' '{print > ($6 "_report.A04_BB.txt")}' A04_BB.CX_report.txt
   # awk -F'\t' '{print > ("A04_BB." $6 "_report.txt")}' A04_BB.CX_report.txt
 
