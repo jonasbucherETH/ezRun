@@ -61,7 +61,11 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   } else {
     BPPARAM <- SerialParam()
   }
-
+  
+  # significantRegions <- readRDS("/srv/gstore/projects/p1535/DNAme_fun_mm_test6_60--over--40_2023-07-20--13-14-42/DNAme/CpG/significantRegions.rds")
+  # writeBedFileRegions(regions = significantRegions, nameBed = "significantRegions")
+  # findMotifsGenome.pl ~/git/sushi/significantRegions.bed mm10 homer -nlen 0 -noweight -preparsedDir .
+  
   writeBedFileRegions <- function(regions, nameBed) {
     dfGR <- data.frame(chr=seqnames(regions),
                        starts=start(regions),
@@ -70,7 +74,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                        scores=c(rep(".", length(regions))), # col 5 = not used
                        # strands=strand(regions))
                        strands=c(rep("+", length(regions))))
-    write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F)
+    write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F, quote = F)
   }
   
   greatFun <- function(dmRegions, significantRegions) { # dmType = region / locus
@@ -193,27 +197,29 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     filteredMethylRaw  <- filterByCoverage(
       methylRaw,
-      lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
-      lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
+      lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
+      lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
       hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
       hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
     )
     methylBase <- unite(filteredMethylRaw, destrand=FALSE) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
-    significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.01, type="all")
+    significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
     
     saveRDS(dmLoci, file=paste0("dmLoci", ".rds"))
     saveRDS(significantLoci, file=paste0("significantLoci", ".rds"))
     
+    greatFun(dmRegions = dmRegions, significantRegions = significantRegions)
+    
     region_size <- 200
     motif_length <- "8,10,12"
     genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
+    # genomeHomer <- "mm10"
     bedFile <- "significantRegions.bed"
     bedFileBG <- "dmRegions.bed"
     cmd <- paste("findMotifsGenome.pl", bedFile, genomeHomer, "homer", "-size 200", "-bg", bedFileBG, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
     ezSystem(cmd)
 
-    greatFun(dmRegions = dmRegions, significantRegions = significantRegions)
   }
 
   # print(sampleNames)
