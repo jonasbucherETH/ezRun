@@ -841,7 +841,10 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   
   if (param$allCytosineContexts) {
     # cmd <- paste("awk -F'\t' '{print > ($6", paste0("\"_report.txt\")}'"), paste0(names(bamFile), "*CX_report*"))
-    cmd <- paste("awk -F'\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 ", "\"_report.txt.gz\")}'"), paste0("<(zcat ", names(bamFile), "*CX_report.txt.gz)"))
+    # cmd <- paste("awk -F'\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 ", "\"_report.txt.gz\")}'"), paste0("<(zcat ", names(bamFile), "*CX_report.txt.gz)"))
+    cmd <- paste("zcat", paste0(names(bamFile), "*CX_report.txt.gz"), "|", "awk -F '\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 ", "\"_report.txt\")}'"))
+    ezSystem(cmd)
+    cmd <- paste("gzip", paste0(names(bamFile), "*^[X]_report.txt"))
     ezSystem(cmd)
   }
   
@@ -852,6 +855,11 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   
   # awk -F'\t' '{print > ($6 "_report.A04_BB.txt")}' A04_BB.CX_report.txt
   # awk -F'\t' '{print > ("A04_BB." $6 "_report.txt")}' A04_BB.CX_report.txt
+  # awk -F '\t' '{print > "A04_BB."($6 "_report.txt.gz")}' <(zcat A04_BB*CX_report.txt.gz)
+  # awk -F '\t' '{print > "A04_BB."($6 "_report.txt")}' <(zcat A04_BB*CX_report.txt.gz) | gzip
+  # zcat A04_BB*CX_report.txt.gz | awk -F '\t' '{print $6 | gzip > "A04_BB." $6 "_report.txt.gz")}'
+  # zcat A04_BB*CX_report.txt.gz | awk -F '\t' '{print > "A04_BB."($6 "_report.txt.gz")}'
+  # echo 1 2 | awk '{print $2 | "gzip > "$1".gz"}'
 
   splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
   ezSystem(paste("cat ", splittingReportFile[1], ">>", reportFile))
