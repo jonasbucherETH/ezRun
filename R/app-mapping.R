@@ -845,7 +845,7 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
     cmd <- paste("awk -F '\\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 \"_report.txt\")}'"), paste0("<(zcat ", names(bamFile), "*CX_report.txt.gz)"))
     # cmd <- paste("zcat", paste0(names(bamFile), "*CX_report.txt.gz"), "|", "awk -F '\t' '{print >", paste0("\"", names(bamFile), ".\"", "($6 ", "\"_report.txt\")}'"))
     ezSystem(cmd)
-    cmd <- paste("gzip", paste0(names(bamFile), "*^[X]_report.txt"))
+    cmd <- paste("gzip", paste0(names(bamFile), "*_report.txt"))
     ezSystem(cmd)
   }
   
