@@ -72,12 +72,12 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                        ends=end(regions),
                        names=paste0("peakID_", seq(1:length(regions))), # col 4 = unique Peak ID (?)
                        scores=c(rep(".", length(regions))), # col 5 = not used
-                       # strands=strand(regions))
-                       strands=c(rep("+", length(regions))))
+                       strands=strand(regions))
+                       # strands=c(rep("+", length(regions))))
     write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F, quote = F)
   }
   
-  greatFun <- function(dmRegions, significantRegions) { # dmType = region / locus
+  greatFun <- function(dmRegions, significantRegions, type) { # dmType = region / locus
     greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
                             background = dmRegions, cores = param$cores)
     greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
@@ -120,21 +120,23 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       greatResult_KE <- great(gr = significantRegions, gene_sets = kegg_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
                               background = dmRegions, cores = param$cores)
       
-      enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
-      enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
-      saveRDS(greatResult_RE, file = paste0("greatResultRE", ".rds"))
-      saveRDS(greatResult_KE, file = paste0("greatResultKE", ".rds"))
+      # enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
+      # enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
+      saveRDS(greatResult_RE, file = file.path(type, paste0("greatResultRE", ".rds")))
+      saveRDS(greatResult_KE, file = file.path(type, paste0("greatResultKE", ".rds")))
     }
-    saveRDS(greatResult_BP, file = paste0("greatResultBP", ".rds"))
-    saveRDS(greatResult_CC, file = paste0("greatResultCC", ".rds"))
-    saveRDS(greatResult_MF, file = paste0("greatResultMF", ".rds"))
+    saveRDS(greatResult_BP, file = file.path(type, paste0("greatResultBP", ".rds")))
+    saveRDS(greatResult_CC, file = file.path(type, paste0("greatResultCC", ".rds")))
+    saveRDS(greatResult_MF, file = file.path(type, paste0("greatResultMF", ".rds")))
   }
   
-  coverageFiles <- input$getFullPaths("COV")
+  # coverageFiles <- input$getFullPaths("COV")
   # sampleNames <- names(coverageFiles)
   sampleNames <- param$samples
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleNames)
   colnames(bsseqColData) <- param$grouping
+  
+  # ezSystem("mkdir region loci")
   
   if (param$allCytosineContexts) {
     contexts <- c("CpG", "CHG", "CHH")
@@ -143,15 +145,21 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   }
   
   for (i in seq_along(contexts)) {
-    if (contexts[i] == "CpG") {
-      covColumnName <- "COV"
-    } else {
-      covColumnName <- paste0("COV_", contexts[i])
-    } 
+    # using coverage files
+    # if (contexts[i] == "CpG") {
+    #   covColumnName <- "COV"
+    # } else {
+    #   covColumnName <- paste0("COV_", contexts[i])
+    # } 
+    # using genome-wide cytosine report
+    covColumnName <- paste0(contexts[i], "_report")
+
     setwd(cwd)
     setwd(basename(output$getColumn("Report")))
     setwdNew(contexts[i])
     # ezSystem(paste("mkdir", contexts[i]))
+    ezSystem("mkdir regions loci")
+    ezSystem("mkdir regions/hyper regions/hypo loci/hyper loci/hypo")
     
     coverageFiles <- input$getFullPaths(covColumnName)
     
@@ -172,23 +180,44 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     )
     
     seqlevelsStyle(dmRegions) <- "UCSC"
+    
+    qvalCutoff <- 0.05
+    significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
+    # TODO: split into hypo- and hyper-methylated regions
+    # note that for a two-group comparison dmrseq uses alphabetical order of the covariate of interest
+    if (sort(c(param$sampleGroup, param$refGroup))[1] == param$refGroup) {
+      significantRegions_hyper <- significantRegions[significantRegions$stat > 0, ]
+      significantRegions_hypo <- significantRegions[significantRegions$stat < 0, ]
+    } else {
+      significantRegions_hyper <- significantRegions[significantRegions$stat < 0, ]
+      significantRegions_hypo <- significantRegions[significantRegions$stat > 0, ]
+    }
+
     # keepStandardChromosomes
-    significantRegions <- dmRegions[1:(length(dmRegions)/3),]
+    # significantRegions <- dmRegions[1:(length(dmRegions)/3),]
     # qvalCutoff <- 0.5
     # significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
-    writeBedFileRegions(regions = dmRegions, nameBed = "dmRegions")
-    writeBedFileRegions(regions = significantRegions, nameBed = "significantRegions")
-    saveRDS(bsseq, file=paste0("bsseq", ".rds"))
-    saveRDS(dmRegions, file=paste0("dmRegions", ".rds"))
-    saveRDS(significantRegions, file=paste0("significantRegions", ".rds"))
     
+    
+    writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
+    saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
+    writeBedFileRegions(regions = significantRegions, nameBed = "regions/significantRegions")
+    saveRDS(significantRegions, file=paste0("regions/significantRegions", ".rds"))
+    
+    writeBedFileRegions(regions = significantRegions_hyper, nameBed = "regions/hyper/significantRegions")
+    writeBedFileRegions(regions = significantRegions_hypo, nameBed = "regions/hypo/significantRegions")
+    saveRDS(significantRegions_hyper, file=paste0("regions/hyper/significantRegions", ".rds"))
+    saveRDS(significantRegions_hypo, file=paste0("regions/hypo/significantRegions", ".rds"))
+    saveRDS(bsseq, file=paste0("regions/bsseq", ".rds"))
+
     treatmentMethylKit <- rep(0, length(sampleNames))
     treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
     
     methylRaw <- methRead(location = as.list(coverageFiles),
                              sample.id = as.list(sampleNames),
                              treatment = treatmentMethylKit,
-                             pipeline = "bismarkCoverage",
+                             # pipeline = "bismarkCoverage",
+                             pipeline = "bismarkCytosineReport",
                              assembly = param$biomart_selection,
                              context = contexts[i],
                              mincov = 0,
@@ -204,12 +233,26 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     )
     methylBase <- unite(filteredMethylRaw, destrand=FALSE) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
+    dmLoci <- as(dmLoci,"GRanges")
+    seqlevelsStyle(dmLoci) <- "UCSC"
+    
     significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
+    significantLoci_hyper <- significantLoci[significantLoci$meth.diff > 0, ]
+    significantLoci_hypo <- significantLoci[significantLoci$meth.diff < 0, ]
     
-    saveRDS(dmLoci, file=paste0("dmLoci", ".rds"))
-    saveRDS(significantLoci, file=paste0("significantLoci", ".rds"))
-    
-    greatFun(dmRegions = dmRegions, significantRegions = significantRegions)
+    saveRDS(dmLoci, file=file.path("loci", paste0("dmLoci", ".rds")))
+    saveRDS(significantLoci, file=file.path("loci", paste0("significantLoci", ".rds")))
+    saveRDS(significantLoci_hyper, file=file.path("loci", "hyper", paste0("significantLoci", ".rds")))
+    saveRDS(significantLoci_hypo, file=file.path("loci", "hypo", paste0("significantLoci", ".rds")))
+    writeBedFileRegions(regions = dmLoci, nameBed = "loci/dmLoci")
+    writeBedFileRegions(regions = significantLoci, nameBed = "loci/significantLoci")
+    writeBedFileRegions(regions = significantLoci_hyper, nameBed = "loci/hyper/significantLoci")
+    writeBedFileRegions(regions = significantLoci_hypo, nameBed = "loci/hypo/significantLoci")
+
+    greatFun(dmRegions = dmRegions, significantRegions = significantRegions_hyper, type = "regions/hyper")
+    greatFun(dmRegions = dmRegions, significantRegions = significantRegions_hypo, type = "regions/hypo")
+    greatFun(dmRegions = dmLoci, significantRegions = significantLoci_hyper, type = "loci/hyper")
+    greatFun(dmRegions = dmLoci, significantRegions = significantLoci_hypo, type = "loci/hypo")
     
     region_size <- 200
     motif_length <- "8,10,12"
@@ -217,9 +260,17 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # genomeHomer <- "mm10"
     bedFile <- "significantRegions.bed"
     bedFileBG <- "dmRegions.bed"
-    cmd <- paste("findMotifsGenome.pl", bedFile, genomeHomer, "homer", "-size 200", "-bg", bedFileBG, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+    # cmd <- paste("findMotifsGenome.pl", bedFile, genomeHomer, "homer", "-size 200", "-bg", bedFileBG, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+    # ezSystem(cmd)
+    cmd <- paste("findMotifsGenome.pl", "regions/hyper/significantRegions.bed", genomeHomer, "regions/hyper/homer", "-size 200", "-bg", "regions/dmRegions.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir regions/hyper")
     ezSystem(cmd)
-
+    cmd <- paste("findMotifsGenome.pl", "regions/hypo/significantRegions.bed", genomeHomer, "regions/hypo/homer", "-size 200", "-bg", "regions/dmRegions.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir regions/hypo")
+    ezSystem(cmd)
+    
+    cmd <- paste("findMotifsGenome.pl", "loci/hyper/significantLoci.bed", genomeHomer, "loci/hyper/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hyper")
+    ezSystem(cmd)
+    cmd <- paste("findMotifsGenome.pl", "loci/hypo/significantLoci.bed", genomeHomer, "loci/hypo/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hypo")
+    ezSystem(cmd)
   }
 
   # print(sampleNames)
