@@ -224,7 +224,6 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     methylBase <- unite(filteredMethylRaw, destrand=FALSE) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
-
     significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
     significantLoci <- as(significantLoci,"GRanges")
     seqlevelsStyle(significantLoci) <- "UCSC"
@@ -274,7 +273,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     }
     
     greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
-    greatHomer(significantRegions_hyper, significantRegions_hypo, dmLoci, "regions")
+    greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
     
     # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
     # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
