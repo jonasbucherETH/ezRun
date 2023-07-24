@@ -158,8 +158,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     setwd(basename(output$getColumn("Report")))
     setwdNew(contexts[i])
     # ezSystem(paste("mkdir", contexts[i]))
-    ezSystem("mkdir regions loci")
-    ezSystem("mkdir regions/hyper regions/hypo loci/hyper loci/hypo")
+    # ezSystem("mkdir regions loci")
+    # ezSystem("mkdir regions/hyper regions/hypo loci/hyper loci/hypo")
+    ezSystem("mkdir hyper hypo")
+    ezSystem("mkdir hyper/regions hyper/loci hypo/regions hypo/loci")
     
     coverageFiles <- input$getFullPaths(covColumnName)
     
@@ -198,30 +200,18 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # qvalCutoff <- 0.5
     # significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
     
-    
-    writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
-    saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
-    writeBedFileRegions(regions = significantRegions, nameBed = "regions/significantRegions")
-    saveRDS(significantRegions, file=paste0("regions/significantRegions", ".rds"))
-    
-    writeBedFileRegions(regions = significantRegions_hyper, nameBed = "regions/hyper/significantRegions")
-    writeBedFileRegions(regions = significantRegions_hypo, nameBed = "regions/hypo/significantRegions")
-    saveRDS(significantRegions_hyper, file=paste0("regions/hyper/significantRegions", ".rds"))
-    saveRDS(significantRegions_hypo, file=paste0("regions/hypo/significantRegions", ".rds"))
-    saveRDS(bsseq, file=paste0("regions/bsseq", ".rds"))
-
     treatmentMethylKit <- rep(0, length(sampleNames))
     treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
     
     methylRaw <- methRead(location = as.list(coverageFiles),
-                             sample.id = as.list(sampleNames),
-                             treatment = treatmentMethylKit,
-                             # pipeline = "bismarkCoverage",
-                             pipeline = "bismarkCytosineReport",
-                             assembly = param$biomart_selection,
-                             context = contexts[i],
-                             mincov = 0,
-                             skip = 0
+                          sample.id = as.list(sampleNames),
+                          treatment = treatmentMethylKit,
+                          # pipeline = "bismarkCoverage",
+                          pipeline = "bismarkCytosineReport",
+                          assembly = param$biomart_selection,
+                          context = contexts[i],
+                          mincov = 0,
+                          skip = 0
     )
     
     filteredMethylRaw  <- filterByCoverage(
@@ -231,46 +221,104 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
       hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
     )
+    
     methylBase <- unite(filteredMethylRaw, destrand=FALSE) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
+
+    significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
+    significantLoci <- as(significantLoci,"GRanges")
+    seqlevelsStyle(significantLoci) <- "UCSC"
     dmLoci <- as(dmLoci,"GRanges")
     seqlevelsStyle(dmLoci) <- "UCSC"
     
-    significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
     significantLoci_hyper <- significantLoci[significantLoci$meth.diff > 0, ]
     significantLoci_hypo <- significantLoci[significantLoci$meth.diff < 0, ]
     
-    saveRDS(dmLoci, file=file.path("loci", paste0("dmLoci", ".rds")))
-    saveRDS(significantLoci, file=file.path("loci", paste0("significantLoci", ".rds")))
-    saveRDS(significantLoci_hyper, file=file.path("loci", "hyper", paste0("significantLoci", ".rds")))
-    saveRDS(significantLoci_hypo, file=file.path("loci", "hypo", paste0("significantLoci", ".rds")))
-    writeBedFileRegions(regions = dmLoci, nameBed = "loci/dmLoci")
-    writeBedFileRegions(regions = significantLoci, nameBed = "loci/significantLoci")
-    writeBedFileRegions(regions = significantLoci_hyper, nameBed = "loci/hyper/significantLoci")
-    writeBedFileRegions(regions = significantLoci_hypo, nameBed = "loci/hypo/significantLoci")
-
-    greatFun(dmRegions = dmRegions, significantRegions = significantRegions_hyper, type = "regions/hyper")
-    greatFun(dmRegions = dmRegions, significantRegions = significantRegions_hypo, type = "regions/hypo")
-    greatFun(dmRegions = dmLoci, significantRegions = significantLoci_hyper, type = "loci/hyper")
-    greatFun(dmRegions = dmLoci, significantRegions = significantLoci_hypo, type = "loci/hypo")
+    saveRDS(bsseq, file=paste0("bsseq", ".rds"))
+    # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
+    # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
+    
+    # methType <- "hyper"
+    # dmType <- "regions"
     
     region_size <- 200
     motif_length <- "8,10,12"
     genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
-    # genomeHomer <- "mm10"
-    bedFile <- "significantRegions.bed"
-    bedFileBG <- "dmRegions.bed"
-    # cmd <- paste("findMotifsGenome.pl", bedFile, genomeHomer, "homer", "-size 200", "-bg", bedFileBG, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
-    # ezSystem(cmd)
-    cmd <- paste("findMotifsGenome.pl", "regions/hyper/significantRegions.bed", genomeHomer, "regions/hyper/homer", "-size 200", "-bg", "regions/dmRegions.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir regions/hyper")
-    ezSystem(cmd)
-    cmd <- paste("findMotifsGenome.pl", "regions/hypo/significantRegions.bed", genomeHomer, "regions/hypo/homer", "-size 200", "-bg", "regions/dmRegions.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir regions/hypo")
-    ezSystem(cmd)
+    # genomeHomer <- file.path("/srv/GT/reference", "abc", 'Sequence/WholeGenomeFasta/genome.fa')
+
+    greatHomer <- function(significantHyper, significantHypo, differentialSet, dmType) { # methType = hypo/hyper | dmType = regions/loci
+      if (length(differentialSet) > 0) {
+        writeBedFileRegions(regions = differentialSet, nameBed = dmType)
+        saveRDS(differentialSet, file=paste0(dmType, ".rds"))
+        if (length(significantHyper) > 0 & length(differentialSet) > length(significantHyper)) {
+          methType <- "hyper"
+          writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
+          saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
+          greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
+          cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+          ezSystem(cmd)
+        } 
+        if (length(significantHypo) > 0 & length(differentialSet) > length(significantHypo)) {
+          methType <- "hypo"
+          
+          writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
+          saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
+          greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
+          cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+          ezSystem(cmd)
+        } 
+      } else { # remove subdirectory if no regions/loci for given methType and dmType combination
+        cmd <- paste0("rm -r ", methType, dmType)
+        ezSystem(cmd)
+      }
+    }
     
-    cmd <- paste("findMotifsGenome.pl", "loci/hyper/significantLoci.bed", genomeHomer, "loci/hyper/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hyper")
-    ezSystem(cmd)
-    cmd <- paste("findMotifsGenome.pl", "loci/hypo/significantLoci.bed", genomeHomer, "loci/hypo/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hypo")
-    ezSystem(cmd)
+    greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
+    greatHomer(significantRegions_hyper, significantRegions_hypo, dmLoci, "regions")
+    
+    # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
+    # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
+    # writeBedFileRegions(regions = significantRegions, nameBed = "regions/significantRegions")
+    # saveRDS(significantRegions, file=paste0("regions/significantRegions", ".rds"))
+    
+    # writeBedFileRegions(regions = significantRegions_hyper, nameBed = "regions/hyper/significantRegions")
+    # writeBedFileRegions(regions = significantRegions_hypo, nameBed = "regions/hypo/significantRegions")
+    # saveRDS(significantRegions_hyper, file=paste0("regions/hyper/significantRegions", ".rds"))
+    # saveRDS(significantRegions_hypo, file=paste0("regions/hypo/significantRegions", ".rds"))
+    # saveRDS(bsseq, file=paste0("regions/bsseq", ".rds"))
+
+    
+    # saveRDS(dmLoci, file=file.path("loci", paste0("dmLoci", ".rds")))
+    # saveRDS(significantLoci, file=file.path("loci", paste0("significantLoci", ".rds")))
+    # saveRDS(significantLoci_hyper, file=file.path("loci", "hyper", paste0("significantLoci", ".rds")))
+    # saveRDS(significantLoci_hypo, file=file.path("loci", "hypo", paste0("significantLoci", ".rds")))
+    # writeBedFileRegions(regions = dmLoci, nameBed = "loci/dmLoci")
+    # writeBedFileRegions(regions = significantLoci, nameBed = "loci/significantLoci")
+    # writeBedFileRegions(regions = significantLoci_hyper, nameBed = "loci/hyper/significantLoci")
+    # writeBedFileRegions(regions = significantLoci_hypo, nameBed = "loci/hypo/significantLoci")
+
+    # greatFun(dmRegions = dmRegions, significantRegions = significantRegions_hyper, type = "regions/hyper")
+    # greatFun(dmRegions = dmRegions, significantRegions = significantRegions_hypo, type = "regions/hypo")
+    # greatFun(dmRegions = dmLoci, significantRegions = significantLoci_hyper, type = "loci/hyper")
+    # greatFun(dmRegions = dmLoci, significantRegions = significantLoci_hypo, type = "loci/hypo")
+    
+    # region_size <- 200
+    # motif_length <- "8,10,12"
+    # genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
+    # # genomeHomer <- "mm10"
+    # bedFile <- "significantRegions.bed"
+    # bedFileBG <- "dmRegions.bed"
+    # # cmd <- paste("findMotifsGenome.pl", bedFile, genomeHomer, "homer", "-size 200", "-bg", bedFileBG, "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+    # # ezSystem(cmd)
+    # cmd <- paste("findMotifsGenome.pl", "regions/hyper/significantRegions.bed", genomeHomer, "regions/hyper/homer", "-size 200", "-bg", "regions/dmRegions.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir regions/hyper")
+    # ezSystem(cmd)
+    # cmd <- paste("findMotifsGenome.pl", "regions/hypo/significantRegions.bed", genomeHomer, "regions/hypo/homer", "-size 200", "-bg", "regions/dmRegions.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir regions/hypo")
+    # ezSystem(cmd)
+    # 
+    # cmd <- paste("findMotifsGenome.pl", "loci/hyper/significantLoci.bed", genomeHomer, "loci/hyper/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hyper")
+    # ezSystem(cmd)
+    # cmd <- paste("findMotifsGenome.pl", "loci/hypo/significantLoci.bed", genomeHomer, "loci/hypo/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hypo")
+    # ezSystem(cmd)
   }
 
   # print(sampleNames)
