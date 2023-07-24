@@ -866,8 +866,8 @@ ezMethodBismark <- function(input = NA, output = NA, param = NA) {
   # echo 1 2 | awk '{print $2 | "gzip > "$1".gz"}'
   # awk -F 't' '{print > "A04_BB."($6 "_report.txt.gz")}' <(zcat A04_BB*CX_report.txt.gz)
 
-  splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
-  ezSystem(paste("cat ", splittingReportFile[1], ">>", reportFile))
+  # splittingReportFile <- list.files(".", pattern = "splitting_report.txt$")
+  # ezSystem(paste("cat ", splittingReportFile[1], ">>", reportFile))
   
   ## write an igv link
   # if (param$writeIgvSessionLink){
