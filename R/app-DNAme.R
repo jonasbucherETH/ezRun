@@ -180,9 +180,11 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       verbose = TRUE,
       BPPARAM = BPPARAM
     )
-    
-    seqlevelsStyle(dmRegions) <- "UCSC"
-    
+
+    if (length(dmRegions) > 0) {
+      seqlevelsStyle(dmRegions) <- "UCSC"
+    }
+
     qvalCutoff <- 0.05
     significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
     # TODO: split into hypo- and hyper-methylated regions
