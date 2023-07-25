@@ -240,7 +240,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
     )
     
-    methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = 1) # destrand = T only for CpG
+    methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = 1L) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
     significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
     significantLoci <- as(significantLoci,"GRanges")
