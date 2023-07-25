@@ -165,11 +165,26 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     coverageFiles <- input$getFullPaths(covColumnName)
     
+    # dd <- "/srv/gstore/projects/p1535/Bismark_mm_CpG_2023-07-24--16-13-37"
+    # coverageFiles <- list.files(dd, pattern = "*CG_report.txt.gz", full.names = T)
+    
+    # bsseq_6 <- bsseq::read.bismark(files = coverageFiles[1], loci = loci, verbose = T, strandCollapse = FALSE)
+    # strandCollapse?
+    # lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq_6, type="M")==0) == 0)
+    # bsseqFiltered <- bsseq_6[lociCoverage, ]
+    
+    # round(colMeans(getCoverage(bsseq_6)), 1)
+
+    loci <- bsseq:::.readBismarkAsFWGRanges(unname(coverageFiles[1]), rmZeroCov = F, strandCollapse = F)
     bsseq <- bsseq::read.bismark(files = unname(coverageFiles),
                                     rmZeroCov = FALSE,
                                     strandCollapse = FALSE,
                                     verbose = FALSE,
-                                    colData = bsseqColData)
+                                    colData = bsseqColData,
+                                    BPPARAM = BPPARAM,
+                                    loci = loci)
+    
+    seqlevelsStyle(bsseq) <- "UCSC"
     
     lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
     bsseqFiltered <- bsseq[lociCoverage, ]
@@ -181,9 +196,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       BPPARAM = BPPARAM
     )
 
-    if (length(dmRegions) > 0) {
-      seqlevelsStyle(dmRegions) <- "UCSC"
-    }
+    # if (length(dmRegions) > 0) {
+    #   seqlevelsStyle(dmRegions) <- "UCSC"
+    # }
 
     qvalCutoff <- 0.05
     significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
@@ -218,13 +233,14 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     filteredMethylRaw  <- filterByCoverage(
       methylRaw,
-      lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
+      # lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
+      lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
       lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
       hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
       hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
     )
     
-    methylBase <- unite(filteredMethylRaw, destrand=FALSE) # destrand = T only for CpG
+    methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = 1) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
     significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
     significantLoci <- as(significantLoci,"GRanges")
