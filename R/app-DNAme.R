@@ -230,7 +230,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
     bsseqFiltered <- bsseq[lociCoverage, ]
-    table(strand(bsseqFiltered))
+    # table(strand(bsseqFiltered))
     
     dmRegions <- dmrseq(
       bs = bsseqFiltered,
@@ -267,15 +267,18 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # significantRegions <- dmRegions[1:(length(dmRegions)/3),]
     # qvalCutoff <- 0.5
     # significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
-
+    # sampleNames <- input_datset$Name
     treatmentMethylKit <- rep(0, length(sampleNames))
     treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
+    cat(treatmentMethylKit)
+    # treatmentMethylKit[bsseqColData == "BB"] <- 1
+    
 
     methylRaw <- methRead(location = as.list(coverageFiles),
                           sample.id = as.list(sampleNames),
                           treatment = treatmentMethylKit,
-                          # pipeline = "bismarkCoverage",
-                          pipeline = "bismarkCytosineReport",
+                          pipeline = "bismarkCoverage",
+                          # pipeline = "bismarkCytosineReport",
                           assembly = param$biomart_selection,
                           context = contexts[i],
                           mincov = 0,
