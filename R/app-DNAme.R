@@ -130,6 +130,33 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     saveRDS(greatResult_MF, file = file.path(type, paste0("greatResultMF", ".rds")))
   }
   
+  greatHomer <- function(significantHyper, significantHypo, differentialSet, dmType) { # methType = hypo/hyper | dmType = regions/loci
+    if (length(differentialSet) > 0) {
+      writeBedFileRegions(regions = differentialSet, nameBed = dmType)
+      saveRDS(differentialSet, file=paste0(dmType, ".rds"))
+      if (length(significantHyper) > 0 & length(differentialSet) > length(significantHyper)) {
+        methType <- "hyper"
+        writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
+        saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
+        greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
+        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        ezSystem(cmd)
+      } 
+      if (length(significantHypo) > 0 & length(differentialSet) > length(significantHypo)) {
+        methType <- "hypo"
+        
+        writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
+        saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
+        greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
+        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+        ezSystem(cmd)
+      } 
+    } else { # remove subdirectory if no regions/loci for given methType and dmType combination
+      cmd <- paste0("rm -r ", methType, dmType)
+      ezSystem(cmd)
+    }
+  }
+  
   # coverageFiles <- input$getFullPaths("COV")
   # sampleNames <- names(coverageFiles)
   sampleNames <- param$samples
@@ -235,12 +262,13 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       methylRaw,
       # lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
       lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
-      lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
+      # lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
+      lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
       hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
-      hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+      # hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+      hi.perc=NULL # Bases/regions having higher coverage than this percentile is discarded
     )
-    
-    methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = 1L) # destrand = T only for CpG
+    methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = NULL, mc.cores = param$cores) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
     significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
     significantLoci <- as(significantLoci,"GRanges")
@@ -262,36 +290,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     motif_length <- "8,10,12"
     genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
     # genomeHomer <- file.path("/srv/GT/reference", "abc", 'Sequence/WholeGenomeFasta/genome.fa')
-
-    greatHomer <- function(significantHyper, significantHypo, differentialSet, dmType) { # methType = hypo/hyper | dmType = regions/loci
-      if (length(differentialSet) > 0) {
-        writeBedFileRegions(regions = differentialSet, nameBed = dmType)
-        saveRDS(differentialSet, file=paste0(dmType, ".rds"))
-        if (length(significantHyper) > 0 & length(differentialSet) > length(significantHyper)) {
-          methType <- "hyper"
-          writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
-          saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
-          greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
-          cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
-          ezSystem(cmd)
-        } 
-        if (length(significantHypo) > 0 & length(differentialSet) > length(significantHypo)) {
-          methType <- "hypo"
-          
-          writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
-          saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
-          greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
-          cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
-          ezSystem(cmd)
-        } 
-      } else { # remove subdirectory if no regions/loci for given methType and dmType combination
-        cmd <- paste0("rm -r ", methType, dmType)
-        ezSystem(cmd)
-      }
-    }
     
     greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
     greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
+  }
     
     # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
     # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
@@ -336,7 +338,6 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # ezSystem(cmd)
     # cmd <- paste("findMotifsGenome.pl", "loci/hypo/significantLoci.bed", genomeHomer, "loci/hypo/homer", "-size 200", "-bg", "loci/dmLoci.bed", "-len", motif_length, "-keepOverlappingBg", "-preparsedDir loci/hypo")
     # ezSystem(cmd)
-  }
 
   # print(sampleNames)
   
