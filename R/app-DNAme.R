@@ -241,10 +241,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       significantRegions_hypo <- significantRegions[significantRegions$stat > 0, ]
     }
     
-    saveRDS(dmRegions, file=paste0(dmRegions, ".rds"))
-    saveRDS(significantRegions, file=paste0(significantRegions, ".rds"))
-    saveRDS(significantRegions_hyper, file=paste0(significantRegions_hyper, ".rds"))
-    saveRDS(significantRegions_hypo, file=paste0(significantRegions_hypo, ".rds"))
+    saveRDS(dmRegions, file=paste0("dmRegions", ".rds"))
+    saveRDS(significantRegions, file=paste0("significantRegions", ".rds"))
+    saveRDS(significantRegions_hyper, file=file.path("hyper", "regions", paste0("significantRegions", ".rds")))
+    saveRDS(significantRegions_hypo, file=file.path("hypo", "regions", paste0("significantRegions", ".rds")))
     
 # 
 #     # keepStandardChromosomes
