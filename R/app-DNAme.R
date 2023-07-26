@@ -134,7 +134,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     if (length(differentialSet) > 0) {
       writeBedFileRegions(regions = differentialSet, nameBed = dmType)
       saveRDS(differentialSet, file=paste0(dmType, ".rds"))
-      if (length(significantHyper) > 0 & length(differentialSet) > length(significantHyper)) {
+      if (length(significantHyper) > 0 && length(differentialSet) > length(significantHyper)) {
         methType <- "hyper"
         writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
@@ -142,7 +142,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
         ezSystem(cmd)
       } 
-      if (length(significantHypo) > 0 & length(differentialSet) > length(significantHypo)) {
+      if (length(significantHypo) > 0 && length(differentialSet) > length(significantHypo)) {
         methType <- "hypo"
         
         writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
@@ -201,6 +201,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # bsseqFiltered <- bsseq_6[lociCoverage, ]
     
     # round(colMeans(getCoverage(bsseq_6)), 1)
+    cat(sampleNames)
 
     loci <- bsseq:::.readBismarkAsFWGRanges(unname(coverageFiles[1]), rmZeroCov = F, strandCollapse = F)
     bsseq <- bsseq::read.bismark(files = unname(coverageFiles),
@@ -220,14 +221,15 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       bs = bsseqFiltered,
       testCovariate = param$grouping,
       verbose = TRUE,
-      BPPARAM = BPPARAM
+      BPPARAM = BPPARAM,
+      cutoff = 0.0001
     )
 
     # if (length(dmRegions) > 0) {
     #   seqlevelsStyle(dmRegions) <- "UCSC"
     # }
 
-    qvalCutoff <- 0.05
+    qvalCutoff <- 0.5
     significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
     # TODO: split into hypo- and hyper-methylated regions
     # note that for a two-group comparison dmrseq uses alphabetical order of the covariate of interest
@@ -238,61 +240,61 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       significantRegions_hyper <- significantRegions[significantRegions$stat < 0, ]
       significantRegions_hypo <- significantRegions[significantRegions$stat > 0, ]
     }
-
-    # keepStandardChromosomes
-    # significantRegions <- dmRegions[1:(length(dmRegions)/3),]
-    # qvalCutoff <- 0.5
-    # significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
-    
-    treatmentMethylKit <- rep(0, length(sampleNames))
-    treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
-    
-    methylRaw <- methRead(location = as.list(coverageFiles),
-                          sample.id = as.list(sampleNames),
-                          treatment = treatmentMethylKit,
-                          # pipeline = "bismarkCoverage",
-                          pipeline = "bismarkCytosineReport",
-                          assembly = param$biomart_selection,
-                          context = contexts[i],
-                          mincov = 0,
-                          skip = 0
-    )
-    
-    filteredMethylRaw  <- filterByCoverage(
-      methylRaw,
-      # lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
-      lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
-      # lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
-      lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
-      hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
-      # hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
-      hi.perc=NULL # Bases/regions having higher coverage than this percentile is discarded
-    )
-    methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = NULL, mc.cores = param$cores) # destrand = T only for CpG
-    dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
-    significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
-    significantLoci <- as(significantLoci,"GRanges")
-    seqlevelsStyle(significantLoci) <- "UCSC"
-    dmLoci <- as(dmLoci,"GRanges")
-    seqlevelsStyle(dmLoci) <- "UCSC"
-    
-    significantLoci_hyper <- significantLoci[significantLoci$meth.diff > 0, ]
-    significantLoci_hypo <- significantLoci[significantLoci$meth.diff < 0, ]
-    
-    saveRDS(bsseq, file=paste0("bsseq", ".rds"))
-    # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
-    # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
-    
-    # methType <- "hyper"
-    # dmType <- "regions"
-    
-    region_size <- 200
-    motif_length <- "8,10,12"
-    genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
-    # genomeHomer <- file.path("/srv/GT/reference", "abc", 'Sequence/WholeGenomeFasta/genome.fa')
-    
-    greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
-    greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
+# 
+#     # keepStandardChromosomes
+#     # significantRegions <- dmRegions[1:(length(dmRegions)/3),]
+#     # qvalCutoff <- 0.5
+#     # significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
+#     
+#     treatmentMethylKit <- rep(0, length(sampleNames))
+#     treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
+#     
+#     methylRaw <- methRead(location = as.list(coverageFiles),
+#                           sample.id = as.list(sampleNames),
+#                           treatment = treatmentMethylKit,
+#                           # pipeline = "bismarkCoverage",
+#                           pipeline = "bismarkCytosineReport",
+#                           assembly = param$biomart_selection,
+#                           context = contexts[i],
+#                           mincov = 0,
+#                           skip = 0
+#     )
+#     
+#     filteredMethylRaw  <- filterByCoverage(
+#       methylRaw,
+#       # lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
+#       lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
+#       # lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
+#       lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
+#       hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
+#       # hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+#       hi.perc=NULL # Bases/regions having higher coverage than this percentile is discarded
+#     )
+#     methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = NULL, mc.cores = param$cores) # destrand = T only for CpG
+#     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
+#     significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
+#     significantLoci <- as(significantLoci,"GRanges")
+#     seqlevelsStyle(significantLoci) <- "UCSC"
+#     dmLoci <- as(dmLoci,"GRanges")
+#     seqlevelsStyle(dmLoci) <- "UCSC"
+#     
+#     significantLoci_hyper <- significantLoci[significantLoci$meth.diff > 0, ]
+#     significantLoci_hypo <- significantLoci[significantLoci$meth.diff < 0, ]
+#     
+#     saveRDS(bsseq, file=paste0("bsseq", ".rds"))
+#     # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
+#     # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
+#     
+#     # methType <- "hyper"
+#     # dmType <- "regions"
+#     
+#     region_size <- 200
+#     motif_length <- "8,10,12"
+#     genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
+#     # genomeHomer <- file.path("/srv/GT/reference", "abc", 'Sequence/WholeGenomeFasta/genome.fa')
+#     
+#     greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
+#     greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
   }
     
     # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
