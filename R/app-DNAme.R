@@ -197,7 +197,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     coverageFiles <- input$getFullPaths(covColumnName)
     cytosineReportFiles <- input$getFullPaths(cytosineReportColumnName)
-    
+    cat(coverageFiles)
     
     # dd <- "/srv/gstore/projects/p1535/Bismark_mm_CpG_2023-07-24--16-13-37"
     # coverageFiles <- list.files(dd, pattern = "*CG_report.txt.gz", full.names = T)
