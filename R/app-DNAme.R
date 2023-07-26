@@ -179,7 +179,12 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     #   covColumnName <- paste0("COV_", contexts[i])
     # } 
     # using genome-wide cytosine report
-    covColumnName <- paste0(contexts[i], "_report")
+    if (contexts[i] == "CpG") {
+      covColumnName <- "COV"
+    } else {
+      covColumnName <- paste0("COV_", contexts[i])
+    }
+    cytosineReportColumnName <- paste0(contexts[i], "_report")
 
     setwd(cwd)
     setwd(basename(output$getColumn("Report")))
@@ -191,6 +196,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     ezSystem("mkdir hyper/regions hyper/loci hypo/regions hypo/loci")
     
     coverageFiles <- input$getFullPaths(covColumnName)
+    cytosineReportFiles <- input$getFullPaths(cytosineReportColumnName)
+    
     
     # dd <- "/srv/gstore/projects/p1535/Bismark_mm_CpG_2023-07-24--16-13-37"
     # coverageFiles <- list.files(dd, pattern = "*CG_report.txt.gz", full.names = T)
@@ -203,20 +210,22 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # round(colMeans(getCoverage(bsseq_6)), 1)
     cat(sampleNames)
 
-    loci <- bsseq:::.readBismarkAsFWGRanges(unname(coverageFiles[1]), rmZeroCov = F, strandCollapse = F)
+    loci <- bsseq:::.readBismarkAsFWGRanges(unname(cytosineReportFiles[1]), rmZeroCov = F, strandCollapse = F)
     bsseq <- bsseq::read.bismark(files = unname(coverageFiles),
                                     rmZeroCov = FALSE,
                                     strandCollapse = FALSE,
                                     verbose = FALSE,
                                     colData = bsseqColData,
                                     BPPARAM = BPPARAM,
-                                    loci = loci)
+                                    loci = loci,
+                                    nThread = 3)
     
     seqlevelsStyle(bsseq) <- "UCSC"
     
     lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
     bsseqFiltered <- bsseq[lociCoverage, ]
-    
+    cat(length(bsseqFiltered))
+
     dmRegions <- dmrseq(
       bs = bsseqFiltered,
       testCovariate = param$grouping,
@@ -1144,6 +1153,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
 
   # setwd again before saving these
   # setwd(basename(output$getColumn("Report")))
+  setwd(cwd)
   
   ## Copy the style files and templates
   styleFiles <- file.path(
