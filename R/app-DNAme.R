@@ -152,7 +152,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         ezSystem(cmd)
       } 
     } else { # remove subdirectory if no regions/loci for given methType and dmType combination
-      cmd <- paste0("rm -r ", methType, dmType)
+      cmd <- paste("rm -r ", file.path(methType, dmType))
       ezSystem(cmd)
     }
   }
