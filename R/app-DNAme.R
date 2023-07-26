@@ -139,21 +139,20 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
         greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
-        ezSystem(cmd)
+        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        # ezSystem(cmd)
       } 
       if (length(significantHypo) > 0 && length(differentialSet) > length(significantHypo)) {
         methType <- "hypo"
-        
         writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
         greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
-        ezSystem(cmd)
+        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+        # ezSystem(cmd)
       } 
     } else { # remove subdirectory if no regions/loci for given methType and dmType combination
       cmd <- paste("rm -r ", file.path(methType, dmType))
-      ezSystem(cmd)
+      # ezSystem(cmd)
     }
   }
   
@@ -202,7 +201,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     # dd <- "/srv/gstore/projects/p1535/Bismark_mm_CpG_2023-07-24--16-13-37"
     # coverageFiles <- list.files(testDir, pattern = "*CHH.gz.bismark.cov.gz", full.names = T)
-    # cytosineReportFiles <- list.files(testDir, pattern = "*CHH_report.txt.gz", full.names = T)
+    # cytosineReportFiles <- list.files(testDir, pattern = "*CG_report.txt.gz", full.names = T)
     
     # input_datset <- read_tsv("/srv/gstore/projects/p1535/DNAme_CXreport_test1_BB--over--AN_2023-07-24--15-31-12/input_dataset.tsv")
     # bsseqColData <- data.frame(input_datset$`Treatment [Factor]`)
@@ -222,10 +221,11 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                                     strandCollapse = FALSE,
                                     verbose = FALSE,
                                     colData = bsseqColData,
-                                    # BPPARAM = BPPARAM,
+                                    BPPARAM = BPPARAM,
                                     loci = loci,
                                     nThread = 3)
     
+    seqlevelsStyle(loci) <- "UCSC"
     seqlevelsStyle(bsseq) <- "UCSC"
     
     lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
@@ -284,7 +284,31 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                           mincov = 0,
                           skip = 0
     )
-
+    
+    # overlap <- findOverlaps(bsseq@rowRanges, loci)
+    # strand(methylGR[ovl@to]) <- strand(bsseq@rowRanges[ovl@from])
+    
+    # methylRaw <- methRead(location = as.list(cytosineReportFiles),
+    #                       sample.id = as.list(sampleNames),
+    #                       treatment = treatmentMethylKit,
+    #                       # pipeline = "bismarkCoverage",
+    #                       pipeline = "bismarkCytosineReport",
+    #                       assembly = "ath",
+    #                       context = "CHH",
+    #                       mincov = 1,
+    #                       skip = 0
+    # )
+    # 
+    # methylBase <- methylKit::unite(methylRaw)
+    # methylGR <- as(methylBase, "GRanges")
+    # seqlevelsStyle(methylGR) <- "UCSC"
+    # 
+    # ovl <- findOverlaps(bsseq@rowRanges, methylGR)
+    # strand(methylGR[ovl@to]) <- strand(bsseq@rowRanges[ovl@from])
+    # 
+    # which(bsseq@rowRanges@ranges@start == methylBase$start)
+    # class(bsseq@rowRanges)
+    
     filteredMethylRaw  <- filterByCoverage(
       methylRaw,
       # lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
