@@ -152,15 +152,14 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       # testCovariate = "Treatment",
       verbose = TRUE,
       BPPARAM = BPPARAM,
-      cutoff = 0.1
+      cutoff = param$cutoffRegions
     )
 
     # if (length(dmRegions) > 0) {
     #   seqlevelsStyle(dmRegions) <- "UCSC"
     # }
 
-    qvalCutoff <- 0.5
-    significantRegions <- dmRegions[dmRegions$qval < qvalCutoff, ]
+    significantRegions <- dmRegions[dmRegions$qval < param$qvalRegions, ]
     # TODO: split into hypo- and hyper-methylated regions
     # note that for a two-group comparison dmrseq uses alphabetical order of the covariate of interest
     if (sort(c(param$sampleGroup, param$refGroup))[1] == param$refGroup) {
@@ -235,7 +234,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     )
     methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = NULL, mc.cores = param$cores) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
-    significantLoci <- getMethylDiff(dmLoci, difference=25, qvalue=0.1, type="all")
+    significantLoci <- getMethylDiff(dmLoci, difference=param$cutoffLoci, qvalue=param$qvalLoci, type="all")
     significantLoci <- as(significantLoci,"GRanges")
     seqlevelsStyle(significantLoci) <- "UCSC"
     dmLoci <- as(dmLoci,"GRanges")
