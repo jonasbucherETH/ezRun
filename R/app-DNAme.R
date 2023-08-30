@@ -123,7 +123,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # bsseqFiltered <- bsseq_6[lociCoverage, ]
     
     # round(colMeans(getCoverage(bsseq_6)), 1)
-    cat(sampleNames)
+    # cat(sampleNames)
 
     loci <- bsseq:::.readBismarkAsFWGRanges(unname(cytosineReportFiles[1]), rmZeroCov = F, strandCollapse = F)
     bsseq <- bsseq::read.bismark(files = unname(coverageFiles),
@@ -142,9 +142,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
     bsseqFiltered <- bsseq[lociCoverage, ]
-    cat(table(strand(bsseqFiltered)))
+    # cat(table(strand(bsseqFiltered)))
     
-    cat(length(bsseqFiltered))
+    # cat(length(bsseqFiltered))
     
     dmRegions <- dmrseq(
       bs = bsseqFiltered,
@@ -183,7 +183,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # sampleNames <- input_datset$Name
     treatmentMethylKit <- rep(0, length(sampleNames))
     treatmentMethylKit[input$getColumn(param$grouping) == param$sampleGroup] <- 1
-    cat(treatmentMethylKit)
+    # cat(treatmentMethylKit)
     # treatmentMethylKit[bsseqColData == "BB"] <- 1
     
 
@@ -226,11 +226,11 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
       methylRaw,
       # lo.count=param$minCoverageBases, # Bases/regions having lower coverage than this count is discarded
       lo.count=NULL, # Bases/regions having lower coverage than this count is discarded
-      # lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
-      lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
+      lo.perc=0.1, # Bases/regions having lower coverage than this percentile is discarded
+      # lo.perc=NULL, # Bases/regions having lower coverage than this percentile is discarded
       hi.count=NULL, # might want to filter out very high coverages as well (PCR bias)
-      # hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
-      hi.perc=NULL # Bases/regions having higher coverage than this percentile is discarded
+      hi.perc=99.9 # Bases/regions having higher coverage than this percentile is discarded
+      # hi.perc=NULL # Bases/regions having higher coverage than this percentile is discarded
     )
     methylBase <- methylKit::unite(filteredMethylRaw, destrand=FALSE, min.per.group = NULL, mc.cores = param$cores) # destrand = T only for CpG
     dmLoci <- calculateDiffMeth(methylBase, mc.cores = param$cores)
