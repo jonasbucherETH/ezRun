@@ -129,7 +129,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     bsseq <- bsseq::read.bismark(files = unname(coverageFiles),
                                     rmZeroCov = FALSE,
                                     strandCollapse = FALSE,
-                                    verbose = FALSE,
+                                    verbose = TRUE,
                                     colData = bsseqColData,
                                     BPPARAM = BPPARAM,
                                     loci = loci,
@@ -255,8 +255,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     genomeHomer <- file.path("/srv/GT/reference", dirname(dirname(param$refBuild)), 'Sequence/WholeGenomeFasta/genome.fa')
     # genomeHomer <- file.path("/srv/GT/reference", "abc", 'Sequence/WholeGenomeFasta/genome.fa')
 
-    greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
-    greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
+    # greatHomer(significantLoci_hyper, significantLoci_hypo, dmLoci, "loci")
+    # greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
   }
   
 ####################################### --- FUNCTIONS START --- #######################################
