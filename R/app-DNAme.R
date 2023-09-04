@@ -144,7 +144,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     
     # loci <- readRDS("/scratch/jonas/62355/DNAme/CpG/loci.rds")
     
-    seqlevelsStyle(loci) <- "UCSC"
+    # seqlevelsStyle(loci) <- "UCSC"
     seqlevelsStyle(bsseq) <- "UCSC"
     
     lociCoverage <- which(DelayedMatrixStats::rowSums2(getCoverage(bsseq, type="Cov")==0) == 0)
