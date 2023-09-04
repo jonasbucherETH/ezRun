@@ -51,6 +51,104 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   setwdNew(basename(output$getColumn("Report")))
   on.exit(setwd(cwd), add = TRUE)
   
+  ####################################### --- FUNCTIONS START --- #######################################
+  
+  writeBedFileRegions <- function(regions, nameBed) {
+    dfGR <- data.frame(chr=seqnames(regions),
+                       starts=start(regions),
+                       ends=end(regions),
+                       names=paste0("peakID_", seq(1:length(regions))), # col 4 = unique Peak ID (?)
+                       scores=c(rep(".", length(regions))), # col 5 = not used
+                       strands=strand(regions))
+    # strands=c(rep("+", length(regions))))
+    write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F, quote = F)
+  }
+  
+  greatFun <- function(dmRegions, significantRegions, type) { # dmType = region / locus
+    greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
+                            background = dmRegions, cores = param$cores)
+    greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
+                            background = dmRegions, cores = param$cores)
+    greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selection,
+                            background = dmRegions, cores = param$cores)
+    
+    # enrichmentTable_BP <- getEnrichmentTable(greatResult_BP)
+    # enrichmentTable_CC <- getEnrichmentTable(greatResult_CC)
+    # enrichmentTable_MF <- getEnrichmentTable(greatResult_MF)
+    
+    if(param$biomart_selection=="athaliana_eg_gene") {
+      reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
+      react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
+      rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
+      reactome_pathways <- split(rdb$V4, paste(rdb$V1, rdb$V2, sep = ": "))
+      
+      ## KEGG pathways
+      kg <- keggList("organism")
+      
+      pathway2gene <- keggLink("pathway", "ath")
+      pathwayName <- keggList("pathway", "ath")
+      df1 <- data.frame(
+        gene = gsub("ath:", "", names(pathway2gene)),
+        pathID = gsub("path:", "", pathway2gene)
+      )
+      
+      df2 <- data.frame(
+        pathID = gsub("path:", "", names(pathwayName)),
+        name = pathwayName
+      )
+      
+      df_kegg <- merge(df2, df1)
+      kegg_pathways <- split(df_kegg$gene, paste(df_kegg$pathID, df_kegg$name,
+                                                 sep = ": "
+      ))
+      
+      greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
+                              background = dmRegions, cores = param$cores)
+      greatResult_KE <- great(gr = significantRegions, gene_sets = kegg_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
+                              background = dmRegions, cores = param$cores)
+      
+      # enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
+      # enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
+      saveRDS(greatResult_RE, file = file.path(type, paste0("greatResultRE", ".rds")))
+      saveRDS(greatResult_KE, file = file.path(type, paste0("greatResultKE", ".rds")))
+    }
+    saveRDS(greatResult_BP, file = file.path(type, paste0("greatResultBP", ".rds")))
+    saveRDS(greatResult_CC, file = file.path(type, paste0("greatResultCC", ".rds")))
+    saveRDS(greatResult_MF, file = file.path(type, paste0("greatResultMF", ".rds")))
+  }
+  
+  greatHomer <- function(significantHyper, significantHypo, differentialSet, dmType) { # methType = hypo/hyper | dmType = regions/loci
+    if (length(differentialSet) > 0) {
+      writeBedFileRegions(regions = differentialSet, nameBed = dmType)
+      saveRDS(differentialSet, file=paste0(dmType, ".rds"))
+      if (length(significantHyper) > 0 && length(differentialSet) > length(significantHyper)) {
+        methType <- "hyper"
+        writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
+        saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
+        greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
+        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        ezSystem(cmd)
+      } else {
+        cat(paste0("no significant hypermethylated ", dmType, " found"))
+      }
+      if (length(significantHypo) > 0 && length(differentialSet) > length(significantHypo)) {
+        methType <- "hypo"
+        writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
+        saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
+        greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
+        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+        ezSystem(cmd)
+      } else {
+        cat(paste0("no significant hypomethylated ", dmType, " found"))
+      } 
+    } else { # remove subdirectory if no regions/loci for given methType and dmType combination
+      cat(paste0("no methylated ", dmType, " found"))
+      # cmd <- paste("rm -r ", file.path(methType, dmType))
+      # ezSystem(cmd)
+    }
+  }
+  ####################################### --- FUNCTIONS END --- #######################################
+  
   ###################### actual app ######################
   ### General preparation
   # sampleNames <- input$getColumn("Name")
@@ -269,103 +367,6 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     greatHomer(significantRegions_hyper, significantRegions_hypo, dmRegions, "regions")
   }
   
-####################################### --- FUNCTIONS START --- #######################################
-  
-  writeBedFileRegions <- function(regions, nameBed) {
-    dfGR <- data.frame(chr=seqnames(regions),
-                       starts=start(regions),
-                       ends=end(regions),
-                       names=paste0("peakID_", seq(1:length(regions))), # col 4 = unique Peak ID (?)
-                       scores=c(rep(".", length(regions))), # col 5 = not used
-                       strands=strand(regions))
-    # strands=c(rep("+", length(regions))))
-    write.table(dfGR, paste0(nameBed, ".bed"), sep = "\t", col.names = F, row.names = F, quote = F)
-  }
-  
-  greatFun <- function(dmRegions, significantRegions, type) { # dmType = region / locus
-    greatResult_BP <- great(gr = significantRegions, gene_sets = "BP", biomart_dataset = param$biomart_selection,
-                            background = dmRegions, cores = param$cores)
-    greatResult_CC <- great(gr = significantRegions, gene_sets = "CC", biomart_dataset = param$biomart_selection,
-                            background = dmRegions, cores = param$cores)
-    greatResult_MF <- great(gr = significantRegions, gene_sets = "MF", biomart_dataset = param$biomart_selection,
-                            background = dmRegions, cores = param$cores)
-    
-    # enrichmentTable_BP <- getEnrichmentTable(greatResult_BP)
-    # enrichmentTable_CC <- getEnrichmentTable(greatResult_CC)
-    # enrichmentTable_MF <- getEnrichmentTable(greatResult_MF)
-    
-    if(param$biomart_selection=="athaliana_eg_gene") {
-      reactome <- "https://plantreactome.gramene.org/download/current/gene_ids_by_pathway_and_species.tab"
-      react <- data.frame(data.table::fread(input = reactome, header = F, nThread = 16))
-      rdb <- react[grep(pattern = "^R-ATH", x = react$V1), ]
-      reactome_pathways <- split(rdb$V4, paste(rdb$V1, rdb$V2, sep = ": "))
-      
-      ## KEGG pathways
-      kg <- keggList("organism")
-      
-      pathway2gene <- keggLink("pathway", "ath")
-      pathwayName <- keggList("pathway", "ath")
-      df1 <- data.frame(
-        gene = gsub("ath:", "", names(pathway2gene)),
-        pathID = gsub("path:", "", pathway2gene)
-      )
-      
-      df2 <- data.frame(
-        pathID = gsub("path:", "", names(pathwayName)),
-        name = pathwayName
-      )
-      
-      df_kegg <- merge(df2, df1)
-      kegg_pathways <- split(df_kegg$gene, paste(df_kegg$pathID, df_kegg$name,
-                                                 sep = ": "
-      ))
-      
-      greatResult_RE <- great(gr = significantRegions, gene_sets = reactome_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
-                              background = dmRegions, cores = param$cores)
-      greatResult_KE <- great(gr = significantRegions, gene_sets = kegg_pathways, tss_source = "TxDb.Athaliana.BioMart.plantsmart51",
-                              background = dmRegions, cores = param$cores)
-      
-      # enrichmentTable_RE <- getEnrichmentTable(greatResult_RE)
-      # enrichmentTable_KE <- getEnrichmentTable(greatResult_KE)
-      saveRDS(greatResult_RE, file = file.path(type, paste0("greatResultRE", ".rds")))
-      saveRDS(greatResult_KE, file = file.path(type, paste0("greatResultKE", ".rds")))
-    }
-    saveRDS(greatResult_BP, file = file.path(type, paste0("greatResultBP", ".rds")))
-    saveRDS(greatResult_CC, file = file.path(type, paste0("greatResultCC", ".rds")))
-    saveRDS(greatResult_MF, file = file.path(type, paste0("greatResultMF", ".rds")))
-  }
-  
-  greatHomer <- function(significantHyper, significantHypo, differentialSet, dmType) { # methType = hypo/hyper | dmType = regions/loci
-    if (length(differentialSet) > 0) {
-      writeBedFileRegions(regions = differentialSet, nameBed = dmType)
-      saveRDS(differentialSet, file=paste0(dmType, ".rds"))
-      if (length(significantHyper) > 0 && length(differentialSet) > length(significantHyper)) {
-        methType <- "hyper"
-        writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
-        saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
-        greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
-        ezSystem(cmd)
-      } else {
-        cat(paste0("no significant hypermethylated ", dmType, " found"))
-      }
-      if (length(significantHypo) > 0 && length(differentialSet) > length(significantHypo)) {
-        methType <- "hypo"
-        writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
-        saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
-        greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
-        ezSystem(cmd)
-      } else {
-        cat(paste0("no significant hypomethylated ", dmType, " found"))
-      } 
-    } else { # remove subdirectory if no regions/loci for given methType and dmType combination
-      cat(paste0("no methylated ", dmType, " found"))
-      # cmd <- paste("rm -r ", file.path(methType, dmType))
-      # ezSystem(cmd)
-    }
-  }
-####################################### --- FUNCTIONS END --- #######################################
     
     # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
     # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
