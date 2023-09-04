@@ -137,9 +137,10 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
                                     strandCollapse = FALSE,
                                     verbose = TRUE,
                                     colData = bsseqColData,
-                                    BPPARAM = BPPARAM,
+                                    BPPARAM = BPPARAM
                                     # loci = loci,
-                                    nThread = 3)
+                                    # nThread = 3
+                                 )
     
     # loci <- readRDS("/scratch/jonas/62355/DNAme/CpG/loci.rds")
     
