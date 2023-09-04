@@ -69,6 +69,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # coverageFiles <- input$getFullPaths("COV")
   # sampleNames <- names(coverageFiles)
   sampleNames <- param$samples
+  cat(sampleNames)
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleNames)
   colnames(bsseqColData) <- param$grouping
   
@@ -107,6 +108,11 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # testDir <- "/srv/gstore/projects/p1535/Bismark_awk_test3_2023-07-24--15-14-57"
     coverageFiles <- input$getFullPaths(covColumnName)
     cytosineReportFiles <- input$getFullPaths(cytosineReportColumnName)
+    
+    cat(coverageFiles)
+    cat(cytosineReportFiles)
+    
+    
     # cat(coverageFiles)
     
     # dd <- "/srv/gstore/projects/p1535/Bismark_mm_CpG_2023-07-24--16-13-37"
@@ -125,14 +131,14 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     # round(colMeans(getCoverage(bsseq_6)), 1)
     # cat(sampleNames)
 
-    loci <- bsseq:::.readBismarkAsFWGRanges(unname(cytosineReportFiles[1]), rmZeroCov = F, strandCollapse = F)
+    # loci <- bsseq:::.readBismarkAsFWGRanges(unname(cytosineReportFiles[1]), rmZeroCov = F, strandCollapse = F)
     bsseq <- bsseq::read.bismark(files = unname(coverageFiles),
                                     rmZeroCov = FALSE,
                                     strandCollapse = FALSE,
                                     verbose = TRUE,
                                     colData = bsseqColData,
                                     BPPARAM = BPPARAM,
-                                    loci = loci,
+                                    # loci = loci,
                                     nThread = 3)
     
     # loci <- readRDS("/scratch/jonas/62355/DNAme/CpG/loci.rds")
