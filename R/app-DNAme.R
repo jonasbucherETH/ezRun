@@ -251,6 +251,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     significantLoci_hypo <- significantLoci[significantLoci$meth.diff < 0, ]
 
     saveRDS(bsseq, file=paste0("bsseq", ".rds"))
+    saveRDS(methylBase, file=paste0("methylBase", ".rds"))
+    saveRDS(methylRaw, file=paste0("methylRaw", ".rds"))
+    
     # writeBedFileRegions(regions = dmRegions, nameBed = "regions/dmRegions")
     # saveRDS(dmRegions, file=paste0("regions/dmRegions", ".rds"))
 
