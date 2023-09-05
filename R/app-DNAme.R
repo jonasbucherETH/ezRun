@@ -54,6 +54,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   ####################################### --- FUNCTIONS START --- #######################################
   
   writeBedFileRegions <- function(regions, nameBed) {
+    seqlevelsStyle(regions) <- "NCBI"
     dfGR <- data.frame(chr=seqnames(regions),
                        starts=start(regions),
                        ends=end(regions),
@@ -126,7 +127,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
         greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
         ezSystem(cmd)
       } else {
         cat(paste0("no significant hypermethylated ", dmType, " found"))
@@ -136,7 +138,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
         greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
         ezSystem(cmd)
       } else {
         cat(paste0("no significant hypomethylated ", dmType, " found"))
@@ -167,7 +170,7 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
   # coverageFiles <- input$getFullPaths("COV")
   # sampleNames <- names(coverageFiles)
   sampleNames <- param$samples
-  cat(sampleNames)
+  # cat(sampleNames)
   bsseqColData <- as.data.frame(input$getColumn(param$grouping), row.names = sampleNames)
   colnames(bsseqColData) <- param$grouping
   
@@ -207,8 +210,8 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     coverageFiles <- input$getFullPaths(covColumnName)
     cytosineReportFiles <- input$getFullPaths(cytosineReportColumnName)
     
-    cat(coverageFiles)
-    cat(cytosineReportFiles)
+    # cat(coverageFiles)
+    # cat(cytosineReportFiles)
     
     
     # cat(coverageFiles)
@@ -264,7 +267,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
     #   seqlevelsStyle(dmRegions) <- "UCSC"
     # }
 
-    significantRegions <- dmRegions[dmRegions$qval < as.numeric(param$qvalRegions), ]
+    # significantRegions <- dmRegions[dmRegions$qval < as.numeric(param$qvalRegions), ]
+    significantRegions <- dmRegions[dmRegions$pval < as.numeric(param$qvalRegions), ]
+    
     # TODO: split into hypo- and hyper-methylated regions
     # note that for a two-group comparison dmrseq uses alphabetical order of the covariate of interest
     if (sort(c(param$sampleGroup, param$refGroup))[1] == param$refGroup) {
