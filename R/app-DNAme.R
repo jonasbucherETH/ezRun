@@ -127,9 +127,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         writeBedFileRegions(regions = significantHyper, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHyper, file=file.path(methType, dmType, paste0("significant", ".rds")))
         greatFun(dmRegions = differentialSet, significantRegions = significantHyper, type = file.path(methType, dmType))
-        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
-        ezSystem(cmd)
+        # # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", file.path(methType, dmType, "full.bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        # ezSystem(cmd)
       } else {
         cat(paste0("no significant hypermethylated ", dmType, " found"))
       }
@@ -138,9 +138,9 @@ ezMethodDNAme <- function(input = NA, output = NA, param = NA,
         writeBedFileRegions(regions = significantHypo, nameBed = file.path(methType, dmType, "significant"))
         saveRDS(significantHypo, file=file.path(methType, dmType, paste0("significant", ".rds")))
         greatFun(dmRegions = differentialSet, significantRegions = significantHypo, type = file.path(methType, dmType))
-        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
-        cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
-        ezSystem(cmd)
+        # # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir .")
+        # cmd <- paste("findMotifsGenome.pl", file.path(methType, dmType, "significant.bed"), genomeHomer, file.path(methType, dmType, "homer"), "-size 200", "-bg", paste0(dmType, ".bed"), "-len", motif_length, "-keepOverlappingBg", "-preparsedDir", file.path(methType, dmType))
+        # ezSystem(cmd)
       } else {
         cat(paste0("no significant hypomethylated ", dmType, " found"))
       } 
